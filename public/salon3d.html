@@ -470,9 +470,9 @@ body {
   </div>
   <canvas id="minimapCanvas" width="130" height="175"></canvas>
   <div class="minimap-legend">
-    <div class="minimap-tag"><span class="m-dot" style="background:#f6e27a;"></span> ⚡ Dede</div>
+    <div class="minimap-tag"><span class="m-dot" style="background:#ffffff; box-shadow: 0 0 5px #f6e27a;"></span> 👴 Dede (Merkez)</div>
     <div class="minimap-tag"><span class="m-dot" style="background:#4ade80;"></span> 🎡 Rulet</div>
-    <div class="minimap-tag"><span class="m-dot" style="background:#60a5fa;"></span> 🂡 Blackjack</div>
+    <div class="minimap-tag"><span class="m-dot" style="background:#f6e27a;"></span> ⚡ Slotlar</div>
     <div class="minimap-tag"><span class="m-dot" style="background:#f43f5e;"></span> ✈️ Aviator</div>
   </div>
 </div>
@@ -639,6 +639,38 @@ body {
       <button class="action-btn" id="bjDealBtn" onclick="dealBlackjack()">ELİ BAŞLAT</button>
       <button class="action-btn" id="bjHitBtn" onclick="hitBlackjack()" style="display: none; background: #222; color: #fff; border-color: #666;">KART ÇEK</button>
       <button class="action-btn" id="bjStandBtn" onclick="standBlackjack()" style="display: none; background: #222; color: #fff; border-color: #666;">KAL (STAND)</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     AK SAKALLI DEDE (ZEUS / OLİMPOS PİRİ) DİYALOG MODALI
+     ═══════════════════════════════════════════════════════════ -->
+<div class="game-modal" id="modalDede">
+  <div class="modal-dialog" style="max-width: 520px; border: 2px solid #f6e27a; box-shadow: 0 0 50px rgba(246, 226, 122, 0.4);">
+    <div class="modal-header">
+      <div class="modal-title" style="color: #f6e27a;">⚡ AK SAKALLI DEDE (OLİMPOS PİRİ)</div>
+      <button class="modal-close" onclick="closeGameModal()">✕</button>
+    </div>
+
+    <div style="text-align: center; margin-bottom: 20px;">
+      <div style="font-size: 54px; margin-bottom: 8px; filter: drop-shadow(0 0 16px rgba(246,226,122,0.8));">👴⚡</div>
+      <div id="dedeDialogueText" style="font-family: 'Playfair Display', serif; font-size: 17px; font-style: italic; color: #fff; line-height: 1.6; min-height: 52px; padding: 0 10px;">
+        "Hoş geldin evladım... DÜRTÜ Mabedi'nin tam kalbindesin. Asamdaki ilahi nur ve şimşekler sana şans dağıtmak için parlar."
+      </div>
+      <div id="dedeBonusAlert" style="font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 700; color: #4ade80; margin-top: 10px; min-height: 20px;"></div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 10px;">
+      <button class="action-btn" id="btnDedeBlessing" onclick="askDedeBlessing()" style="background: linear-gradient(135deg, #D4AF37, #f6e27a); color: #000; font-weight: 700; border-color: #fff;">
+        ⚡ DEDE'DEN HAYIR DUASI & ŞANS AL (+150 dürTL • +80 XP)
+      </button>
+      <button class="action-btn" onclick="askDedeQuote()" style="background: rgba(255, 255, 255, 0.08); color: #fff; border-color: #666;">
+        📜 DEDE'DEN BİR NASİHAT DİNLE
+      </button>
+      <button class="action-btn" onclick="teleportToSlots()" style="background: rgba(212, 175, 55, 0.15); color: #f6e27a; border-color: var(--gold);">
+        🎰 DEDE'NİN ÖZEL SLOTUNA IŞINLAN (GATES OF OLYMPUS)
+      </button>
     </div>
   </div>
 </div>
@@ -1216,6 +1248,32 @@ const M = {
     emissive: 0xffb81a,
     emissiveIntensity: 4.5,
     roughness: 0.2
+  }),
+  whiteRobe: new THREE.MeshStandardMaterial({
+    color: 0xfcfcfc,
+    roughness: 0.9,
+    metalness: 0.05
+  }),
+  whiteBeard: new THREE.MeshStandardMaterial({
+    color: 0xffffff,
+    roughness: 0.95,
+    metalness: 0.0
+  }),
+  skin: new THREE.MeshStandardMaterial({
+    color: 0xe0a885,
+    roughness: 0.75,
+    metalness: 0.0
+  }),
+  staffWood: new THREE.MeshStandardMaterial({
+    color: 0x3d2314,
+    roughness: 0.7,
+    metalness: 0.1
+  }),
+  staffGlow: new THREE.MeshStandardMaterial({
+    color: 0x60d5ff,
+    emissive: 0x38bdf8,
+    emissiveIntensity: 4.0,
+    roughness: 0.1
   })
 };
 
@@ -1325,6 +1383,157 @@ function buildCasino() {
   // 11. Sahne ve Neon Tabela
   buildStage();
   buildNeonSign();
+
+  // 12. SALONUN TAM ORTASINDAKİ AK SAKALLI DEDE (ZEUS / OLİMPOS PİRİ)
+  buildDedeCharacter(0, 0);
+}
+
+// ═══════════════════════════════════════════════════════════
+// AK SAKALLI DEDE (BEMBEYAZ GİYİMLİ, PARLAYAN ASALI HEYKEL/FİGÜR)
+// ═══════════════════════════════════════════════════════════
+let dedeStaffOrb = null;
+let dedeStaffLight = null;
+let dedeGroup = null;
+
+function buildDedeCharacter(dx, dz) {
+  dedeGroup = new THREE.Group();
+  dedeGroup.position.set(dx, 0, dz);
+
+  // 1. Altın Kaide (Mermer ve Altın Süslemeli Podyum)
+  const baseBottom = addCylinder(scene, 'Dede_Podium_Base', dx, 0.12, dz, 1.4, 0.24, M.marbleNero, true, 32);
+  const baseStep = addCylinder(scene, 'Dede_Podium_Step', dx, 0.28, dz, 1.15, 0.12, M.gold, true, 32);
+  const baseTop = addCylinder(scene, 'Dede_Podium_Top', dx, 0.38, dz, 0.95, 0.1, M.marbleNero, true, 32);
+
+  const localY = 0.43; // Kaide üstü
+
+  // 2. Bembeyaz Cübbe & Etek (White Robe)
+  const robeGeo = new THREE.CylinderGeometry(0.38, 0.55, 1.35, 20);
+  const robeMesh = new THREE.Mesh(robeGeo, M.whiteRobe);
+  robeMesh.position.set(0, localY + 0.67, 0);
+  robeMesh.castShadow = true;
+  robeMesh.receiveShadow = true;
+  dedeGroup.add(robeMesh);
+
+  // Altın Kemer / Kuşak
+  const beltGeo = new THREE.TorusGeometry(0.42, 0.04, 12, 24);
+  const beltMesh = new THREE.Mesh(beltGeo, M.gold);
+  beltMesh.rotation.x = Math.PI / 2;
+  beltMesh.position.set(0, localY + 0.95, 0);
+  dedeGroup.add(beltMesh);
+
+  // 3. Gövde ve Omuzlar
+  const chestGeo = new THREE.BoxGeometry(0.68, 0.65, 0.42);
+  const chestMesh = new THREE.Mesh(chestGeo, M.whiteRobe);
+  chestMesh.position.set(0, localY + 1.25, 0);
+  chestMesh.castShadow = true;
+  dedeGroup.add(chestMesh);
+
+  // Omuz Pelerini (Altın Tokalı Beyaz Pelerin)
+  const capeGeo = new THREE.BoxGeometry(0.8, 0.9, 0.1);
+  const capeMesh = new THREE.Mesh(capeGeo, M.whiteRobe);
+  capeMesh.position.set(0, localY + 1.2, 0.22);
+  capeMesh.rotation.x = 0.08;
+  dedeGroup.add(capeMesh);
+
+  // 4. Boyun ve Kafa (Skin)
+  const headGeo = new THREE.SphereGeometry(0.2, 20, 20);
+  const headMesh = new THREE.Mesh(headGeo, M.skin);
+  headMesh.position.set(0, localY + 1.72, 0);
+  headMesh.castShadow = true;
+  dedeGroup.add(headMesh);
+
+  // 5. Bembeyaz Saçlar ve Ak Sakal (White Hair & Beard)
+  const hairGeo = new THREE.SphereGeometry(0.23, 16, 16);
+  const hairMesh = new THREE.Mesh(hairGeo, M.whiteBeard);
+  hairMesh.position.set(0, localY + 1.77, 0.04);
+  dedeGroup.add(hairMesh);
+
+  // Ak Sakal (Görkemli uzun beyaz sakal)
+  const beardGeo = new THREE.ConeGeometry(0.22, 0.65, 16);
+  const beardMesh = new THREE.Mesh(beardGeo, M.whiteBeard);
+  beardMesh.position.set(0, localY + 1.45, -0.15);
+  beardMesh.rotation.x = -0.15;
+  dedeGroup.add(beardMesh);
+
+  // Beyaz Bıyık
+  const mustGeo = new THREE.BoxGeometry(0.24, 0.07, 0.1);
+  const mustMesh = new THREE.Mesh(mustGeo, M.whiteBeard);
+  mustMesh.position.set(0, localY + 1.68, -0.18);
+  dedeGroup.add(mustMesh);
+
+  // Başındaki Altın Defne Yapraklı Taç (Zeus Tacı)
+  const crownGeo = new THREE.TorusGeometry(0.21, 0.03, 8, 24);
+  const crownMesh = new THREE.Mesh(crownGeo, M.gold);
+  crownMesh.rotation.x = Math.PI / 2 + 0.15;
+  crownMesh.position.set(0, localY + 1.83, 0);
+  dedeGroup.add(crownMesh);
+
+  // 6. Kollar
+  // Sol Kol (Kemerinde dinlenen kol)
+  const armLGeo = new THREE.CylinderGeometry(0.1, 0.09, 0.65, 12);
+  const armL = new THREE.Mesh(armLGeo, M.whiteRobe);
+  armL.position.set(-0.42, localY + 1.25, 0.05);
+  armL.rotation.z = 0.25;
+  dedeGroup.add(armL);
+
+  // Sağ Kol (Asayı ileri ve yukarı doğru tutan kol)
+  const armRGeo = new THREE.CylinderGeometry(0.1, 0.08, 0.72, 12);
+  const armR = new THREE.Mesh(armRGeo, M.whiteRobe);
+  armR.position.set(0.44, localY + 1.35, -0.15);
+  armR.rotation.x = -Math.PI / 4;
+  armR.rotation.z = -0.2;
+  dedeGroup.add(armR);
+
+  // Sağ El
+  const handRGeo = new THREE.SphereGeometry(0.08, 10, 10);
+  const handR = new THREE.Mesh(handRGeo, M.skin);
+  handR.position.set(0.48, localY + 1.6, -0.42);
+  dedeGroup.add(handR);
+
+  // 7. ELİNDEKİ PARLAYAN İLAHİ ASA (STAFF)
+  // Asa Gövdesi (Ahşap & Altın Oymalı Gövde)
+  const staffShaftGeo = new THREE.CylinderGeometry(0.032, 0.04, 2.4, 12);
+  const staffShaft = new THREE.Mesh(staffShaftGeo, M.staffWood);
+  staffShaft.position.set(0.5, localY + 1.2, -0.42);
+  staffShaft.rotation.x = 0.12;
+  dedeGroup.add(staffShaft);
+
+  // Asanın Altın Başlığı ve Kanatları
+  const staffHeadGeo = new THREE.TorusGeometry(0.18, 0.035, 10, 24);
+  const staffHead = new THREE.Mesh(staffHeadGeo, M.gold);
+  staffHead.position.set(0.5, localY + 2.38, -0.28);
+  dedeGroup.add(staffHead);
+
+  // Asanın Ucundaki PARLAYAN MAVİ/ALTIN IŞIK KÜRESİ (ORB)
+  const orbGeo = new THREE.SphereGeometry(0.14, 24, 24);
+  dedeStaffOrb = new THREE.Mesh(orbGeo, M.staffGlow);
+  dedeStaffOrb.position.set(0.5, localY + 2.38, -0.28);
+  dedeGroup.add(dedeStaffOrb);
+
+  // Asadan Etrafa Yayılan Gerçek Işık (PointLight)
+  dedeStaffLight = new THREE.PointLight(0x38bdf8, 35, 9, 1.8);
+  dedeStaffLight.position.set(dx + 0.5, localY + 2.4, dz - 0.28);
+  dedeStaffLight.castShadow = true;
+  scene.add(dedeStaffLight);
+
+  scene.add(dedeGroup);
+
+  // Octree ve Çarpışmaya Ekle (Oyuncu dedenin içinden geçemesin)
+  worldOctree.fromGraphNode(baseBottom);
+  worldOctree.fromGraphNode(baseStep);
+  worldOctree.fromGraphNode(baseTop);
+
+  // Etkileşime Ekle ([E] ile Dede ile konuş)
+  interactiveObjects.push({
+    mesh: baseBottom,
+    name: "⚡ AK SAKALLI DEDE (ZEUS)",
+    action: () => openDedeModal()
+  });
+  interactiveObjects.push({
+    mesh: robeMesh,
+    name: "⚡ AK SAKALLI DEDE (ZEUS)",
+    action: () => openDedeModal()
+  });
 }
 
 function buildChandelier(cx, cy, cz) {
@@ -1920,6 +2129,58 @@ function openBarModal() {
   document.exitPointerLock();
   document.getElementById('modalBar').classList.add('active');
 }
+
+// ── AK SAKALLI DEDE ETKİLEŞİMİ ──
+function openDedeModal() {
+  document.exitPointerLock();
+  const alertEl = document.getElementById('dedeBonusAlert');
+  if (alertEl) alertEl.innerText = '';
+  document.getElementById('modalDede').classList.add('active');
+}
+
+window.askDedeBlessing = () => {
+  const today = new Date().toDateString();
+  const alertEl = document.getElementById('dedeBonusAlert');
+  if (clubState.lastDedeBlessingDay === today) {
+    if (alertEl) alertEl.innerText = "👴 Dede: 'Evladım bugün sana hayır duamı ettim. Yarın yine gel, şansın daim olsun!'";
+    return;
+  }
+  clubState.lastDedeBlessingDay = today;
+  clubState.chips += 150;
+  bumpChips();
+  addXp(80, '(Dede Hayır Duası)');
+  saveClubState();
+  playThunderSound();
+  playWinSound();
+  if (alertEl) alertEl.innerText = "⚡ Dede asasını vurdu! +150 dürTL ilahi şans ve +80 XP kazandınız!";
+};
+
+const DEDE_WISDOM = [
+  "Nefsine hakim olan, masanın efendisidir evladım.",
+  "Şimşek bir kere çakar ama sabreden kasanın bereketini toplar.",
+  "Asamdaki nur, hırsını dizginleyen mert oyuncuları aydınlatır.",
+  "Ruletin çarkı döner, feleğin çarkı döner... Mühim olan dik durabilmektir.",
+  "Olimpos'un kapıları cesur olanlara ardına kadar açıktır!",
+  "Kazandığında şükret, kaybettiğinde dinlenmeyi bil evladım."
+];
+
+window.askDedeQuote = () => {
+  const q = DEDE_WISDOM[Math.floor(Math.random() * DEDE_WISDOM.length)];
+  const txt = document.getElementById('dedeDialogueText');
+  if (txt) txt.innerText = `"${q}"`;
+  playTickSound();
+};
+
+window.teleportToSlots = () => {
+  window.closeGameModal();
+  // Oyuncuyu slotların önüne ışınla ve slotlara baktır
+  playerCollider.start.set(0, CAPSULE_RADIUS, 9.2);
+  playerCollider.end.set(0, CAPSULE_HEIGHT - CAPSULE_RADIUS, 9.2);
+  playerVelocity.set(0, 0, 0);
+  camera.rotation.y = 0; // Doğrudan slotlara bakış
+  camera.rotation.x = 0;
+  playThunderSound();
+};
 
 window.openVaultDirect = () => {
   clubState.chips += 1000;
@@ -2639,6 +2900,19 @@ function updateMinimap() {
     mCtx.fillRect(toMapX(bx) - 5, toMapY(bz) - 3, 10, 6);
   });
 
+  // Ak Sakallı Dede (Salonun Tam Ortası X:0, Z:0)
+  mCtx.beginPath();
+  mCtx.arc(toMapX(0), toMapY(0), 7, 0, Math.PI * 2);
+  mCtx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+  mCtx.fill();
+  mCtx.strokeStyle = '#f6e27a';
+  mCtx.lineWidth = 1.5;
+  mCtx.stroke();
+  mCtx.font = '8px sans-serif';
+  mCtx.fillStyle = '#000';
+  mCtx.textAlign = 'center';
+  mCtx.fillText('👴', toMapX(0), toMapY(0) + 3);
+
   // Oyuncunun Konumu ve Bakış Yönü
   const px = toMapX(camera.position.x);
   const py = toMapY(camera.position.z);
@@ -2686,6 +2960,17 @@ function animate() {
     applyControls(deltaTime);
     updatePlayer(deltaTime);
     teleportIfOob();
+  }
+
+  // Ak Sakallı Dede Asasının Canlı Nefes Alıp Vermesi & Işık Dalgalanması
+  if (dedeStaffOrb && dedeStaffLight) {
+    const pulse = Math.sin(time * 3.5) * 0.35 + 1.0;
+    dedeStaffOrb.scale.set(pulse, pulse, pulse);
+    dedeStaffLight.intensity = 30 + Math.sin(time * 4) * 15;
+    if (dedeGroup) {
+      // Dede hafifçe nefes alır gibi yükselip alçalır
+      dedeGroup.position.y = Math.sin(time * 1.5) * 0.015;
+    }
   }
 
   updateSlotScreens(time);
