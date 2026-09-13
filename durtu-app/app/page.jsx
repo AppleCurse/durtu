@@ -8,6 +8,7 @@ import CrashGame from '../components/CrashGame';
 import BlackjackGame from '../components/BlackjackGame';
 import RouletteGame from '../components/RouletteGame';
 import MinesGame from '../components/MinesGame';
+import SportBet from '../components/SportBet';
 import PlinkoGame from '../components/PlinkoGame';
 import LimboGame from '../components/LimboGame';
 import HiloGame from '../components/HiloGame';
@@ -33,7 +34,7 @@ export default function Page() {
   const [name, setName] = useState('Misafir');
   const [chips, setChips] = useState(1000);
   const [slotId, setSlotId] = useState(null);
-  const [open, setOpen] = useState(null); // 'crash' | 'bj' | 'rl' | 'mines' | 'vault' | 'stats' | 'checkin'
+  const [open, setOpen] = useState(null); // 'crash' | 'bj' | 'rl' | 'mines' | 'sport' | 'plinko' | 'limbo' | 'hilo' | 'wheel' | 'vault' | 'stats' | 'checkin'
   const [checkInResult, setCheckInResult] = useState(null);
   const [checkInInfo, setCheckInInfo] = useState(null);
   const chipsRef = useRef(1000);
@@ -51,9 +52,7 @@ export default function Page() {
   const win = n => setC(chipsRef.current + n);
 
   useEffect(() => {
-    if ('serviceWorker' in navigator)
-      navigator.serviceWorker.register('/sw.js').catch(() => {});
-
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});
     // Profil ve bakiye yükle
     const p = getProfile();
     if (p.name && p.name !== 'Misafir') setName(p.name);
@@ -113,6 +112,7 @@ export default function Page() {
     else if (id === 'bj') setOpen('bj');
     else if (id === 'rl') setOpen('rl');
     else if (id === 'mines') setOpen('mines');
+    else if (id === 'sport') setOpen('sport');
     else if (id === 'plinko') setOpen('plinko');
     else if (id === 'limbo') setOpen('limbo');
     else if (id === 'hilo') setOpen('hilo');
@@ -148,14 +148,14 @@ export default function Page() {
           >
             ☀️ {checkInInfo?.streak ? `${checkInInfo.streak}. GÜN` : 'RİTÜEL'}
           </button>
-          <button className="btn btn-sm" onClick={() => setOpen('vault')}
-            style={{ padding: '.32rem .7rem', fontSize: '.66rem', background: 'rgba(212,175,55,.14)', border: '1px solid var(--gold)', color: 'var(--gold)', borderRadius: 6, cursor: 'pointer', fontWeight: 600, letterSpacing: '.08em' }}>
+          <button className="btn btn-sm" onClick={() => setOpen('vault')} style={{ padding: '.32rem .7rem', fontSize: '.66rem', background: 'rgba(212,175,55,.14)', border: '1px solid var(--gold)', color: 'var(--gold)', borderRadius: 6, cursor: 'pointer', fontWeight: 600, letterSpacing: '.08em' }}>
             + KASA
           </button>
           <span className="hc" onClick={() => setOpen('stats')} title="Dürtü Raporun" style={{ cursor: 'pointer' }}>◈ {fmt(chips)} dürTL</span>
           <span className="hc" style={{ color: 'var(--cream)' }}>{name}</span>
         </div>
       </nav>
+
       <main>
         <Salon
           name={name}
@@ -163,27 +163,33 @@ export default function Page() {
           onPlay={handlePlay}
           checkInInfo={checkInInfo}
           onOpenCheckIn={() => {
-            setCheckInResult(checkInResult || {
-              bonus: checkInInfo?.lastCheckInBonus || checkInInfo?.currentBonus || 100,
-              streak: checkInInfo?.streak || 1,
-              nextBonus: checkInInfo?.nextBonus || 125,
-            });
+            setCheckInResult(
+              checkInResult || {
+                bonus: checkInInfo?.lastCheckInBonus || checkInInfo?.currentBonus || 100,
+                streak: checkInInfo?.streak || 1,
+                nextBonus: checkInInfo?.nextBonus || 125,
+              }
+            );
             setOpen('checkin');
           }}
           onClaimCheckIn={() => handleClaimDailyBonus(false)}
         />
         <GameGrid onPlay={handlePlay} />
       </main>
+
       <footer style={{ paddingBottom: 40 }}>
         <div className="serif" style={{ color: 'var(--gold)', letterSpacing: '.3em', marginBottom: '.5rem' }}>✦ DÜRTÜ</div>
         <p>React/Next.js portu — konsept demosu; gerçek para kullanılmaz.<br />18+ • Sorumlu oyun: limitlerini belirle, ara vermekten çekinme.</p>
       </footer>
+
       <Ticker />
+
       {game && <SlotGame game={game} spend={spend} win={win} onClose={() => setSlotId(null)} />}
       {open === 'crash' && <CrashGame spend={spend} win={win} onClose={() => setOpen(null)} />}
       {open === 'bj' && <BlackjackGame chips={chips} spend={spend} win={win} onClose={() => setOpen(null)} />}
       {open === 'rl' && <RouletteGame chips={chips} spend={spend} win={win} onClose={() => setOpen(null)} />}
       {open === 'mines' && <MinesGame chips={chips} spend={spend} win={win} onClose={() => setOpen(null)} />}
+      {open === 'sport' && <SportBet spend={spend} win={win} onClose={() => setOpen(null)} />}
       {open === 'plinko' && <PlinkoGame chips={chips} spend={spend} win={win} onClose={() => setOpen(null)} />}
       {open === 'limbo' && <LimboGame chips={chips} spend={spend} win={win} onClose={() => setOpen(null)} />}
       {open === 'hilo' && <HiloGame chips={chips} spend={spend} win={win} onClose={() => setOpen(null)} />}

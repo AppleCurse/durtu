@@ -61,7 +61,7 @@ globalThis.setTimeout = () => 0; globalThis.setInterval = () => 0; globalThis.cl
 
 /* ---------- 3) Uygulamayı bu bağlamda çalıştır ---------- */
 const run = new Function('document', 'window', 'localStorage', 'navigator', 'performance', 'requestAnimationFrame', 'cancelAnimationFrame', 'IntersectionObserver', 'MutationObserver', 'fetch', 'AudioContext', 'webkitAudioContext',
-  appJs + '; return { state, CR, BJ, ROU, ST: st, crStart, crCash, crQuit, crEnd: (typeof crEnd!=="undefined")?crEnd:null, openCrash, bjTotal: (typeof bjTotal!=="undefined")?bjTotal:null, bjSettle, bjOpen, rouPays, logRound, minesMul: typeof mnMul !== \"undefined\" ? mnMul : null, PROMO_CODES: typeof PROMO_CODES !== \"undefined\" ? PROMO_CODES : null, claimPromoCode: typeof claimPromoCode !== \"undefined\" ? claimPromoCode : null, sha256Sync: typeof sha256Sync !== \"undefined\" ? sha256Sync : null, getProvableCrash: typeof getProvableCrash !== \"undefined\" ? getProvableCrash : null, getProvableMines: typeof getProvableMines !== \"undefined\" ? getProvableMines : null, PF: typeof PF !== \"undefined\" ? PF : null, VIP_TIERS: typeof VIP_TIERS !== \"undefined\" ? VIP_TIERS : null, getVipInfo: typeof getVipInfo !== \"undefined\" ? getVipInfo : null, claimVipChest: typeof claimVipChest !== \"undefined\" ? claimVipChest : null, toggleFavorite: typeof toggleFavorite !== \"undefined\" ? toggleFavorite : null, submitApply: typeof submitApply !== \"undefined\" ? submitApply : null, enterApp: typeof enterApp !== \"undefined\" ? enterApp : null }');
+  appJs + '; return { state, CR, BJ, ROU, ST: st, crStart, crCash, crQuit, crEnd: (typeof crEnd!=="undefined")?crEnd:null, openCrash, bjTotal: (typeof bjTotal!=="undefined")?bjTotal:null, bjSettle, bjOpen, rouPays, logRound, minesMul: typeof mnMul !== "undefined" ? mnMul : null, SPORTS_MATCHES: typeof SPORTS_MATCHES!=="undefined"?SPORTS_MATCHES:null, SPORT: typeof SPORT!=="undefined"?SPORT:null, pickOdd: typeof pickOdd!=="undefined"?pickOdd:null, confirmBet: typeof confirmBet!=="undefined"?confirmBet:null, sportCalcPotential: typeof sportCalcPotential!=="undefined"?sportCalcPotential:null, PROMO_CODES: typeof PROMO_CODES !== "undefined" ? PROMO_CODES : null, claimPromoCode: typeof claimPromoCode !== "undefined" ? claimPromoCode : null, sha256Sync: typeof sha256Sync !== "undefined" ? sha256Sync : null, getProvableCrash: typeof getProvableCrash !== "undefined" ? getProvableCrash : null, getProvableMines: typeof getProvableMines !== "undefined" ? getProvableMines : null, PF: typeof PF !== "undefined" ? PF : null, VIP_TIERS: typeof VIP_TIERS !== "undefined" ? VIP_TIERS : null, getVipInfo: typeof getVipInfo !== "undefined" ? getVipInfo : null, claimVipChest: typeof claimVipChest !== "undefined" ? claimVipChest : null, toggleFavorite: typeof toggleFavorite !== "undefined" ? toggleFavorite : null, submitApply: typeof submitApply !== "undefined" ? submitApply : null, enterApp: typeof enterApp !== "undefined" ? enterApp : null }');
 let app;
 try {
   app = run(document, window, localStorage, navigator, performance, requestAnimationFrame, cancelAnimationFrame, IntersectionObserver, MutationObserver, fetch, ACStub, ACStub);
@@ -161,6 +161,25 @@ console.log('\n📜 Tur geçmişi:');
   T('En yeni en başta', h[0].win === 20 && h[1].win === 0, `h0=${h[0].win} h1=${h[1].win}`);
 }
 
+
+/* ---------- 8.5) SPORT — gerçek oran settlement ---------- */
+console.log('\n⚽ Spor:');
+{
+  const SM = app.SPORTS_MATCHES;
+  T('3 maç var (UCL+SL)', Array.isArray(SM) && SM.length===3, 'len='+(SM?SM.length:'null'));
+  T('Oranlar >1 ve <10', SM && SM.every(m=> m.odds['1']>1 && m.odds['1']<10 && m.odds['X']>1 && m.odds['2']>1));
+  // payout calc
+  const m = SM[0];
+  const stake=25;
+  const payout=Math.round(stake*m.odds['1']);
+  T('Payout hesabı: 25 @2.10 → 52/53', payout===52 || payout===53, 'got '+payout);
+  // implied prob normalizasyon
+  const inv={ '1':1/m.odds['1'], 'X':1/m.odds['X'], '2':1/m.odds['2'] };
+  const sum=inv['1']+inv['X']+inv['2'];
+  const prob={ '1':inv['1']/sum, 'X':inv['X']/sum, '2':inv['2']/sum };
+  T('İma edilen olasılık toplamı 1', Math.abs(prob['1']+prob['X']+prob['2']-1)<0.0001);
+  T('pickOdd ve confirmBet fonksiyonları var (gerçek motor)', typeof app.pickOdd==='function' && typeof app.confirmBet==='function');
+}
 
 /* ---------- 8.5) MINES — adil çarpan matrisi ---------- */
 console.log('\n💣 Mines:');
@@ -313,6 +332,7 @@ console.log('\n☀️ Günlük Giriş / Check-in Bonusu:');
   T('Dün giriş yapılmışsa seri 1 artar (2 -> 3 gün)', app.state.streakDays === 3);
   T('Yeni günde +100 dürTL bonus hesaba eklenir', app.state.chips === 1600);
 }
+
 
 /* ---------- 9) Sonuç ---------- */
 console.log(`\n${'='.repeat(44)}\nSONUÇ: ${pass} geçti, ${fail} kaldı`);

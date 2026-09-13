@@ -29,7 +29,7 @@ export default function Salon({ name, chips, onPlay, onOpenCheckIn, checkInInfo,
         </h1>
         <p className="muted" suppressHydrationWarning>{date}</p>
 
-        {/* ☀️ Günlük Giriş Ritüeli (Daily Check-in Banner) */}
+        {/* ☀️ Günlük Giriş Ritüeli */}
         <div
           style={{
             background: 'linear-gradient(135deg, rgba(212,175,55,.12) 0%, rgba(18,18,16,.92) 80%)',
@@ -99,7 +99,6 @@ export default function Salon({ name, chips, onPlay, onOpenCheckIn, checkInInfo,
             </div>
           </div>
 
-          {/* 7-Day progress mini line */}
           <div style={{ marginTop: '.6rem', paddingTop: '.8rem', borderTop: '1px dashed rgba(212,175,55,.15)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '.45rem' }}>
               <span style={{ fontSize: '.62rem', letterSpacing: '.18em', textTransform: 'uppercase', color: 'var(--muted)' }}>
@@ -151,17 +150,24 @@ export default function Salon({ name, chips, onPlay, onOpenCheckIn, checkInInfo,
         <h2 className="sect" style={{ marginTop: '2rem' }}>Bugün senin için hazırlananlar</h2>
         <div className="picks">
           <div className="pick">
-            <span className="tag">🎰 Slot</span>
+            <span className="tag">🎰 Slot · Gerçek</span>
             <div className="ic">⚡</div>
             <h3>Zeus'un Günü</h3>
-            <p>Gates of Olympus bugün senin profilinde parlıyor. Çarpan mekaniği geçen haftaki favorine çok yakın.</p>
+            <p>Gates 6×5 scatter — 8+ her yerde öder, tumble, çarpan birikir.</p>
             <button className="btn" onClick={() => onPlay('gates')}>Oyna</button>
+          </div>
+          <div className="pick">
+            <span className="tag">⚽ Canlı · Gerçek</span>
+            <div className="ic">🏆</div>
+            <h3>Şampiyonlar Ligi Gecesi</h3>
+            <p>3 maç · 1X2 gerçek oran · anında settlement · dürTL bakiye entegre.</p>
+            <button className="btn solid" onClick={() => onPlay('sport')}>Bahis Yap — Gerçek</button>
           </div>
           <div className="pick">
             <span className="tag">🟢 Kripto Orijinal</span>
             <div className="ic">🟢</div>
             <h3>Plinko 1000×</h3>
-            <p>Çivi piramidinden süzülen toplar — 8-16 satır ve 1000× dev çarpan ile adrenalin dorukta.</p>
+            <p>Çivi piramidinden süzülen toplar — 8-16 satır ve 1000× dev çarpan.</p>
             <button className="btn" onClick={() => onPlay('plinko')}>Topu Bırak</button>
           </div>
           <div className="pick">
@@ -186,47 +192,18 @@ export default function Salon({ name, chips, onPlay, onOpenCheckIn, checkInInfo,
           <div className="mini">
             <span className="tag">🧠 Dürtü Analizi</span>
             <h4 className="serif" style={{ fontStyle: 'italic', fontWeight: 400, lineHeight: 1.55, color: 'var(--cream)' }}>
-              “Son 3 girişinde Gates of Olympus'ta %15 kayıp yaşadın. Bugün şansını Sweet Bonanza'da denemeni öneririm.”
+              “Gates 6×5 tumble + çarpan birikimi, Bonanza 6×5 bomba — ikisi de gerçek scatter. Spor da gerçek settlement.”
             </h4>
             <button className="btn" onClick={() => onPlay('sb')}>Sweet Bonanza'ya git</button>
           </div>
           <div className="mini">
             <span className="tag">🎁 Sana Özel</span>
             <h4>50 Ücretsiz Dönüş</h4>
-            <p>Banner yok, spam yok — sadece sana. Gates of Olympus'ta geçerli, bu gece yarısına dek.</p>
+            <p>Banner yok, spam yok — sadece sana. Gates of Olympus'ta geçerli.</p>
             <button className="btn solid" onClick={() => { say('<b>50 ücretsiz dönüş</b> tanımlandı (demo). Bol şans.'); onPlay('gates'); }}>Kullan</button>
-          </div>
-        </div>
-
-        <div className="strip">
-          <div className="mini">
-            <span className="tag">◈ Haftalık Bütçe</span>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', margin: '.4rem 0' }}>
-              <svg width="84" height="84" viewBox="0 0 84 84" style={{ transform: 'rotate(-90deg)' }}>
-                <circle cx="42" cy="42" r="34" fill="none" stroke="#22221f" strokeWidth="5" />
-                <circle cx="42" cy="42" r="34" fill="none" stroke="#D4AF37" strokeWidth="5" strokeLinecap="round"
-                  strokeDasharray="213.6" strokeDashoffset="64.1" />
-              </svg>
-              <div>
-                <div className="big-num">%70</div>
-                <p style={{ maxWidth: 200 }}>Bütçenin %70'ini kullandın. Ara vermek istersen “Sakin Oyunlar” seni bekler.</p>
-              </div>
-            </div>
-          </div>
-          <div className="mini">
-            <span className="tag">👤 Kişisel Temsilcin</span>
-            <h4>Selin <span className="muted" style={{ fontSize: '.7rem', fontFamily: 'var(--sans)' }}>· çevrimiçi</span></h4>
-            <p>Bot yok, kuyruk yok. Concierge sohbeti React yol haritasında — prototipte mevcut.</p>
-          </div>
-          <div className="mini">
-            <span className="tag">✦ Davet Hakların</span>
-            <h4>3 mühür duruyor</h4>
-            <p>Kimi içeri alacağın senin imzan sayılır. Kod üretimi backoffice ile entegre çalışır.</p>
-            <button className="btn" onClick={() => say('✦ <b>Davetiye:</b> EV-' + Math.random().toString(36).slice(2, 6).toUpperCase() + ' üretildi (demo)')}>Davet Et</button>
           </div>
         </div>
       </section>
     </>
   );
 }
-

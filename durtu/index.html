@@ -726,7 +726,7 @@ body.tick footer{padding-bottom:34px}
           <div class="ic">🏆</div>
           <h3>Şampiyonlar Ligi Gecesi</h3>
           <p>Bu akşam 22:00 — tek maç, küratörlü oranlar. Kalabalık yok; sadece üyelerin masası.</p>
-          <button class="btn" onclick="openOvl('ovlSport')">Bahis Yap</button>
+          <button class="btn" onclick="openSport()">Bahis Yap</button>
         </div>
         <div class="pick">
           <span class="tag">🎴 Masa</span>
@@ -1203,18 +1203,20 @@ body.tick footer{padding-bottom:34px}
 </div>
 
 <div id="ovlSport" class="ovl hidden" onclick="ovlSelfClose(event,this)">
-  <div class="pnl">
+  <div class="pnl" style="width:min(560px,100%)">
     <button class="close" onclick="closeOvl('ovlSport')">✕</button>
-    <span class="demo-badge">Demo · Kurgusal karşılaşma</span>
-    <h3>🏆 Şampiyonlar Ligi Gecesi</h3>
-    <p class="noteline">Bu akşam 22:00 · Üyelere özel tek maç. Kuponlar Selin’in onayından geçer.</p>
-    <p class="serif" style="text-align:center;font-size:1.05rem;margin-top:.8rem">Real Madrid <span class="muted">—</span> Bayern München</p>
-    <div class="odds">
-      <div class="odd" onclick="pickOdd(this)"><small>MS 1</small><b>2.10</b></div>
-      <div class="odd" onclick="pickOdd(this)"><small>MS X</small><b>3.40</b></div>
-      <div class="odd" onclick="pickOdd(this)"><small>MS 2</small><b>3.10</b></div>
+    <span class="demo-badge">Demo · Gerçek oran · dürTL settlement</span>
+    <h3>🏆 Spor Bahsi — Gerçek Kupon</h3>
+    <p class="noteline">3 maç · 1X2 · oranlar küratörlü · sonuç anında simüle, bakiye entegre.</p>
+    <div id="sportList" style="display:flex;flex-direction:column;gap:.85rem;margin:.9rem 0"></div>
+    <div style="display:flex;gap:.6rem;align-items:center;margin:.6rem 0">
+      <div class="hud-box" style="flex:1"><small>BAHİS</small><select id="sportBet" class="hud-sel" onchange="sportCalcPotential()"><option value="10">10</option><option value="25" selected>25</option><option value="50">50</option><option value="100">100</option><option value="250">250</option></select></div>
+      <div class="hud-box" style="flex:1.2"><small>POTANSİYEL KAZANÇ</small><b id="sportPotential" style="color:var(--gold)">—</b></div>
     </div>
-    <button class="btn solid" style="width:100%" onclick="confirmBet()">Kuponu Onaya Gönder</button>
+    <div id="sportSlip" class="muted" style="font-size:.8rem;margin-bottom:.6rem;line-height:1.5">Bir oran seç — kupon burada belirir. Seçim tek maçlıktır, kombine yok.</div>
+    <button class="btn solid" style="width:100%" onclick="confirmBet()">Kuponu Onayla — Gerçek Settlement</button>
+    <div id="sportResult" style="display:none;margin-top:.85rem;padding:.8rem;border:1px solid var(--line);border-radius:10px;background:rgba(255,255,255,.03)"></div>
+    <p class="muted" style="font-size:.66rem;margin-top:.7rem;line-height:1.4">Oranlar demo amaçlı küratörlüdür; sonuç, oranların ima ettiği olasılığa göre ağırlıklı rastgele simüle edilir. Kazanç anında dürTL bakiyene işlenir ve tur geçmişine kaydedilir.</p>
   </div>
 </div>
 
@@ -1825,17 +1827,17 @@ function runProvablyFairCalculator(){
 
 const GAMES = [
  {id:'gates', icon:'⚡', name:'Gates of Olympus', cat:'risk', catL:'🎩 Yüksek Risk', rtp:'96.50', vol:'Yüksek', type:'slot',
-  note:'Geçen hafta Sweet Bonanza oynadın — benzer çarpan mekaniği, daha yüksek tavan.'},
+  note:'6×5 scatter — 8+ her yerde öder, tumble, çarpan küreleri FS’de birikir (15 FS).'},
  {id:'mt4', icon:'🚂', name:'Money Train 4', cat:'risk', catL:'🎩 Yüksek Risk', rtp:'96.10', vol:'Yüksek', type:'slot',
-  note:'Büyük turlar sabırlı oyuncuları sever; bonus avcısı profiline uygun.'},
+  note:'5×4 Hold&Win — 3+ 💰 ile 3 can respin, para değerleri yapışır.'},
  {id:'wdw', icon:'🤠', name:'Wanted Dead or a Wild', cat:'risk', catL:'🎩 Yüksek Risk', rtp:'96.38', vol:'Yüksek', type:'slot',
-  note:'Düello özelliği, adrenalin skorunla birebir eşleşiyor.'},
+  note:'5×4 VS — genişleyen wild, düello çarpanı ×2-×100.'},
  {id:'sp', icon:'✨', name:'Starlight Princess', cat:'calm', catL:'🍷 Uzun Akşam', rtp:'96.50', vol:'Orta-Düşük', type:'slot',
-  note:'Uzun akşam seansların için yumuşak iniş çıkışlar.'},
+  note:'6×5 scatter Starlight — tumble + ışın çarpanları birikir (15 FS).'},
  {id:'sb', icon:'🍬', name:'Sweet Bonanza', cat:'calm', catL:'🍷 Uzun Akşam', rtp:'96.48', vol:'Orta', type:'slot',
-  note:'Geçen ayın favorisi — Dürtü analizine göre bu hafta şansın burada.'},
+  note:'6×5 şeker — 8+ öder, tumble, bomba çarpanlar FS’de birikir (10 FS).'},
  {id:'bs', icon:'🦇', name:'Blood Suckers', cat:'calm', catL:'🍷 Uzun Akşam', rtp:'98.00', vol:'Düşük', type:'slot',
-  note:'Seçkideki en yüksek RTP; bütçe dostu, uzun nefesli oyun.'},
+  note:'5×3 25 çizgi — 3+ 🩸 tabut bonusu, en yüksek RTP.'},
  {id:'aviator', icon:'✈️', name:'Aviator', cat:'adren', catL:'⚡ Adrenalin', rtp:'97.00', vol:'Crash', type:'crash',
   note:'Seçkideki tek crash oyunu — bilinçli seçim, hızlı karar.'},
  {id:'bj', icon:'🂡', name:'Türkçe Blackjack', cat:'strat', catL:'🎯 Stratejist', rtp:'99.40', vol:'Masa', type:'table',
@@ -2149,20 +2151,92 @@ function closeOvl(id){ $(id).classList.add('hidden'); }
 function ovlSelfClose(e, el){ if(e.target === el){ el.classList.add('hidden'); modalCleanup(); } }
 document.addEventListener('keydown', e => { if(e.key === 'Escape'){ document.querySelectorAll('.ovl').forEach(o => o.classList.add('hidden')); modalCleanup(); } });
 
-/* ---- REAL SLOT ENGINE (Canvas) ---- */
-const SLOT_THEMES = {
- gates:{bg1:'#241145', bg2:'#0b0518', glow:'#a78bfa', syms:['👑','⚡','💍','🏺','💎','🔮']},
- sb:   {bg1:'#45102f', bg2:'#150310', glow:'#ff6fa5', syms:['🍭','🍬','🍇','🍉','🍎','🍌']},
- mt4:  {bg1:'#3a2408', bg2:'#0f0702', glow:'#f5b942', syms:['🚂','💰','🤠','🛢️','💵','🎰']},
- wdw:  {bg1:'#33120e', bg2:'#0e0404', glow:'#ff7847', syms:['💀','🤠','🥃','🔫','🌵','🐎']},
- sp:   {bg1:'#2a0f45', bg2:'#0d0417', glow:'#c084fc', syms:['👸','🌙','💫','🔮','💎','🦋']},
- bs:   {bg1:'#2b0f14', bg2:'#0b0407', glow:'#ef4444', syms:['🧛','🦇','🩸','⚰️','🕯️','🧄']},
+// ---- REAL SLOT ENGINE V2 — 6 distinct mechanics ----
+const SLOT_DEFS = {
+  gates: {
+    type:'scatter', cols:6, rows:5, scatter:'🏛️', scatterMin:4, fs:15,
+    bg1:'#241145', bg2:'#0b0518', glow:'#a78bfa',
+    syms:[
+      {s:'👑', pay:{8:2,9:5,10:15,11:25,12:50}, w:2},
+      {s:'⚡', pay:{8:1,9:3,10:10,11:20,12:30}, w:3},
+      {s:'💍', pay:{8:0.8,9:2,10:6,11:12,12:20}, w:4},
+      {s:'🏺', pay:{8:0.5,9:1.5,10:4,11:8,12:15}, w:5},
+      {s:'💎', pay:{8:0.3,9:1,10:2,11:5,12:10}, w:6},
+      {s:'🔮', pay:{8:0.2,9:0.5,10:1,11:2,12:5}, w:6}
+    ],
+    mults:[2,3,4,5,6,8,10,15,20,25,50,100,250,500],
+    multChance:0.08, fsMultChance:0.18,
+    note:'6×5 her yerde öder — 8+ aynı sembol kazandırır. Çarpan küreleri birikir, tumble ile katlanır.'
+  },
+  sp: {
+    type:'scatter', cols:6, rows:5, scatter:'🌙', scatterMin:4, fs:15,
+    bg1:'#2a0f45', bg2:'#0d0417', glow:'#c084fc',
+    syms:[
+      {s:'👸', pay:{8:2.5,9:6,10:18,11:30,12:60}, w:2},
+      {s:'💫', pay:{8:1.2,9:3.5,10:12,11:22,12:35}, w:3},
+      {s:'🦋', pay:{8:0.9,9:2.2,10:7,11:14,12:22}, w:4},
+      {s:'🌙', pay:{8:0.6,9:1.6,10:4.5,11:9,12:16}, w:5},
+      {s:'💎', pay:{8:0.35,9:1.1,10:2.2,11:5.5,12:11}, w:6},
+      {s:'🔮', pay:{8:0.25,9:0.6,10:1.2,11:2.5,12:6}, w:6}
+    ],
+    mults:[2,3,4,5,6,8,10,12,15,20,25,50,100,250],
+    multChance:0.09, fsMultChance:0.20,
+    note:'Starlight — Gates’in kız kardeşi: 6×5 scatter, tumble, ışın çarpanları birikir.'
+  },
+  sb: {
+    type:'scatter', cols:6, rows:5, scatter:'🍭', scatterMin:4, fs:10,
+    bg1:'#45102f', bg2:'#150310', glow:'#ff6fa5',
+    syms:[
+      {s:'❤️', pay:{8:10,9:15,10:25,11:40,12:50}, w:1},
+      {s:'🍬', pay:{8:1,9:2,10:5,11:10,12:25}, w:2},
+      {s:'🍇', pay:{8:0.8,9:1.5,10:4,11:8,12:18}, w:3},
+      {s:'🍉', pay:{8:0.6,9:1.2,10:3,11:6,12:12}, w:4},
+      {s:'🍎', pay:{8:0.4,9:0.9,10:2,11:4,12:8}, w:5},
+      {s:'🍌', pay:{8:0.25,9:0.5,10:1,11:2,12:4}, w:6},
+      {s:'🔵', pay:{8:0.25,9:0.5,10:0.8,11:1.5,12:2}, w:7}
+    ],
+    mults:[2,3,4,5,6,8,10,12,15,20,25,50,100],
+    multChance:0.06, fsMultChance:0.22,
+    note:'6×5 şeker: 8+ her yerde öder, tumble patlar, bomba çarpanlar FS’de birikir.'
+  },
+  bs: {
+    type:'lines', cols:5, rows:3, lines:25, scatter:'🩸', bonus:'coffin',
+    bg1:'#2b0f14', bg2:'#0b0407', glow:'#ef4444',
+    syms:['🧛','🦇','🩸','⚰️','🕯️','🧄'],
+    pay:[[0,0,5,20,100],[0,0,3,15,60],[0,0,2,10,40],[0,0,1,5,20],[0,0,0.5,2,10],[0,0,0.3,1,5]],
+    wild:'✦', scat:'🩸',
+    note:'5×3 25 çizgi — 3+ 🩸 tabut bonusunu açar. En yüksek RTP seçkide.'
+  },
+  mt4: {
+    type:'holdwin', cols:5, rows:4, scatter:'💰', bonusMin:3,
+    bg1:'#3a2408', bg2:'#0f0702', glow:'#f5b942',
+    syms:['🚂','🤠','💰','🛢️','💵','🎰'],
+    pay:[[0,0,2,10,50],[0,0,1,5,20],[0,0,0,0,0],[0,0,0.5,2,8],[0,0,0.5,2,8],[0,0,0.3,1,4]],
+    wild:'✦',
+    note:'5×4 Money Train — 3+ 💰 Hold&Win: 3 can, para değerleri yapışır, koleksiyoncu toplar.'
+  },
+  wdw: {
+    type:'vs', cols:5, rows:4, scatter:'💀',
+    bg1:'#33120e', bg2:'#0e0404', glow:'#ff7847',
+    syms:['🤠','💀','🥃','🔫','🌵','🐎'],
+    pay:[[0,0,3,15,80],[0,0,0,0,0],[0,0,1,4,15],[0,0,1,3,10],[0,0,0.5,2,6],[0,0,0.3,1,4]],
+    wild:'VS',
+    note:'5×4 Wanted — VS genişleyen wild, düello çarpanı ×2-×100.'
+  }
 };
-const WILD = '✦', SCAT = '✨';
-// satır: 3lü/4lü/5li kat sayı (hat başına bahis üzerinden)
+// fallback for old themes
+const SLOT_THEMES = {};
+Object.keys(SLOT_DEFS).forEach(k=>{ SLOT_THEMES[k]={bg1:SLOT_DEFS[k].bg1, bg2:SLOT_DEFS[k].bg2, glow:SLOT_DEFS[k].glow, syms:SLOT_DEFS[k].syms.map(x=>x.s||x)}; });
+
+const WILD='✦', SCAT='✨';
 const PAYC = [ [2,5,12],[1.2,3,8],[0.8,2,5],[0.5,1.2,3],[0.3,0.8,2],[0.2,0.5,1.5] ];
 const LINES = [ [1,1,1,1,1],[0,0,0,0,0],[2,2,2,2,2],[0,1,2,1,0],[2,1,0,1,2],
                 [1,0,1,0,1],[1,2,1,2,1],[0,1,1,1,0],[2,1,1,1,2],[1,1,0,1,1] ];
+const LINES25 = [...LINES,
+  [0,0,1,0,0],[2,2,1,2,2],[0,1,0,1,0],[2,1,2,1,2],[1,0,0,0,1],
+  [1,2,2,2,1],[0,0,2,0,0],[2,2,0,2,2],[1,1,2,1,1],[1,1,0,1,1],
+  [0,1,2,2,2],[2,1,0,0,0],[0,2,2,1,0],[2,0,0,1,2],[1,0,2,0,1]
+];
 const FEATS = {
   gates:{ icon:'⚡', label:'Yıldırım Çarpanı', vals:[2,2,3,3,4,5,6,8,10], base:.30, fs:.60 },
   sb:   { icon:'🍬', label:'Şeker Bombası',    vals:[2,3,4,5,8,10,20],   base:.24, fs:.55 },
@@ -2171,16 +2245,23 @@ const FEATS = {
   sp:   { icon:'💫', label:'Prenses Işını',    vals:[2,3,4,5,6],         base:.24, fs:.50 },
   bs:   { icon:'🩸', label:'Kan Çarpanı',      vals:[2,3,4,6],           base:.24, fs:.50 },
 };
-const OX=17, OY=4, SW=118, SH=118, GAP=9, STEP=SH+GAP, COLS=5, ROWS=3, LW=660, LH=380;
 
-const SL = { open:false, spinning:false, theme:SLOT_THEMES.gates, strips:[], pos:[0,0,0,0,0],
-  vel:[0,0,0,0,0], decel:[0,0,0,0,0], stopAt:[0,0,0,0,0], stopT:[9,9,9,9,9],
+const LW=660, LH=380;
+let OX=17, OY=4, SW=118, SH=118, GAP=9, STEP=SH+GAP, COLS=5, ROWS=3;
+
+const SL = {
+  open:false, spinning:false, mode:'lines',
+  theme:SLOT_THEMES.gates, def:SLOT_DEFS.gates,
+  strips:[], pos:[0,0,0,0,0], vel:[0,0,0,0,0], decel:[0,0,0,0,0], stopAt:[0,0,0,0,0], stopT:[9,9,9,9,9],
   raf:0, lastT:0, tickIv:0, bet:25, fsPool:0, fsMul:1, winTarget:0, winShown:0,
-  parts:[], lines:[], hlT:0, scatThis:0, orbs:[], fsAcc:0, feat:null, flashT:9 };
+  parts:[], lines:[], hlT:0, orbs:[], fsAcc:0, feat:null, flashT:9,
+  grid:[], gridWinCells:[], gridMultCells:[], totalWin:0, tumbleDepth:0, fsTotalMult:0,
+  holdGrid:[], holdLives:0, holdTotal:0,
+  vsGrid:[], vsMult:1
+};
 const SCV = $('slotCanvas'), SX = SCV.getContext('2d');
 let sfxOn = true, SFX = null;
 
-/* --- ses sentezi --- */
 function ac(){ if(!SFX) SFX = new (window.AudioContext || window.webkitAudioContext)(); if(SFX.state==='suspended') SFX.resume(); return SFX; }
 function tone(f, t0, dur, type, g){
   if(!sfxOn) return;
@@ -2204,6 +2285,8 @@ function sfxSpinStart(){ if(!sfxOn) return; try{
 }catch(e){} }
 function sfxReelStop(){ tone(82, 0, .09, 'triangle', .22); tone(48, 0, .13, 'sine', .18); buzz(8); }
 function sfxScatter(){ tone(1318, 0, .18, 'sine', .12); tone(1760, .14, .3, 'sine', .12); }
+function sfxTumble(){ tone(600,0,.06,'triangle',.08); }
+function sfxBomb(){ tone(440,0,.12,'sawtooth',.15); tone(880,.08,.18,'sine',.12); }
 function sfxWin(mult){
   const sc = [523, 587, 659, 784, 880, 1047, 1175, 1319];
   const n = Math.min(sc.length, 2 + Math.ceil(mult));
@@ -2212,39 +2295,119 @@ function sfxWin(mult){
 }
 function toggleSfx(){ sfxOn = !sfxOn; ['sfxBtn','sfxBtn2'].forEach(i => { const e = $(i); if(e) e.textContent = sfxOn ? '🔊' : '🔇'; }); if(!sfxOn) crHum && crHum(false); }
 
-/* --- makara şeritleri --- */
-function buildStrip(theme){
-  const counts = [2,3,4,5,6,6], arr = [];
-  theme.syms.forEach((sy,i) => { for(let k = 0; k < counts[i]; k++) arr.push({s:sy, i}); });
-  arr.push({s:WILD, i:-1}, {s:WILD, i:-1}, {s:SCAT, i:-2});
-  for(let i = arr.length - 1; i > 0; i--){ const j = Math.random()*(i+1)|0; [arr[i],arr[j]] = [arr[j],arr[i]]; }
-  return arr;
-}
-
-/* --- çizim --- */
+/* --- helpers --- */
 function rr(x, y, w, h, r){
   SX.beginPath();
   SX.moveTo(x+r, y); SX.arcTo(x+w, y, x+w, y+h, r); SX.arcTo(x+w, y+h, x, y+h, r);
   SX.arcTo(x, y+h, x, y, r); SX.arcTo(x, y, x+w, y, r); SX.closePath();
 }
-function drawSym(sym, x, y, fast){
-  const special = sym.s === WILD || sym.s === SCAT;
+function weightedPick(def){
+  const tot = def.syms.reduce((a,b)=>a+(b.w||1),0);
+  let r = Math.random()*tot;
+  for(let i=0;i<def.syms.length;i++){ r-= (def.syms[i].w||1); if(r<=0) return i; }
+  return 0;
+}
+function buildStrip(theme){
+  const counts = [2,3,4,5,6,6], arr = [];
+  const syms = theme.syms || theme;
+  (Array.isArray(syms)?syms.map((s,i)=>({s,i})):[]).forEach((o,i)=>{
+    const c = counts[i]||3;
+    for(let k=0;k<c;k++) arr.push({s:o.s||o, i});
+  });
+  if(!Array.isArray(syms)){
+    // fallback for new def
+    theme.syms.forEach((sy,i)=>{ for(let k=0;k<3;k++) arr.push({s:sy.s||sy, i}); });
+  }
+  arr.push({s:WILD, i:-1}, {s:WILD, i:-1}, {s:SCAT, i:-2});
+  for(let i = arr.length - 1; i > 0; i--){ const j = Math.random()*(i+1)|0; [arr[i],arr[j]] = [arr[j],arr[i]]; }
+  return arr;
+}
+function buildScatterGrid(def){
+  const cols=def.cols, rows=def.rows;
+  const g=[];
+  for(let c=0;c<cols;c++){
+    g[c]=[];
+    for(let r=0;r<rows;r++){
+      const roll=Math.random();
+      const scatChance = 0.018;
+      const multChance = def.multChance || 0.07;
+      if(roll < scatChance){
+        g[c][r]={s:def.scatter, type:'scatter'};
+      } else if(roll < scatChance+multChance){
+        const mv = def.mults[Math.random()*def.mults.length|0];
+        g[c][r]={s:'×'+mv, type:'mult', mult:mv};
+      } else {
+        const idx=weightedPick(def);
+        g[c][r]={s:def.syms[idx].s, type:'pay', idx, pay:def.syms[idx].pay};
+      }
+    }
+  }
+  // force scatter count sometimes
+  if(Math.random()<0.12){
+    const need = def.scatterMin;
+    let placed=0;
+    for(let c=0;c<cols;c++) for(let r=0;r<rows;r++) if(g[c][r].type==='scatter') placed++;
+    while(placed<need){
+      const c=Math.random()*cols|0, r=Math.random()*rows|0;
+      if(g[c][r].type!=='scatter'){ g[c][r]={s:def.scatter, type:'scatter'}; placed++; }
+    }
+  }
+  return g;
+}
+function evalScatterGrid(grid, bet, def){
+  const flat=grid.flat();
+  const counts={};
+  flat.forEach(cell=>{ if(cell.type==='pay'){ counts[cell.idx]=(counts[cell.idx]||0)+1; } });
+  let win=0, winCells=[];
+  const winMap=new Set();
+  Object.keys(counts).forEach(k=>{
+    const cnt=counts[k], idx=+k, pay=def.syms[idx].pay;
+    if(cnt>=8){
+      let mult=0;
+      if(cnt>=12) mult=pay[12]||pay[12]||0;
+      else if(cnt>=11) mult=pay[11]||0;
+      else if(cnt>=10) mult=pay[10]||0;
+      else if(cnt>=9) mult=pay[9]||0;
+      else if(cnt>=8) mult=pay[8]||0;
+      if(mult>0){
+        win+= bet * mult;
+        // mark all cells of this symbol as winning
+        grid.forEach((col,c)=>col.forEach((cell,r)=>{
+          if(cell.type==='pay' && cell.idx===idx){ winMap.add(c+'-'+r); winCells.push({c,r}); }
+        }));
+      }
+    }
+  });
+  let scat=0, multSum=0, multCells=[];
+  grid.forEach((col,c)=>col.forEach((cell,r)=>{
+    if(cell.type==='scatter') scat++;
+    if(cell.type==='mult'){ multSum+=cell.mult; multCells.push({c,r,mult:cell.mult}); }
+  }));
+  return {win, winCells:Array.from(winMap).map(s=>{const [c,r]=s.split('-').map(Number); return {c,r};}), scat, multSum, multCells};
+}
+
+/* --- drawing --- */
+function drawSym(sym, x, y, fast, small){
+  const s = typeof sym==='string'?sym:(sym.s||sym);
+  const special = s===WILD || s===SCAT || s.includes('×') || s===SLOT_DEFS.gates.scatter || s===SLOT_DEFS.sb.scatter || s===SLOT_DEFS.sp.scatter || s==='🏛️' || s==='🍭' || s==='🌙';
   SX.save();
   SX.translate(x + SW/2, y + SH/2);
   if(special){
     const g = SX.createRadialGradient(0,0,8, 0,0,52);
-    g.addColorStop(0, sym.s === WILD ? 'rgba(212,175,55,.5)' : 'rgba(140,180,255,.4)');
+    g.addColorStop(0, s.includes('×') ? 'rgba(246,226,122,.55)' : 'rgba(212,175,55,.35)');
     g.addColorStop(1, 'rgba(0,0,0,0)');
     SX.fillStyle = g; SX.beginPath(); SX.arc(0, 4, 52, 0, 7); SX.fill();
   }
   if(fast) SX.scale(1, 1.22);
-  SX.font = (special ? 58 : 62) + 'px Georgia, serif';
+  SX.font = (small? (special?28:30) : (special? 38:40)) + 'px Georgia, serif';
   SX.textAlign = 'center'; SX.textBaseline = 'middle';
-  if(special){ SX.shadowColor = SL.theme.glow; SX.shadowBlur = 18; }
-  SX.fillText(sym.s, 0, 4);
+  if(special){ SX.shadowColor = SL.def.glow||'#D4AF37'; SX.shadowBlur = 14; }
+  if(s.includes('×')){ SX.fillStyle='#f6e27a'; SX.font='700 '+(small?18:22)+'px Georgia'; }
+  SX.fillText(s, 0, 4);
   SX.restore();
 }
 function drawReel(c){
+  if(SL.mode!=='lines') return;
   const x = OX + c*(SW+GAP), winTop = OY, winH = 3*SH + 2*GAP, L = SL.strips[c].length;
   SX.save();
   SX.beginPath(); SX.rect(x - 1, winTop, SW + 2, winH); SX.clip();
@@ -2264,25 +2427,47 @@ function drawReel(c){
   }
   SX.restore();
 }
-function drawSlot(){
+function drawScatter(){
+  const def=SL.def, cols=def.cols, rows=def.rows;
+  const cw = (LW - 2*OX - (cols-1)*GAP)/cols;
+  const ch = (LH - 2*OY - (rows-1)*4)/rows;
+  SW=cw; SH=ch;
+  const winSet=new Set((SL.gridWinCells||[]).map(o=>o.c+'-'+o.r));
+  for(let c=0;c<cols;c++) for(let r=0;r<rows;r++){
+    const x=OX + c*(cw+GAP), y=OY + r*(ch+4);
+    const isWin=winSet.has(c+'-'+r);
+    rr(x,y,cw,ch,8);
+    SX.fillStyle = isWin ? 'rgba(212,175,55,.18)' : 'rgba(255,255,255,.04)';
+    SX.fill();
+    if(isWin){ SX.strokeStyle=SL.def.glow; SX.lineWidth=2; SX.stroke(); }
+    const cell=SL.grid[c] && SL.grid[c][r];
+    if(cell) drawSym(cell, x, y, false, true);
+  }
+  // mult cells glow
+  (SL.gridMultCells||[]).forEach(o=>{
+    const x=OX + o.c*(cw+GAP) + cw/2, y=OY + o.r*(ch+4) + ch/2;
+    SX.save(); SX.translate(x,y);
+    SX.beginPath(); SX.arc(0,0,26,0,7); SX.fillStyle='rgba(8,8,6,.88)'; SX.fill();
+    SX.strokeStyle='#f6e27a'; SX.lineWidth=2; SX.shadowColor=def.glow; SX.shadowBlur=12; SX.stroke();
+    SX.restore();
+  });
+}
+function drawLines(){
   const th = SL.theme;
   const bg = SX.createLinearGradient(0, 0, 0, LH);
   bg.addColorStop(0, th.bg1); bg.addColorStop(1, th.bg2);
   SX.fillStyle = bg; SX.fillRect(0, 0, LW, LH);
-  // hücreler
   for(let c = 0; c < COLS; c++) for(let r = 0; r < ROWS; r++){
     rr(OX + c*(SW+GAP), OY + r*STEP, SW, SH, 10);
     SX.fillStyle = 'rgba(255,255,255,.035)'; SX.fill();
   }
   for(let c = 0; c < COLS; c++) drawReel(c);
-  // üst/alt gölge
   const sh = SX.createLinearGradient(0, OY, 0, OY + 46);
   sh.addColorStop(0, 'rgba(0,0,0,.55)'); sh.addColorStop(1, 'rgba(0,0,0,0)');
   SX.fillStyle = sh; SX.fillRect(0, OY, LW, 46);
   const sh2 = SX.createLinearGradient(0, LH - 46, 0, LH);
   sh2.addColorStop(0, 'rgba(0,0,0,0)'); sh2.addColorStop(1, 'rgba(0,0,0,.55)');
   SX.fillStyle = sh2; SX.fillRect(0, LH - 46, LW, 46);
-  // kazanan çizgiler
   if(SL.lines.length && SL.hlT < 2.2){
     const a = .45 + .35 * Math.sin(SL.hlT * 9);
     SL.lines.forEach(LI => {
@@ -2301,7 +2486,6 @@ function drawSlot(){
       SX.globalAlpha = 1; SX.shadowBlur = 0;
     });
   }
-  // çarpan orbları
   const _now = performance.now();
   SL.orbs.forEach(o => {
     const age = (_now - o.born)/1000; if(age > 2) return;
@@ -2314,18 +2498,49 @@ function drawSlot(){
     SX.shadowColor = SL.theme.glow; SX.shadowBlur = 16; SX.stroke();
     SX.shadowBlur = 0;
     SX.textAlign = 'center'; SX.textBaseline = 'middle';
-    SX.font = '13px Georgia'; SX.fillStyle = '#f6e27a'; SX.fillText(f ?  (SL.feat||FEATS.gates).icon : '✦', 0, -10);
+    SX.font = '13px Georgia'; SX.fillStyle = '#f6e27a'; SX.fillText((SL.feat||FEATS.gates).icon, 0, -10);
     SX.font = '600 16px Georgia'; SX.fillStyle = '#F5F5DC'; SX.fillText('×' + o.m, 0, 9);
     SX.restore();
   });
-  // FS birikim göstergesi
   if(SL.fsPool > 0 && SL.fsAcc > 0){
     SX.font = '600 13px Georgia'; SX.fillStyle = '#f6e27a'; SX.textAlign = 'right';
     SX.shadowColor = 'rgba(212,175,55,.5)'; SX.shadowBlur = 8;
     SX.fillText((SL.feat||FEATS.gates).icon + ' biriken ×' + SL.fsAcc, LW - 24, 44);
     SX.shadowBlur = 0;
   }
-  // partiküller
+}
+function drawSlot(){
+  const th = SL.theme || {bg1:'#111', bg2:'#000', glow:'#D4AF37'};
+  const bg = SX.createLinearGradient(0, 0, 0, LH);
+  bg.addColorStop(0, th.bg1); bg.addColorStop(1, th.bg2);
+  SX.fillStyle = bg; SX.fillRect(0, 0, LW, LH);
+  if(SL.mode==='scatter'){
+    drawScatter();
+  } else if(SL.mode==='holdwin'){
+    // simple hold&win draw
+    const def=SL.def, cols=def.cols, rows=def.rows;
+    const cw=(LW-2*OX-(cols-1)*GAP)/cols, ch=(LH-2*OY-(rows-1)*4)/rows;
+    SW=cw; SH=ch;
+    for(let c=0;c<cols;c++) for(let r=0;r<rows;r++){
+      const x=OX+c*(cw+GAP), y=OY+r*(ch+4);
+      rr(x,y,cw,ch,8); SX.fillStyle='rgba(255,255,255,.04)'; SX.fill();
+      const cell=SL.holdGrid[c] && SL.holdGrid[c][r];
+      if(cell) drawSym(cell.s||cell, x,y,false,true);
+    }
+  } else if(SL.mode==='vs'){
+    const def=SL.def, cols=def.cols, rows=def.rows;
+    const cw=(LW-2*OX-(cols-1)*GAP)/cols, ch=(LH-2*OY-(rows-1)*4)/rows;
+    SW=cw; SH=ch;
+    for(let c=0;c<cols;c++) for(let r=0;r<rows;r++){
+      const x=OX+c*(cw+GAP), y=OY+r*(ch+4);
+      rr(x,y,cw,ch,8); SX.fillStyle='rgba(255,255,255,.04)'; SX.fill();
+      const cell=SL.vsGrid[c] && SL.vsGrid[c][r];
+      if(cell) drawSym(cell, x,y,false,true);
+    }
+  } else {
+    drawLines();
+  }
+  // particles
   SL.parts.forEach(pt => {
     SX.globalAlpha = Math.max(0, pt.life);
     SX.fillStyle = pt.spark ? '#f6e27a' : '#D4AF37';
@@ -2335,6 +2550,11 @@ function drawSlot(){
   if(SL.flashT < .3){
     SX.fillStyle = 'rgba(246,226,122,' + (.26 * (1 - SL.flashT/.3)).toFixed(3) + ')';
     SX.fillRect(0, 0, LW, LH);
+  }
+  // FS total mult indicator
+  if(SL.mode==='scatter' && SL.fsPool>0){
+    SX.font='700 12px Inter'; SX.fillStyle='#f6e27a'; SX.textAlign='left';
+    SX.fillText('TOPLAM ÇARPAN ×'+(SL.fsTotalMult||0)+' | FS '+SL.fsPool, OX, LH-8);
   }
 }
 function burst(x, y, n){
@@ -2347,38 +2567,47 @@ function stepParticles(dt){
   SL.parts = SL.parts.filter(pt => pt.life > 0 && pt.y < LH + 20);
 }
 
-/* --- ana döngü --- */
+/* --- main loop for lines --- */
 function loop(t){
   if(!SL.open) return;
   const dt = Math.min(.05, (t - SL.lastT)/1000 || .016);
   SL.lastT = t; SL.hlT += dt;
   if(SL.flashT < .3) SL.flashT += dt;
-  let allStopped = true;
-  SL.strips.forEach((st, c) => {
-    if(SL.vel[c] > 0){
-      allStopped = false;
-      SL.vel[c] = Math.max(0, SL.vel[c] - SL.decel[c]*dt);
-      SL.pos[c] += SL.vel[c]*dt;
-      if(SL.pos[c] >= SL.stopAt[c] || SL.vel[c] <= 0){
-        SL.pos[c] = SL.stopAt[c]; SL.vel[c] = 0; SL.stopT[c] = 0;
-        sfxReelStop();
-      }
-    } else if(SL.stopT[c] < .3) SL.stopT[c] += dt;
-  });
-  stepParticles(dt);
-  // kazanç sayacı
-  if(SL.winShown < SL.winTarget)
-    SL.winShown = Math.min(SL.winTarget, SL.winShown + Math.max(1, SL.winTarget - SL.winShown) * dt * 9);
-  $('winAmt').textContent = fmt(SL.winShown);
-  drawSlot();
-  if(allStopped && SL.spinning){
-    SL.spinning = false; clearInterval(SL.tickIv);
-    onSettle();
+  if(SL.mode==='lines'){
+    let allStopped = true;
+    SL.strips.forEach((st, c) => {
+      if(SL.vel[c] > 0){
+        allStopped = false;
+        SL.vel[c] = Math.max(0, SL.vel[c] - SL.decel[c]*dt);
+        SL.pos[c] += SL.vel[c]*dt;
+        if(SL.pos[c] >= SL.stopAt[c] || SL.vel[c] <= 0){
+          SL.pos[c] = SL.stopAt[c]; SL.vel[c] = 0; SL.stopT[c] = 0;
+          sfxReelStop();
+        }
+      } else if(SL.stopT[c] < .3) SL.stopT[c] += dt;
+    });
+    stepParticles(dt);
+    if(SL.winShown < SL.winTarget)
+      SL.winShown = Math.min(SL.winTarget, SL.winShown + Math.max(1, SL.winTarget - SL.winShown) * dt * 9);
+    $('winAmt').textContent = fmt(SL.winShown);
+    drawSlot();
+    if(allStopped && SL.spinning){
+      SL.spinning = false; clearInterval(SL.tickIv);
+      onSettle();
+    }
+    SL.raf = requestAnimationFrame(loop);
+  } else {
+    // scatter / holdwin / vs use their own async loops, but keep RAF for particles
+    stepParticles(dt);
+    if(SL.winShown < SL.winTarget)
+      SL.winShown = Math.min(SL.winTarget, SL.winShown + Math.max(1, SL.winTarget - SL.winShown) * dt * 9);
+    $('winAmt').textContent = fmt(SL.winShown);
+    drawSlot();
+    SL.raf = requestAnimationFrame(loop);
   }
-  SL.raf = requestAnimationFrame(loop);
 }
 
-/* --- döndürme --- */
+/* --- buy bonus --- */
 function buyCostNow(){ const b = +($('slotBet') ? $('slotBet').value : 25); return b * 100; }
 function renderBuyCost(){
   const el = $('buyCost'); if(el) el.textContent = '×100 = ◈ ' + fmt(buyCostNow());
@@ -2486,14 +2715,22 @@ function buyBonus(){
   st().wagered += cost;
   logRound(name + ' · Bonus Satın Al', cost, 0, null);
   if(typeof vaultWageringTick === 'function') vaultWageringTick(cost);
-  SL.fsAcc = 0; SL.fsPool += 8; SL.fsMul = 2;
+  SL.fsAcc = 0; SL.fsTotalMult=0;
+  const def=SL.def;
+  if(def.type==='scatter'){
+    SL.fsPool += def.fs; SL.fsTotalMult=0;
+  } else {
+    SL.fsPool += 8; SL.fsMul = 2;
+  }
   sfxScatter(); buzz([30, 40, 30, 40, 80]);
-  toast('⚡ <b>Bonus satın alındı:</b> 8 ücretsiz dönüş, biriken çarpanla. Bol şans, ' + esc(state.name) + '.');
+  toast('⚡ <b>Bonus satın alındı:</b> '+def.fs+' ücretsiz dönüş, biriken çarpanla. Bol şans, ' + esc(state.name) + '.');
   updateFsBanner();
   $('spinBtn').disabled = true;
   setTimeout(() => { if(SL.open && !SL.spinning) slotSpin(); }, 650);
   saveDemo();
 }
+
+/* --- spin dispatcher --- */
 function slotSpin(){
   if(!SL.open || SL.spinning) return;
   const bet = +$('slotBet').value;
@@ -2509,29 +2746,373 @@ function slotSpin(){
   }
   SL.bet = bet;
   SL.spinning = true; SL.lines = []; SL.hlT = 0;
-  SL.winTarget = 0; SL.winShown = 0;
+  SL.winTarget = 0; SL.winShown = 0; SL.totalWin=0;
   $('spinBtn').disabled = true;
-  $('slotMsg').textContent = free ? '✨ Ücretsiz dönüş (×2) — kalan: ' + SL.fsPool : '…';
+  $('slotMsg').textContent = free ? '✨ Ücretsiz dönüş — kalan: ' + SL.fsPool : '…';
   $('winHud').classList.remove('hot');
   updateFsBanner();
-  // makara hedefleri
-  const spSpeed = SL.turbo ? 0.38 : 1;
-  SL.strips.forEach((st, c) => {
-    const L = st.length, target = Math.random()*L | 0;
-    const cur = ((SL.pos[c] % L) + L) % L;
-    const dist = (2 + c) * L + (((target - cur) % L) + L) % L;
+
+  if(SL.mode==='scatter'){
+    scatterSpin();
+  } else if(SL.mode==='holdwin'){
+    holdWinSpin();
+  } else if(SL.mode==='vs'){
+    vsSpin();
+  } else if(SL.mode==='blood'){
+    bloodSpin();
+  } else {
+    // lines
+    SL.strips.forEach((st, c) => {
+      const L = st.length, target = Math.random()*L | 0;
+      const cur = ((SL.pos[c] % L) + L) % L;
+      const dist = (2 + c) * L + (((target - cur) % L) + L) % L;
+    const spSpeed = SL.turbo ? 0.38 : 1;
     const dur = (.85 + .3 * c) * spSpeed;
-    SL.stopAt[c] = SL.pos[c] + dist;
-    SL.vel[c] = 2 * dist / dur;
-    SL.decel[c] = SL.vel[c] / dur;
-  });
-  sfxSpinStart();
-  clearInterval(SL.tickIv);
-  SL.tickIv = setInterval(() => sfxOn && tone(1150, 0, .022, 'square', .02), SL.turbo ? 42 : 85);
+      SL.stopAt[c] = SL.pos[c] + dist;
+      SL.vel[c] = 2 * dist / dur;
+      SL.decel[c] = SL.vel[c] / dur;
+    });
+    sfxSpinStart();
+    clearInterval(SL.tickIv);
+    SL.tickIv = setInterval(() => sfxOn && tone(1150, 0, .022, 'square', .02), SL.turbo ? 42 : 85);
+  }
 }
 
-/* --- değerlendirme --- */
+/* --- SCATTER TUMBLE ENGINE --- */
+async function scatterSpin(){
+  const def=SL.def, cols=def.cols, rows=def.rows;
+  SL.grid = buildScatterGrid(def);
+  SL.gridWinCells=[]; SL.gridMultCells=[];
+  SL.tumbleDepth=0;
+  if(SL.fsPool>0 && typeof SL.fsTotalMult!=='number') SL.fsTotalMult=0;
+  if(SL.fsPool===0) SL.fsTotalMult=0;
+  let totalWin=0;
+  let accumulatedMult = SL.fsPool>0 ? (SL.fsTotalMult||0) : 0;
+  let tumbleCount=0;
+  let anyTumble=false;
+
+  function doEval(){
+    const ev = evalScatterGrid(SL.grid, SL.bet, def);
+    SL.gridWinCells = ev.winCells;
+    SL.gridMultCells = ev.multCells;
+    return ev;
+  }
+
+  // initial eval loop with delays
+  while(true){
+    const ev = doEval();
+    drawSlot();
+    if(ev.win>0){
+      anyTumble=true;
+      tumbleCount++;
+      let winThis = ev.win;
+      if(ev.multSum>0){
+        if(def.type==='scatter'){
+          accumulatedMult += ev.multSum;
+          SL.fsTotalMult = accumulatedMult;
+          winThis = winThis * ev.multSum;
+          if(SL.fsPool>0) winThis = ev.win * accumulatedMult;
+          else winThis = ev.win * ev.multSum;
+          sfxBomb(); SL.flashT=0; burst(LW/2, LH/2, 30);
+          toast(def.scatter+' <b>Çarpan!</b> ×'+ev.multSum+' '+(SL.fsPool>0?' birikti → toplam ×'+accumulatedMult:''));
+        }
+      } else {
+        if(SL.fsPool>0 && accumulatedMult>0){
+          winThis = ev.win * accumulatedMult;
+        }
+      }
+      totalWin += winThis;
+      SL.totalWin = totalWin;
+      SL.winTarget = totalWin;
+      $('slotMsg').textContent = '💥 '+tumbleCount+'. tumble: +'+fmt(winThis)+' | toplam +'+fmt(totalWin)+(accumulatedMult>0?' ×'+accumulatedMult:'');
+      // remove winning cells and drop
+      await new Promise(res=>setTimeout(res, 650));
+      // tumble: remove win cells, shift down
+      const winSet=new Set(ev.winCells.map(o=>o.c+'-'+o.r));
+      for(let c=0;c<cols;c++){
+        let writeRow=rows-1;
+        for(let r=rows-1;r>=0;r--){
+          if(!winSet.has(c+'-'+r)){
+            if(writeRow!==r){
+              SL.grid[c][writeRow]=SL.grid[c][r];
+            }
+            writeRow--;
+          }
+        }
+        // fill top
+        for(let r=writeRow;r>=0;r--){
+          const roll=Math.random();
+          if(roll<0.02){
+            SL.grid[c][r]={s:def.scatter, type:'scatter'};
+          } else if(roll<0.02+(def.multChance||0.07)){
+            const mv=def.mults[Math.random()*def.mults.length|0];
+            SL.grid[c][r]={s:'×'+mv, type:'mult', mult:mv};
+          } else {
+            const idx=weightedPick(def);
+            SL.grid[c][r]={s:def.syms[idx].s, type:'pay', idx, pay:def.syms[idx].pay};
+          }
+        }
+      }
+      sfxTumble();
+      drawSlot();
+      await new Promise(res=>setTimeout(res, 350));
+      if(tumbleCount>12) break; // safety
+      continue;
+    } else {
+      // no win, check scatter trigger
+      const scat = SL.grid.flat().filter(x=>x.type==='scatter').length;
+      if(scat>=def.scatterMin){
+        // FS trigger
+        if(SL.fsPool===0) SL.fsTotalMult=accumulatedMult;
+        SL.fsPool += def.fs;
+        SL.fsAcc = accumulatedMult;
+        sfxScatter();
+        $('fsBanner').innerHTML = '✨ '+scat+' SCATTER! '+def.fs+' FS KAZANDIN ✨<small style="display:block;font-size:.7rem;margin-top:.3rem">TOPLAM ÇARPAN ×'+(SL.fsTotalMult||0)+'</small>';
+        $('fsBanner').classList.remove('hidden');
+        toast('✨ <b>'+scat+' Scatter!</b> '+def.fs+' ücretsiz dönüş kazandın! Toplam çarpan ×'+(SL.fsTotalMult||0));
+        burst(LW/2, LH/3, 60);
+      }
+      break;
+    }
+  }
+
+  // finalize
+  if(totalWin>0){
+    state.chips += Math.round(totalWin); renderChips(); giftWin();
+    st().won += Math.round(totalWin); st().big = Math.max(st().big, Math.round(totalWin));
+    logRound(SL.gname||'Slot', SL.bet, Math.round(totalWin), Math.round((totalWin/SL.bet)*100)/100);
+    if(typeof addLedgerEntry==='function' && totalWin>=100) addLedgerEntry('Slot Kazancı', Math.round(totalWin), def.type+' · '+tumbleCount+' tumble', 'ok');
+    SL.winTarget = Math.round(totalWin);
+    $('winHud').classList.add('hot');
+    $('slotMsg').textContent = '🎉 +'+fmt(Math.round(totalWin))+' dürTL — '+tumbleCount+' tumble'+(accumulatedMult>0?' · ×'+accumulatedMult:'');
+    const m = totalWin/SL.bet;
+    sfxWin(m); buzz([25,35,30]);
+    if(m>=6){
+      $('bigWin').innerHTML = 'BÜYÜK KAZANÇ<small>+'+fmt(Math.round(totalWin))+' dürTL</small>';
+      $('bigWin').classList.remove('hidden');
+      $('slotStage').classList.add('shake-stage');
+      setTimeout(()=>$('bigWin').classList.add('hidden'), 1700);
+      setTimeout(()=>$('slotStage').classList.remove('shake-stage'), 500);
+      buzz([40,55,40,55,150]);
+      toast('🎉 <b>Büyük kazanç!</b> '+fmt(Math.round(totalWin))+' dürTL — '+tumbleCount+' tumble zinciri!');
+    }
+  } else {
+    if(SL.fsPool===0 || SL.fsPool===def.fs) logRound(SL.gname||'Slot', SL.bet, 0);
+    $('slotMsg').textContent = ['Bu tur olmadı. Dürtü sabırlı olanı sever.','Tumble ısınıyor…','Şekerler diziliyor, bir tur daha?'][Math.random()*3|0];
+    giftLose();
+  }
+  angelSay('slot', totalWin>0?'win':'lose');
+  updateFsBanner();
+  SL.spinning=false;
+  clearInterval(SL.tickIv);
+  if(SL.fsPool>0){
+    setTimeout(()=>{ if(SL.open && !SL.spinning) slotSpin(); }, 1400);
+  } else {
+    SL.fsTotalMult=0; SL.fsAcc=0;
+    $('fsBanner').classList.add('hidden');
+    $('spinBtn').disabled=false;
+  }
+}
+
+/* --- HOLD & WIN (Money Train 4) --- */
+function holdWinSpin(){
+  const def=SL.def, cols=def.cols, rows=def.rows;
+  // base spin 5x4 lines
+  const grid=[];
+  for(let c=0;c<cols;c++){
+    grid[c]=[];
+    for(let r=0;r<rows;r++){
+      const idx=Math.random()*def.syms.length|0;
+      grid[c][r]={s:def.syms[idx], type: idx===2?'bonus':'pay', val: Math.random()<0.3? (Math.random()*5+1|0):0};
+    }
+  }
+  SL.holdGrid=grid;
+  drawSlot();
+  // count bonus
+  let bonusCount=0;
+  grid.forEach(col=>col.forEach(cell=>{ if(cell.type==='bonus') bonusCount++; }));
+  if(bonusCount>=def.bonusMin){
+    // enter hold&win
+    toast('💰 <b>Money Train Bonus!</b> '+bonusCount+' vagon — Hold&Win başlıyor!');
+    sfxScatter();
+    SL.holdLives=3; SL.holdTotal=0;
+    const bonusGrid=[];
+    for(let c=0;c<cols;c++){
+      bonusGrid[c]=[];
+      for(let r=0;r<rows;r++){
+        const cell=grid[c][r];
+        if(cell.type==='bonus'){
+          bonusGrid[c][r]={s:'💰'+(cell.val||1), type:'money', val:cell.val||1, sticky:true};
+          SL.holdTotal+=cell.val;
+        } else bonusGrid[c][r]=null;
+      }
+    }
+    SL.holdGrid=bonusGrid;
+    // respin loop
+    let lives=3;
+    const respinLoop = async ()=>{
+      while(lives>0){
+        $('slotMsg').textContent='🚂 Hold&Win — can: '+lives+' | toplam ×'+SL.holdTotal;
+        drawSlot();
+        await new Promise(r=>setTimeout(r, 900));
+        let hit=false;
+        for(let c=0;c<cols;c++) for(let r=0;r<rows;r++){
+          if(!SL.holdGrid[c][r] && Math.random()<0.38){
+            const v=Math.random()*8+1|0;
+            SL.holdGrid[c][r]={s:'💰'+v, type:'money', val:v, sticky:true};
+            SL.holdTotal+=v; hit=true;
+            burst(OX+c*120+50, OY+r*90+35, 12);
+          }
+        }
+        if(hit) lives=3; else lives--;
+      }
+      // finalize bonus
+      const win = Math.round(SL.bet * SL.holdTotal);
+      state.chips+=win; renderChips();
+      st().won+=win; st().big=Math.max(st().big, win);
+      logRound(SL.gname, SL.bet, win, SL.holdTotal);
+      SL.winTarget=win; $('winAmt').textContent=fmt(win);
+      $('slotMsg').textContent='🎉 Money Train Bonus bitti: ×'+SL.holdTotal+' → +'+fmt(win)+' dürTL';
+      sfxWin(SL.holdTotal/5); burst(LW/2, LH/2, 80);
+      SL.spinning=false; $('spinBtn').disabled=false;
+      updateFsBanner();
+    };
+    respinLoop();
+  } else {
+    // normal lines eval (simplified)
+    let win=0;
+    if(Math.random()<0.32){ win=Math.round(SL.bet * (0.5+Math.random()*3)); }
+    if(win>0){
+      state.chips+=win; renderChips(); st().won+=win;
+      logRound(SL.gname, SL.bet, win, win/SL.bet);
+      SL.winTarget=win; $('winHud').classList.add('hot');
+      $('slotMsg').textContent='🎉 +'+fmt(win)+' dürTL — vagonlar ısınıyor';
+      sfxWin(win/SL.bet);
+    } else {
+      logRound(SL.gname, SL.bet, 0);
+      $('slotMsg').textContent='Raylar sessiz… bir tur daha?';
+      giftLose();
+    }
+    SL.spinning=false; $('spinBtn').disabled=false;
+  }
+}
+
+/* --- VS / WANTED ENGINE --- */
+function vsSpin(){
+  const def=SL.def, cols=def.cols, rows=def.rows;
+  const grid=[];
+  let vsCount=0;
+  for(let c=0;c<cols;c++){
+    grid[c]=[];
+    for(let r=0;r<rows;r++){
+      if(Math.random()<0.07){
+        grid[c][r]={s:'VS', type:'vs', mult:1};
+        vsCount++;
+      } else {
+        const idx=Math.random()*def.syms.length|0;
+        grid[c][r]={s:def.syms[idx], type:'pay', idx};
+      }
+    }
+  }
+  SL.vsGrid=grid;
+  // expand VS to full reel wild
+  for(let c=0;c<cols;c++){
+    if(grid[c].some(x=>x.type==='vs')){
+      for(let r=0;r<rows;r++) grid[c][r]={s:'VS', type:'wild', mult: 2+Math.random()*8|0};
+    }
+  }
+  drawSlot();
+  let win=0, mult=1;
+  const wildReels = grid.filter(col=>col[0].type==='wild').length;
+  if(wildReels>=1){
+    mult = wildReels===1? (2+Math.random()*3) : wildReels===2? (5+Math.random()*10) : (15+Math.random()*30);
+    win = Math.round(SL.bet * mult);
+    toast('🔫 <b>DÜELLO!</b> '+wildReels+' VS makarası → ×'+mult.toFixed(1));
+    SL.flashT=0; sfxZap(); burst(LW/2, LH/2, 50);
+  } else if(Math.random()<0.28){
+    win = Math.round(SL.bet * (0.4+Math.random()*2.5));
+  }
+  if(win>0){
+    state.chips+=win; renderChips(); st().won+=win; st().big=Math.max(st().big, win);
+    logRound(SL.gname, SL.bet, win, mult);
+    SL.winTarget=win; $('winHud').classList.add('hot');
+    $('slotMsg').textContent='🎉 +'+fmt(win)+' dürTL — '+wildReels+' VS wild'+(mult>1?' ×'+mult.toFixed(1):'');
+    sfxWin(mult);
+  } else {
+    logRound(SL.gname, SL.bet, 0);
+    $('slotMsg').textContent='Kasaba sessiz… düello yaklaşıyor.';
+    giftLose();
+  }
+  SL.spinning=false; $('spinBtn').disabled=false;
+}
+
+/* --- BLOOD SUCKERS + BONUS PICK --- */
+function bloodSpin(){
+  const def=SL.def;
+  // 5x3 lines simple
+  const cols=def.cols, rows=def.rows;
+  const grid=[];
+  for(let c=0;c<cols;c++){
+    grid[c]=[];
+    for(let r=0;r<rows;r++){
+      const idx=Math.random()*def.syms.length|0;
+      grid[c][r]={s:def.syms[idx], idx, type: def.syms[idx]==='🩸'?'bonus':'pay'};
+    }
+  }
+  SL.grid=grid;
+  drawSlotBlood(grid);
+  let bonusCount=0;
+  grid.forEach(col=>col.forEach(cell=>{ if(cell.type==='bonus') bonusCount++; }));
+  if(bonusCount>=3){
+    // coffin pick bonus
+    openBloodBonus();
+  } else {
+    let win=0;
+    if(Math.random()<0.42){ win=Math.round(SL.bet * (0.3+Math.random()*4)); }
+    if(win>0){
+      state.chips+=win; renderChips(); st().won+=win;
+      logRound(SL.gname, SL.bet, win, win/SL.bet);
+      SL.winTarget=win; $('winHud').classList.add('hot');
+      $('slotMsg').textContent='🎉 +'+fmt(win)+' dürTL — kan taze';
+      sfxWin(win/SL.bet);
+    } else {
+      logRound(SL.gname, SL.bet, 0);
+      $('slotMsg').textContent='Tabutlar kapalı… bir tur daha?';
+      giftLose();
+    }
+    SL.spinning=false; $('spinBtn').disabled=false;
+  }
+}
+function drawSlotBlood(grid){
+  const cols=5, rows=3;
+  const cw=(LW-2*OX-(cols-1)*GAP)/cols, ch=(LH-2*OY-(rows-1)*GAP)/rows;
+  SW=cw; SH=ch;
+  const bg=SX.createLinearGradient(0,0,0,LH); bg.addColorStop(0,'#2b0f14'); bg.addColorStop(1,'#0b0407');
+  SX.fillStyle=bg; SX.fillRect(0,0,LW,LH);
+  for(let c=0;c<cols;c++) for(let r=0;r<rows;r++){
+    const x=OX+c*(cw+GAP), y=OY+r*(ch+GAP);
+    rr(x,y,cw,ch,10); SX.fillStyle='rgba(255,255,255,.04)'; SX.fill();
+    const cell=grid[c]&&grid[c][r];
+    if(cell) drawSym(cell.s, x,y,false,false);
+  }
+}
+function openBloodBonus(){
+  const bonusWin = Math.round(SL.bet * (5+Math.random()*15));
+  // simple pick UI via toast + instant win for now
+  toast('🦇 <b>Tabut Bonusu!</b> 3 tabut seçiliyor…');
+  setTimeout(()=>{
+    state.chips+=bonusWin; renderChips(); st().won+=bonusWin;
+    logRound(SL.gname+' · Tabut Bonusu', SL.bet, bonusWin, bonusWin/SL.bet);
+    SL.winTarget=bonusWin; $('winAmt').textContent=fmt(bonusWin);
+    $('slotMsg').textContent='⚰️ Tabut Bonusu: +'+fmt(bonusWin)+' dürTL';
+    sfxWin(bonusWin/SL.bet); burst(LW/2, LH/2, 60);
+    SL.spinning=false; $('spinBtn').disabled=false;
+  }, 1200);
+}
+
+/* --- generic lines settle (old but improved) --- */
 function onSettle(){
+  if(SL.mode!=='lines') return;
   SL.pos.forEach((pp, c) => SL.pos[c] = ((pp % SL.strips[c].length) + SL.strips[c].length) % SL.strips[c].length);
   const grid = [];
   for(let c = 0; c < COLS; c++){ grid.push([]); for(let r = 0; r < ROWS; r++) grid[c].push(SL.strips[c][(SL.pos[c] + r) % SL.strips[c].length]); }
@@ -2548,7 +3129,7 @@ function onSettle(){
       if(symI === -1) symI = s.i;
       if(s.i === symI) count++; else break;
     }
-    if(symI === -1){ symI = 0; } // tamamen wild → premium sembol
+    if(symI === -1){ symI = 0; }
     if(count >= 3){
       const w = perLine * PAYC[symI][count - 3] * SL.fsMul;
       total += w;
@@ -2558,8 +3139,6 @@ function onSettle(){
   total = Math.round(total);
   const fsTrig = scat >= 3;
   if(fsTrig){ if(SL.fsPool === 0) SL.fsAcc = 0; SL.fsPool += 8; SL.fsMul = 2; sfxScatter(); }
-
-  // ✦ imza özellik: çarpan orbları
   SL.orbs = [];
   let orbSum = 0;
   const f = SL.feat || FEATS.gates, inFs = SL.fsMul > 1 && SL.fsPool > 0, fxChance = inFs ? f.fs : f.base;
@@ -2588,8 +3167,6 @@ function onSettle(){
     }
   }
   total = Math.round(total);
-
-  // sunum
   const mult = total / SL.bet;
   if(total > 0){
     state.chips += total; renderChips(); giftWin();
@@ -2621,8 +3198,6 @@ function onSettle(){
   }
   if(fsTrig) toast('✨ <b>Scatter!</b> 8 ücretsiz dönüş kazandın (tüm kazançlar ×2).');
   angelSay('slot', total > 0 ? 'win' : 'lose');
-
-  // ücretsiz dönüş zinciri
   updateFsBanner();
   if(SL.fsPool > 0){
     setTimeout(() => { if(SL.open && !SL.spinning) slotSpin(); }, SL.turbo ? 450 : 1400);
@@ -2646,39 +3221,68 @@ function onSettle(){
 }
 function updateFsBanner(){
   if(SL.fsPool > 0){
-    $('fsBanner').innerHTML = '✨ ÜCRETSİZ DÖNÜŞ ✨<small style="font-size:.8rem;letter-spacing:.3em;margin-top:.4rem">KALAN: ' + SL.fsPool + ' · ×2</small>';
+    const extra = SL.mode==='scatter' ? ' · TOPLAM ×'+(SL.fsTotalMult||0) : '';
+    $('fsBanner').innerHTML = '✨ ÜCRETSİZ DÖNÜŞ ✨<small style=\"font-size:.8rem;letter-spacing:.3em;margin-top:.4rem\">KALAN: ' + SL.fsPool + extra + '</small>';
     $('fsBanner').classList.remove('hidden');
   } else $('fsBanner').classList.add('hidden');
 }
-
-/* --- ödeme tablosu --- */
 function buildPaytable(){
-  const th = SL.theme;
-  let rows = th.syms.map((sy, i) =>
-    `<div class="pt-row"><span class="ps">${sy}</span><span class="pm">${['Premium','Yüksek','Orta','Orta','Düşük','Düşük'][i]}</span><b>3× → ${PAYC[i][0]} · 4× → ${PAYC[i][1]} · 5× → ${PAYC[i][2]} kat</b></div>`
-  ).join('');
-  $('ptable').innerHTML = `<h4>Ödeme Tablosu</h4>
-    <p class="pt-sub">Katsayılar hat başına bahis üzerinden · toplam bahis = 10 hat × hat başına</p>${rows}
-    <div class="pt-row"><span class="ps">✦</span><span class="pm">WILD</span><b>Scatter hariç hepsinin yerine geçer</b></div>
-    <div class="pt-row"><span class="ps">✨</span><span class="pm">SCATTER</span><b>3+ = 8 ücretsiz dönüş · ×2 çarpan</b></div><div class="pt-row"><span class="ps">${SL.feat.icon}</span><span class="pm">${SL.feat.label}</span><b>Rastgele çarpan · dönüşte birikir</b></div>`;
+  const def=SL.def, th=SL.theme;
+  if(def.type==='scatter'){
+    let rows = def.syms.map(sy=>{
+      const p=sy.pay;
+      return `<div class="pt-row"><span class="ps">${sy.s}</span><span class="pm">${sy.s} her yerde</span><b>8→${p[8]}× 10→${p[10]}× 12+→${p[12]}×</b></div>`;
+    }).join('');
+    $('ptable').innerHTML = `<h4>${SL.gname} — Ödeme</h4><p class="pt-sub">${def.note}</p>${rows}
+      <div class="pt-row"><span class="ps">${def.scatter}</span><span class="pm">SCATTER</span><b>${def.scatterMin}+ → ${def.fs} FS</b></div>
+      <div class="pt-row"><span class="ps">×</span><span class="pm">ÇARPAN</span><b>${def.mults.slice(0,6).join(', ')}… rastgele, tumble’da birikir</b></div>`;
+  } else if(def.type==='holdwin'){
+    $('ptable').innerHTML = `<h4>${SL.gname} — Hold&Win</h4><p class="pt-sub">${def.note}</p>
+      <div class="pt-row"><span class="ps">💰</span><span class="pm">BONUS</span><b>3+ → Hold&Win 3 can</b></div>
+      <div class="pt-row"><span class="ps">🚂</span><span class="pm">PREMIUM</span><b>5× → 50×</b></div>`;
+  } else if(def.type==='vs'){
+    $('ptable').innerHTML = `<h4>${SL.gname} — VS Düello</h4><p class="pt-sub">${def.note}</p>
+      <div class="pt-row"><span class="ps">VS</span><span class="pm">WILD</span><b>Tüm makaraya yayılır + çarpan</b></div>
+      <div class="pt-row"><span class="ps">💀</span><span class="pm">SCATTER</span><b>3+ → bonus</b></div>`;
+  } else {
+    let rows = (th.syms||[]).map((sy, i) =>
+      `<div class="pt-row"><span class="ps">${sy}</span><span class="pm">${['Premium','Yüksek','Orta','Orta','Düşük','Düşük'][i]||''}</span><b>3× → ${PAYC[i][0]} · 4× → ${PAYC[i][1]} · 5× → ${PAYC[i][2]} kat</b></div>`
+    ).join('');
+    $('ptable').innerHTML = `<h4>Ödeme Tablosu</h4><p class="pt-sub">Katsayılar hat başına bahis üzerinden</p>${rows}
+      <div class="pt-row"><span class="ps">✦</span><span class="pm">WILD</span><b>Scatter hariç hepsinin yerine geçer</b></div>
+      <div class="pt-row"><span class="ps">✨</span><span class="pm">SCATTER</span><b>3+ = 8 ücretsiz dönüş</b></div>`;
+  }
 }
 function togglePaytable(){ $('ptable').classList.toggle('hidden'); }
-
-/* --- aç/kapat --- */
 function openSlot(id){
   const g = GAMES.find(x => x.id === id) || GAMES[0];
-  SL.theme = SLOT_THEMES[id] || SLOT_THEMES.gates;
+  const def = SLOT_DEFS[id] || SLOT_DEFS.gates;
+  SL.def = def; SL.theme = SLOT_THEMES[id] || {bg1:def.bg1, bg2:def.bg2, glow:def.glow, syms:def.syms.map(s=>s.s||s)};
   SL.gname = g.name;
-  SL.strips = [0,1,2,3,4].map(() => buildStrip(SL.theme));
-  SL.pos = [0,0,0,0,0].map(() => Math.random()*20 | 0);
-  SL.vel = [0,0,0,0,0]; SL.stopT = [9,9,9,9,9];
+  SL.mode = def.type==='scatter'?'scatter':def.type==='holdwin'?'holdwin':def.type==='vs'?'vs':def.type==='lines'&&id==='bs'?'blood':'lines';
+  if(SL.mode==='lines'){
+    COLS=5; ROWS=3; SW=118; SH=118; GAP=9; STEP=SH+GAP;
+    SL.strips = [0,1,2,3,4].map(() => buildStrip(SL.theme));
+    SL.pos = [0,0,0,0,0].map(() => Math.random()*20 | 0);
+    SL.vel = [0,0,0,0,0]; SL.stopT = [9,9,9,9,9];
+  } else if(SL.mode==='scatter'){
+    COLS=def.cols; ROWS=def.rows;
+  } else if(SL.mode==='holdwin'){
+    COLS=def.cols; ROWS=def.rows;
+    SL.holdGrid=[]; SL.holdLives=3; SL.holdTotal=0;
+  } else if(SL.mode==='vs'){
+    COLS=def.cols; ROWS=def.rows;
+    SL.vsGrid=[];
+  } else if(SL.mode==='blood'){
+    COLS=5; ROWS=3;
+  }
   SL.fsPool = 0; SL.fsMul = 1; SL.lines = []; SL.parts = [];
-  SL.fsAcc = 0; SL.orbs = []; SL.feat = FEATS[g.id] || FEATS.gates; SL.flashT = 9;
+  SL.fsAcc = 0; SL.fsTotalMult=0; SL.orbs = []; SL.feat = FEATS[g.id] || FEATS.gates; SL.flashT = 9;
   SL.winTarget = 0; SL.winShown = 0;
-  $('slotTitle').textContent = g.icon + ' ' + g.name;
+  $('slotTitle').textContent = g.icon + ' ' + g.name + (def.type!=='lines'?' · '+def.type.toUpperCase():'');
   if(!$('slotBet').onchange) $('slotBet').onchange = renderBuyCost;
   renderBuyCost();
-  $('slotNote').textContent = '“' + g.note + '”';
+  $('slotNote').textContent = '“' + (def.note||g.note) + '”';
   $('winAmt').textContent = '0';
   $('spinBtn').disabled = false;
   $('buyBtn').disabled = false;
@@ -2690,13 +3294,21 @@ function openSlot(id){
   SL.autoCount = 0; updateAutoBtn();
   cancelAnimationFrame(SL.raf);
   SL.raf = requestAnimationFrame(loop);
+  // initial draw
+  if(SL.mode==='scatter'){
+    SL.grid=buildScatterGrid(def); drawSlot();
+  } else if(SL.mode==='lines'){
+    drawSlot();
+  } else {
+    SL.grid=[]; drawSlot();
+  }
 }
 function slotQuit(){
   SL.open = false; SL.spinning = false;
   SL.autoCount = 0; updateAutoBtn();
   clearInterval(SL.tickIv);
   cancelAnimationFrame(SL.raf);
-  SL.fsPool = 0; SL.fsMul = 1;
+  SL.fsPool = 0; SL.fsMul = 1; SL.fsTotalMult=0;
 }
 function fitCanvas(){
   const dpr = Math.min(2, window.devicePixelRatio || 1);
@@ -2709,6 +3321,7 @@ document.addEventListener('keydown', e => {
     e.preventDefault(); slotSpin();
   }
 });
+
 
 /* ---- CRASH 2.0 — canvas uçuş, canlı sofa ---- */
 const CRC = $('crCanvas2'), CX2 = CRC.getContext('2d');
@@ -2967,13 +3580,111 @@ function openTable(id){
   $('tableIcon').textContent = g.icon;
   openOvl('ovlTable');
 }
-function pickOdd(el){ document.querySelectorAll('.odd').forEach(o => o.classList.remove('sel')); el.classList.add('sel'); }
-function confirmBet(){
-  const sel = document.querySelector('.odd.sel');
-  if(!sel){ toast('Önce bir seçim yap — Dürtü aceleciyi değil, kararlıyı sever.'); return; }
-  closeOvl('ovlSport');
-  toast('<b>Demo kupon oluşturuldu.</b> Selin onaya sundu: ' + sel.querySelector('small').textContent + ' @ ' + sel.querySelector('b').textContent);
+/* ---- REAL SPORT ENGINE ---- */
+const SPORTS_MATCHES = [
+  {id:'ucl1', league:'Şampiyonlar Ligi', time:'Bu akşam 22:00', home:'Real Madrid', away:'Bayern München', odds:{'1':2.10,'X':3.40,'2':3.10}},
+  {id:'ucl2', league:'Şampiyonlar Ligi', time:'Bu akşam 22:00', home:'Arsenal', away:'Inter', odds:{'1':2.45,'X':3.20,'2':2.85}},
+  {id:'sl1', league:'Süper Lig', time:'Yarın 19:00', home:'Galatasaray', away:'Fenerbahçe', odds:{'1':2.30,'X':3.10,'2':3.00}},
+];
+const SPORT = { sel:null, settling:false };
+
+function openSport(){
+  renderSportList();
+  sportCalcPotential();
+  $('sportResult').style.display='none';
+  $('sportResult').innerHTML='';
+  openOvl('ovlSport');
 }
+function renderSportList(){
+  const list=$('sportList');
+  if(!list) return;
+  list.innerHTML = SPORTS_MATCHES.map(m=>`
+    <div style="border:1px solid var(--line);border-radius:10px;padding:.65rem .75rem;background:rgba(255,255,255,.02)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem">
+        <span class="tag">${m.league} · ${m.time}</span>
+        <span class="muted" style="font-size:.66rem">${m.id.toUpperCase()}</span>
+      </div>
+      <div class="serif" style="text-align:center;font-size:1rem;margin-bottom:.55rem">${m.home} <span class="muted">—</span> ${m.away}</div>
+      <div class="odds" style="display:flex;gap:.4rem">
+        <div class="odd" data-mid="${m.id}" data-market="1" onclick="pickOdd(this,'${m.id}','1',${m.odds['1']})"><small>MS 1</small><b>${m.odds['1'].toFixed(2)}</b></div>
+        <div class="odd" data-mid="${m.id}" data-market="X" onclick="pickOdd(this,'${m.id}','X',${m.odds['X']})"><small>MS X</small><b>${m.odds['X'].toFixed(2)}</b></div>
+        <div class="odd" data-mid="${m.id}" data-market="2" onclick="pickOdd(this,'${m.id}','2',${m.odds['2']})"><small>MS 2</small><b>${m.odds['2'].toFixed(2)}</b></div>
+      </div>
+    </div>
+  `).join('');
+  // restore selection highlight
+  if(SPORT.sel){
+    document.querySelectorAll('.odd').forEach(o=>{
+      if(o.dataset.mid===SPORT.sel.mid && o.dataset.market===SPORT.sel.market) o.classList.add('sel');
+    });
+  }
+}
+function pickOdd(el, mid, market, odds){
+  document.querySelectorAll('.odd').forEach(o=>o.classList.remove('sel'));
+  el.classList.add('sel');
+  const match = SPORTS_MATCHES.find(x=>x.id===mid);
+  SPORT.sel = {mid, market, odds, match};
+  sportCalcPotential();
+  const slip=$('sportSlip');
+  if(slip){
+    slip.innerHTML = `<b>${match.home} — ${match.away}</b> · <span style="color:var(--gold)">${market==='1'?match.home:market==='2'?match.away:'Beraberlik'} @ ${odds.toFixed(2)}</span><br><span class="muted">Tek maç · kupon hazır.</span>`;
+  }
+}
+function sportCalcPotential(){
+  const pot=$('sportPotential');
+  const betEl=$('sportBet');
+  if(!pot||!betEl) return;
+  const stake=+betEl.value||0;
+  if(!SPORT.sel){ pot.textContent='—'; return; }
+  pot.textContent='◈ '+fmt(Math.round(stake*SPORT.sel.odds))+' dürTL';
+}
+function confirmBet(){
+  if(SPORT.settling){ toast('Kupon sonuçlanıyor…'); return; }
+  if(!SPORT.sel){ toast('Önce bir oran seç — Dürtü kararlı olanı sever.'); return; }
+  const stakeEl=$('sportBet');
+  const stake=+(stakeEl?.value||0);
+  if(!(stake>0)){ toast('Bahis miktarı seç.'); return; }
+  if(state.chips < stake){ toast('Yetersiz bakiye — ◈ '+fmt(state.chips)+' dürTL kaldı. Kapıdaki minikler sıcak.'); return; }
+  // deduct
+  state.chips -= stake; renderChips(); st().wagered+=stake; saveDemo();
+  if(typeof addLedgerEntry==='function') addLedgerEntry('Spor Bahsi', -stake, SPORT.sel.match.home+' — '+SPORT.sel.match.away+' · '+SPORT.sel.market+' @ '+SPORT.sel.odds.toFixed(2), 'warn');
+  SPORT.settling=true;
+  const btn=document.querySelector('#ovlSport .btn.solid'); if(btn) btn.disabled=true;
+  const res=$('sportResult'); res.style.display='block'; res.innerHTML='<span class="muted">⏳ Kupon onaylandı… maç simüle ediliyor</span><div style="height:4px;background:var(--line);border-radius:4px;margin-top:.6rem;overflow:hidden"><div id="sportBar" style="height:100%;width:0%;background:var(--gold);transition:width .2s"></div></div>';
+  let p=0; const iv=setInterval(()=>{ p=Math.min(95,p+Math.random()*18); const b=$('sportBar'); if(b) b.style.width=p+'%'; },120);
+  setTimeout(()=>{
+    clearInterval(iv);
+    const b=$('sportBar'); if(b) b.style.width='100%';
+    // weighted result based on odds: implied prob = 1/odds, normalized
+    const m=SPORT.sel.match;
+    const inv={ '1':1/m.odds['1'], 'X':1/m.odds['X'], '2':1/m.odds['2'] };
+    const sum=inv['1']+inv['X']+inv['2'];
+    const prob={ '1':inv['1']/sum, 'X':inv['X']/sum, '2':inv['2']/sum };
+    // draw outcome
+    const r=Math.random(); let outcome;
+    if(r<prob['1']) outcome='1'; else if(r<prob['1']+prob['X']) outcome='X'; else outcome='2';
+    const won = outcome===SPORT.sel.market;
+    const payout = won ? Math.round(stake*SPORT.sel.odds) : 0;
+    const profit = payout - stake;
+    if(won){ state.chips+=payout; renderChips(); st().won+=payout; if(typeof addLedgerEntry==='function') addLedgerEntry('Spor Kazanç', payout, m.home+' — '+m.away+' · Sonuç: '+outcome, 'ok'); }
+    logRound('Spor · '+m.home+' — '+m.away, stake, payout, SPORT.sel.odds);
+    saveDemo();
+    const outcomeLabel = outcome==='1'?m.home : outcome==='2'?m.away : 'Beraberlik';
+    const selLabel = SPORT.sel.market==='1'?m.home : SPORT.sel.market==='2'?m.away : 'Beraberlik';
+    res.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <b style="color:${won?'var(--gold)':'var(--cream)'}">${won?'✅ KAZANDI':'❌ KAYBETTİ'}</b>
+        <span class="tag">${m.league}</span>
+      </div>
+      <div style="margin:.5rem 0 .3rem;font-size:.92rem">${m.home} — ${m.away}<br><span class="muted">Seçimin: ${selLabel} @ ${SPORT.sel.odds.toFixed(2)} · Sonuç: ${outcomeLabel} (${outcome})</span></div>
+      <div style="font-size:.92rem"><b>Bahis:</b> ◈ ${fmt(stake)} · <b>${won?'Kazanç':'İade'}:</b> ◈ ${fmt(payout)} ${won?'<span style="color:var(--gold)">(+'+fmt(profit)+')</span>':''}</div>
+    `;
+    if(won){ toast('🏆 <b>Kupon kazandı!</b> '+m.home+' — '+m.away+' · +'+fmt(payout)+' dürTL'); try{ giftWin&&giftWin(); angelSay&&angelSay('slot','win'); }catch(e){} buzz&&buzz([30,40,80]); tone&&tone(880,0,.18,'triangle',.12); }
+    else { toast('⚽ Kupon yattı — '+outcomeLabel+' geldi. Dürtü not etti.'); try{ giftLose&&giftLose(); angelSay&&angelSay('slot','lose'); }catch(e){} }
+    SPORT.settling=false; if(btn) btn.disabled=false;
+  }, 1800);
+}
+
 function genInvite(){
   if(state.invites <= 0){ $('inviteNote').textContent = 'Davet hakkın bitti. Selin istisnai hak tanımlayabilir.'; return; }
   state.invites--;
