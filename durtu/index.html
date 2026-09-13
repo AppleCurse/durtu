@@ -76,6 +76,38 @@ label{font-size:.65rem;letter-spacing:.22em;text-transform:uppercase;color:var(-
 @keyframes pulse{0%,100%{opacity:.5}50%{opacity:1}}
 @keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
 
+
+/* ---------- GATE CINEMATIC ---------- */
+#gateCineWrap{position:relative;width:100%;min-height:100vh;overflow:hidden;display:flex;align-items:center;justify-content:center;background:#050505}
+#gateCanvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.gate-vignette{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse 60% 50% at 50% 38%,transparent 40%,rgba(0,0,0,.78) 92%);z-index:1}
+.gate-grain{position:absolute;inset:0;pointer-events:none;z-index:1;opacity:.06;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+#gateCenter{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;gap:.9rem;perspective:1200px;transform-style:preserve-3d}
+#doorFrame{position:relative;width:min(380px,78vw);height:min(560px,78vh);display:flex;align-items:center;justify-content:center;perspective:1400px;transform-style:preserve-3d}
+#door{width:100%;height:100%;background:linear-gradient(145deg,#1a1510 0%,#0d0a07 18%,#1f1a14 45%,#0e0c09 100%);border:1.5px solid rgba(212,175,55,.28);border-radius:6px;position:relative;transform-origin:left center;transform-style:preserve-3d;transition:transform 1.8s cubic-bezier(.76,0,.24,1), box-shadow 1s;box-shadow:0 0 0 1px rgba(212,175,55,.12),0 18px 60px rgba(0,0,0,.9),inset 0 0 40px rgba(0,0,0,.6);cursor:pointer;overflow:hidden}
+#door::before{content:"";position:absolute;inset:14px;border:1px solid rgba(212,175,55,.14);border-radius:3px;pointer-events:none}
+#door::after{content:"";position:absolute;inset:0;background:linear-gradient(105deg,transparent 30%,rgba(255,255,255,.06) 48%,transparent 62%);pointer-events:none}
+#doorEdge{position:absolute;left:0;top:0;bottom:0;width:18px;background:linear-gradient(90deg,#2a2216,#1a1510);transform:rotateY(90deg);transform-origin:left;opacity:0;transition:opacity .6s}
+#peephole{position:absolute;top:42%;left:50%;transform:translate(-50%,-50%);width:68px;height:68px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#2a2216,#0a0705);border:2px solid rgba(212,175,55,.55);box-shadow:0 0 0 3px rgba(0,0,0,.6),0 0 18px rgba(212,175,55,.18),inset 0 0 12px rgba(0,0,0,.9);display:flex;align-items:center;justify-content:center;z-index:3;overflow:hidden;transition:transform .6s}
+#peepholeInner{width:34px;height:34px;border-radius:50%;background:radial-gradient(circle at 50% 50%,#000 0%,#111 60%,#000 100%);transition:transform .6s;position:relative}
+#peepholeLight{position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle,rgba(246,226,122,.85) 0%,rgba(212,175,55,.35) 28%,transparent 68%);opacity:0;transition:opacity .8s;mix-blend:screen}
+#peepholeEye{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:18px;opacity:0;transition:opacity .5s;filter:drop-shadow(0 0 6px rgba(246,226,122,.6))}
+#knocker{position:absolute;top:58%;left:50%;transform:translate(-50%,-50%);z-index:2;display:flex;flex-direction:column;align-items:center;gap:0;cursor:pointer}
+#knockerRing{width:46px;height:54px;border:3px solid #b8941f;border-bottom-width:5px;border-radius:22px 22px 18px 18px;background:linear-gradient(180deg,#e8c85a,#b8941f 55%,#8a6d14);box-shadow:0 4px 12px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.4);transition:transform .16s cubic-bezier(.34,1.56,.64,1)}
+#knockerPlate{width:22px;height:22px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#f6e27a,#D4AF37 60%,#8a6d14);border:1px solid #8a6d14;margin-top:-8px;box-shadow:0 2px 6px rgba(0,0,0,.5)}
+#doorSlit{position:absolute;right:6px;top:8%;bottom:8%;width:3px;background:linear-gradient(180deg,transparent,rgba(246,226,122,.9) 20%,rgba(246,226,122,.9) 80%,transparent);box-shadow:0 0 12px rgba(246,226,122,.9),0 0 24px rgba(212,175,55,.6);opacity:0;transition:opacity 1.2s;pointer-events:none}
+.gate-brand{font-family:var(--serif);letter-spacing:.34em;font-size:.72rem;color:rgba(212,175,55,.7);text-transform:uppercase;margin-top:.2rem}
+.gate-live{position:absolute;left:50%;transform:translateX(-50%);bottom:max(18px,2.5vh);z-index:3;display:flex;align-items:center;gap:1.2rem;background:rgba(10,10,10,.72);border:1px solid rgba(212,175,55,.18);backdrop-filter:blur(8px);border-radius:24px;padding:.42rem .9rem;font-size:.68rem;letter-spacing:.06em;color:#9a958a;white-space:nowrap}
+.gate-live b{color:#d6d0c2}
+.gate-live .dot{width:7px;height:7px;background:#ef4444;box-shadow:0 0 8px #ef4444}
+#gateFormCine{opacity:0;transform:translateY(18px);transition:all .8s cubic-bezier(.16,1,.3,1);pointer-events:none;background:rgba(12,12,11,.82);border:1px solid rgba(212,175,55,.22);backdrop-filter:blur(14px);border-radius:14px;padding:1rem 1.1rem;display:flex;gap:.6rem;align-items:center;min-width:min(360px,86vw);box-shadow:0 18px 48px rgba(0,0,0,.7)}
+#gateFormCine .inp{flex:1;background:rgba(0,0,0,.5);border:1px solid rgba(212,175,55,.18);color:#e8e0c8;text-align:left;letter-spacing:.06em;text-transform:none;font-size:.88rem;padding:.72rem .95rem}
+#gateFormCine .inp::placeholder{letter-spacing:.08em;color:#6a6560}
+#gateHintCine{font-size:.7rem;color:#8a857a;min-height:1.2rem;text-align:center;max-width:320px;line-height:1.5}
+#btnGyroCine{position:absolute;top:max(14px,2vh);right:max(14px,2vw);z-index:4;background:rgba(10,10,10,.66);border:1px solid rgba(212,175,55,.22);color:#b8b0a0;border-radius:22px;padding:.38rem .75rem;font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;display:flex;align-items:center;gap:.45rem;backdrop-filter:blur(8px)}
+#btnGyroCine:hover{border-color:rgba(212,175,55,.45);color:#f0e6c8}
+@media(max-width:640px){#doorFrame{width:82vw;height:68vh}#gateFormCine{min-width:82vw}#btnGyroCine{top:auto;bottom:68px;right:50%;transform:translateX(50%)}}
+
 /* ---------- APP ---------- */
 #app{position:relative;z-index:2;animation:appIn 1s ease}
 @keyframes appIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
@@ -618,44 +650,102 @@ body.tick footer{padding-bottom:34px}
 <body>
 <div class="grain"></div>
 
-<!-- ============ GATE ============ -->
+<!-- ============ GATE — CINEMATIC 3D + SPATIAL AUDIO ============ -->
 <section id="gate">
-  <span class="tag" style="letter-spacing:.38em;margin-bottom:.4rem;display:block">K a p a l ı &nbsp; K u l ü p</span>
-  <div class="gate-logo">DÜRTÜ</div>
-  <div class="gate-rule"></div>
-  <p class="gate-sub">“Dürtü seni çağırıyor.”</p>
-  <p class="gate-hint" style="margin:0 0 .7rem;letter-spacing:.14em">Seçilmişler için · Giriş yalnızca davetle</p>
-  <div class="stage3d">
-    <div class="spotlight"></div><div class="fog f1"></div><div class="fog f2"></div>
-    <div class="stage-row">
-      <div class="rl-g">
-        <div class="rl rl-cursor" id="rlRoot" title="Çarkı çevir">
-          <div class="rl-disc" id="rlDisc"><div class="rl-ring" id="rlRing"></div><div class="rl-hub">✦</div></div>
-          <div class="rl-ball" id="rlBall"></div>
+  <div id="gateCineWrap" style="position:relative;width:100%;height:100vh;height:100dvh;overflow:hidden;background:#050505">
+    
+    <!-- SEAL — autoplay guarantee -->
+    <div id="gateSealOverlay" style="position:absolute;inset:0;z-index:10;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at 50% 50%,rgba(0,0,0,.45) 0%,rgba(0,0,0,.85) 78%);backdrop-filter:blur(6px);transition:all 1.1s cubic-bezier(.22,1,.36,1);cursor:pointer">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:1.2rem">
+        <div id="gateSealBtn" style="position:relative;padding:1.1rem 2.2rem;border-radius:2px;background:linear-gradient(180deg,#1a1510,#0e0a06);border:1px solid rgba(212,175,55,.55);box-shadow:0 0 0 1px rgba(212,175,55,.18),0 18px 48px rgba(0,0,0,.9),inset 0 1px 0 rgba(246,226,122,.22);animation:sealBreath 3.2s ease-in-out infinite;cursor:pointer;user-select:none">
+          <div style="position:absolute;inset:6px;border:1px solid rgba(212,175,55,.18);pointer-events:none"></div>
+          <span style="font-family:var(--serif);font-weight:700;letter-spacing:.34em;font-size:.82rem;color:#f6e27a;text-shadow:0 0 12px rgba(246,226,122,.55)">✦ KAPIYA YAKLAŞ ✦</span>
         </div>
-        <div class="rl-shadow"></div>
-        <div class="rl-msg" id="rlMsg">Rulet — dokun, şansını gör</div>
+        <span style="font-size:.62rem;letter-spacing:.18em;color:rgba(245,245,220,.45);text-transform:uppercase">Dokun — koridorun uğultusu açılsın</span>
       </div>
-      <div class="m3d-row" id="m3dRow"></div>
     </div>
-    <div class="velvet"></div>
-    <div class="lobby-hc">◈ Lobi bakiyesi: <b id="lobbyChips">0</b> dürTL <small>— girişte hesabına aktarılır</small></div>
-    <div class="gate-angels">
-      <span class="tag">🕊 Şans melekleri — kapı fiyatı içeriden ucuzdur</span>
-      <div class="ga-row" id="gaRow"></div>
+    <style>@keyframes sealBreath{0%,100%{transform:scale(1);box-shadow:0 0 0 1px rgba(212,175,55,.18),0 18px 48px rgba(0,0,0,.9),inset 0 1px 0 rgba(246,226,122,.22),0 0 24px rgba(212,175,55,.12)}50%{transform:scale(1.03);box-shadow:0 0 0 1px rgba(212,175,55,.32),0 22px 56px rgba(0,0,0,.95),inset 0 1px 0 rgba(246,226,122,.32),0 0 36px rgba(212,175,55,.22)}}</style>
+
+    <canvas id="gateCanvas" style="position:absolute;inset:0;width:100%;height:100%;display:block"></canvas>
+    <!-- Vignette + film grain -->
+    <div style="position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at 50% 30%,transparent 40%,rgba(0,0,0,.65) 85%),linear-gradient(180deg,rgba(0,0,0,.15),rgba(0,0,0,.55));z-index:2"></div>
+    <div style="position:absolute;inset:0;pointer-events:none;opacity:.04;z-index:3;background-image:url('data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'120\' height=\'120\'%3E%3Cfilter id=\'n\'%3E%3CfeTurbulence baseFrequency=\'0.9\' numOctaves=\'2\'/%3E%3C/filter%3E%3Crect width=\'120\' height=\'120\' filter=\'url(%23n)\'/%3E%3C/svg%3E')"></div>
+
+    <!-- Top bar -->
+    <div style="position:absolute;top:0;left:0;right:0;z-index:5;display:flex;justify-content:space-between;align-items:center;padding:clamp(.7rem,2vw,1.2rem) clamp(1rem,3vw,1.8rem);pointer-events:none">
+      <span class="tag" style="letter-spacing:.38em;color:var(--gold);opacity:.9">K a p a l ı &nbsp; K u l ü p</span>
+      <span id="gateLivePulse" style="font-size:.62rem;letter-spacing:.12em;color:var(--muted);display:flex;align-items:center;gap:.5rem">
+        <span style="width:7px;height:7px;border-radius:50%;background:#ff3b3b;box-shadow:0 0 8px #ff3b3b;display:inline-block;animation:pulse 1.4s infinite"></span>
+        <span id="liveCount">🔴 Canlı: Salonda şu an 41 seçkin misafir var.</span>
+        <span style="opacity:.6">·</span>
+        <span id="lastTable">⏱️ Son masa açılışı: 3 dk önce (VIP Blackjack)</span>
+      </span>
+    </div>
+
+    <!-- Center: Logo + Door -->
+    <div id="gateCenter" style="position:absolute;inset:0;z-index:4;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(.8rem,2vh,1.4rem);padding:clamp(1rem,3vw,2rem);transition:transform 1.2s cubic-bezier(.22,1,.36,1)">
+      <div class="gate-logo" style="font-size:clamp(2.4rem,6vw,4.2rem);margin:0">DÜRTÜ</div>
+      <div class="gate-rule" style="margin:.2rem auto"></div>
+      <p class="gate-sub" style="margin:0">“Dürtü seni çağırıyor.”</p>
+
+      <!-- 3D Door -->
+      <div id="doorFrame" style="position:relative;width:min(360px,84vw);height:min(520px,62vh);margin-top:clamp(.6rem,1.5vh,1.2rem);perspective:1200px;cursor:pointer">
+        <!-- Door shadow -->
+        <div style="position:absolute;left:4%;right:4%;bottom:-18px;height:26px;border-radius:50%;background:radial-gradient(ellipse,rgba(0,0,0,.8),transparent 70%);filter:blur(6px)"></div>
+        <!-- Door itself -->
+        <div id="door" style="position:absolute;inset:0;border-radius:14px;transform-style:preserve-3d;transform:rotateY(0deg);transition:transform 1.6s cubic-bezier(.22,1,.36,1),box-shadow .6s;transform-origin:left center;overflow:hidden;background:linear-gradient(105deg,#2b2213 0%,#1a1510 32%,#130f09 72%,#0e0b06 100%);border:1px solid rgba(212,175,55,.38);box-shadow:0 24px 60px rgba(0,0,0,.85),inset 0 1px 0 rgba(246,226,122,.18)">
+          <!-- Wood grain overlay -->
+          <div style="position:absolute;inset:0;opacity:.18;background:repeating-linear-gradient(90deg,transparent 0 12px,rgba(212,175,55,.06) 12px 13px)"></div>
+          <!-- Brass plates -->
+          <div style="position:absolute;top:14px;left:14px;right:14px;height:38px;border-radius:8px;background:linear-gradient(180deg,#f8e583,#d3af3c 55%,#8a6a20);display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-weight:700;font-size:.72rem;letter-spacing:.32em;color:#241a05;box-shadow:inset 0 1px 0 rgba(255,255,255,.6),0 4px 12px rgba(0,0,0,.5)">✦ KAPALI KULÜP ✦</div>
+          <!-- Peephole / speakeasy -->
+          <div id="peephole" style="position:absolute;left:50%;top:42%;transform:translate(-50%,-50%);width:92px;height:92px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#1a150a,#0a0804);border:2px solid rgba(212,175,55,.55);box-shadow:inset 0 0 18px rgba(0,0,0,.9),0 0 18px rgba(212,175,55,.15);display:flex;align-items:center;justify-content:center;transition:all .5s;overflow:hidden">
+            <div id="peepholeInner" style="width:68px;height:68px;border-radius:50%;background:#000;position:relative;overflow:hidden;transition:all .5s">
+              <div id="peepholeLight" style="position:absolute;inset:0;background:radial-gradient(circle at 50% 50%,rgba(246,226,122,.95),rgba(212,175,55,.4) 35%,transparent 70%);opacity:0;transition:opacity .6s"></div>
+              <div id="peepholeEye" style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:1.2rem;opacity:.3">◉</div>
+            </div>
+          </div>
+          <!-- Knocker -->
+          <div id="knocker" style="position:absolute;left:50%;top:62%;transform:translate(-50%,-50%);width:64px;height:84px;display:flex;flex-direction:column;align-items:center;gap:0;transition:transform .18s;transform-origin:top center">
+            <div style="width:18px;height:18px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff6cf,#d8b143 58%,#6e5316);box-shadow:0 0 12px rgba(212,175,55,.7),0 3px 6px rgba(0,0,0,.6)"></div>
+            <div style="width:4px;height:46px;background:linear-gradient(90deg,#6e5316,#f6e27a,#6e5316);border-radius:2px;margin-top:-2px;box-shadow:1px 2px 4px rgba(0,0,0,.7)"></div>
+            <div id="knockerRing" style="width:38px;height:38px;border-radius:50%;border:3px solid #c9a86a;background:radial-gradient(circle at 30% 30%,#f6e27a,#8a6a20);box-shadow:inset 0 2px 4px rgba(255,255,255,.4),0 4px 12px rgba(0,0,0,.6);margin-top:-6px;display:flex;align-items:center;justify-content:center;font-size:.7rem;color:#241a05">✦</div>
+          </div>
+          <!-- Light slit bottom -->
+          <div id="doorSlit" style="position:absolute;left:12%;right:12%;bottom:8px;height:2px;background:linear-gradient(90deg,transparent,rgba(246,226,122,.0),rgba(246,226,122,.85),rgba(246,226,122,.0),transparent);opacity:0;transition:opacity .8s;box-shadow:0 0 12px rgba(246,226,122,.8)"></div>
+        </div>
+        <!-- Door edge when open -->
+        <div id="doorEdge" style="position:absolute;left:0;top:0;bottom:0;width:18px;border-radius:14px 0 0 14px;background:linear-gradient(90deg,#0a0804,#1a1510);transform:rotateY(90deg);transform-origin:left center;opacity:0;transition:opacity .3s"></div>
+      </div>
+
+      <p id="gateHintCine" style="font-size:.72rem;color:var(--muted);letter-spacing:.08em;margin-top:.2rem;min-height:1.2em;transition:all .4s">Tokmağa dokun — içeriden ses geliyor.</p>
+      <p id="gateWhisper" style="font-family:var(--serif);font-style:italic;font-size:.86rem;color:#e8d9a0;letter-spacing:.04em;min-height:1.4em;opacity:0;transform:translateY(8px);transition:all .6s cubic-bezier(.22,1,.36,1);text-shadow:0 0 18px rgba(246,226,122,.35),0 2px 12px rgba(0,0,0,.9);text-align:center;max-width:360px"></p>
+
+      <!-- Name / Parola input (appears after peephole opens) -->
+      <div id="gateFormCine" style="width:min(380px,92vw);display:flex;flex-direction:column;gap:.6rem;align-items:center;opacity:0;transform:translateY(12px);pointer-events:none;transition:all .6s">
+        <div style="display:flex;gap:.5rem;width:100%">
+          <input class="inp" id="gateNameCine" placeholder="Adınız veya parola" autocomplete="off" style="flex:1;text-align:center;letter-spacing:.12em">
+          <button class="btn solid" id="gateSubmitCine" style="white-space:nowrap">İçeri Süzül</button>
+        </div>
+        <div style="display:flex;gap:.5rem">
+          <button class="btn ghost" id="btnApplyCine" style="font-size:.62rem;padding:.5rem 1rem">Başvuru Yap</button>
+          <button class="btn ghost" id="btnGyroCine" style="font-size:.62rem;padding:.5rem 1rem">🎧 3D Ses + Jiroskop</button>
+        </div>
+        <p class="gate-hint" style="margin:0">Geçerli mühürler: <b style="color:var(--gold)">DURTU-VIP · SELIN-2026 · SPEAKEASY-77 · KARA-KUZGUN · GECE-00</b></p>
+      </div>
+    </div>
+
+    <!-- Bottom: foot + audio hint -->
+    <div style="position:absolute;bottom:0;left:0;right:0;z-index:5;display:flex;justify-content:space-between;align-items:flex-end;padding:.8rem 1.2rem;pointer-events:none">
+      <p class="gate-foot" style="margin:0;pointer-events:auto">İki adımlı doğrulama · Şifreli iletişim · 18+ · Sorumlu oyun · <button class="quicklink" onclick="resetDemo(event)" style="pointer-events:auto">demo sıfırla</button></p>
+      <span style="font-size:.58rem;letter-spacing:.14em;color:rgba(245,245,220,.35);display:flex;align-items:center;gap:.4rem"><span id="audioDot" style="width:6px;height:6px;border-radius:50%;background:#555;display:inline-block"></span> <span id="audioLabel">ses kapalı — dokun, aç</span></span>
     </div>
   </div>
-  <form class="gate-form" id="gateForm">
-    <input class="inp" id="gateCode" maxlength="12" placeholder="DAVET KODU" autocomplete="off">
-    <button class="btn solid" type="submit">Kapıyı Çal</button>
-    <button class="btn ghost" type="button" id="btnApply">Başvuru Yap</button>
-    <p class="gate-hint" id="gateHint">Demo: 4+ karakterli herhangi bir kod kapıyı açar — örn. <b style="color:var(--gold)">EV-2026</b></p>
-  </form>
-  <p class="gate-foot">İki adımlı doğrulama &nbsp;•&nbsp; Şifreli iletişim &nbsp;•&nbsp; 18+ &nbsp;|&nbsp; Sorumlu oyun</p>
 </section>
-<div id="doorMsg"><span class="tag">Kapı aralanıyor</span><div class="door-line"></div></div>
+<div id="doorMsg" style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:1.2rem;background:var(--bg);z-index:50;opacity:0;pointer-events:none;transition:opacity .6s"><span class="tag">Kapı aralanıyor</span><div class="door-line"></div></div>
 
 <!-- ============ APP ============ -->
+
 <div id="app" class="hidden">
   <nav>
     <div style="display:flex;align-items:center;gap:1rem">
@@ -712,28 +802,34 @@ body.tick footer{padding-bottom:34px}
         </div>
       </div>
 
-      <h2 class="sect rv">Bugün senin için hazırlananlar</h2>
-      <div class="picks rv">
-        <div class="pick">
-          <span class="tag">🎰 Slot</span>
-          <div class="ic">⚡</div>
-          <h3>Zeus’un Günü</h3>
-          <p>Gates of Olympus bugün senin profilinde parlıyor. Çarpan mekaniği geçen haftaki favorine çok yakın.</p>
-          <button class="btn" onclick="openSlot('gates')">Oyna</button>
+      <h2 class="sect rv">Günün 3 Seçkisi — VIP Vitrin</h2>
+      <div class="picks rv" style="grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:1.4rem">
+        <div class="pick vip-pick" style="background:radial-gradient(120% 120% at 20% 10%,rgba(212,175,55,.18),rgba(18,16,12,.98) 55%),linear-gradient(180deg,#1a1610,#0c0a08);border:1px solid rgba(212,175,55,.32);box-shadow:0 0 0 1px rgba(212,175,55,.12),0 18px 48px rgba(0,0,0,.7),0 0 32px rgba(212,175,55,.14);position:relative;overflow:hidden">
+          <div style="position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,#f6e27a,transparent);opacity:.8"></div>
+          <span class="tag" style="background:rgba(212,175,55,.15);border-color:rgba(212,175,55,.3);color:#f6e27a">✦ KULÜP PRESTİJİ · SLOT</span>
+          <div class="ic" style="font-size:2.2rem;filter:drop-shadow(0 0 12px rgba(246,226,122,.45))">👑</div>
+          <h3 style="font-size:1.35rem;letter-spacing:.02em">Gates of Olympus — Tapınak Mühürleri</h3>
+          <p style="color:#b8ae9a">Altın rünler, parlayan mücevherler ve kalkanlar. Çarpan anında altın kıvılcım + ekran sarsıntısı. Tumble zinciri tapınakta yankılanır.</p>
+          <div style="display:flex;gap:.5rem;margin-top:.6rem"><span style="font-size:.62rem;padding:.22rem .5rem;border:1px solid rgba(212,175,55,.22);border-radius:20px;color:var(--muted)">96.5% RTP</span><span style="font-size:.62rem;padding:.22rem .5rem;border:1px solid rgba(212,175,55,.22);border-radius:20px;color:var(--muted)">Yüksek Volatilite</span></div>
+          <button class="btn solid" style="margin-top:1rem;background:linear-gradient(135deg,#D4AF37,#f6e27a);color:#000;font-weight:700;box-shadow:0 0 18px rgba(212,175,55,.35)" onclick="openSlot('gates')">Tapınağa Gir</button>
         </div>
-        <div class="pick">
-          <span class="tag">⚽ Canlı</span>
-          <div class="ic">🏆</div>
-          <h3>Şampiyonlar Ligi Gecesi</h3>
-          <p>Bu akşam 22:00 — tek maç, küratörlü oranlar. Kalabalık yok; sadece üyelerin masası.</p>
-          <button class="btn" onclick="openSport()">Bahis Yap</button>
+        <div class="pick vip-pick" style="background:radial-gradient(120% 120% at 80% 10%,rgba(180,40,40,.14),rgba(18,12,12,.98) 55%),linear-gradient(180deg,#1a1010,#0c0808);border:1px solid rgba(212,175,55,.28);box-shadow:0 0 0 1px rgba(212,175,55,.10),0 18px 48px rgba(0,0,0,.7);position:relative;overflow:hidden">
+          <div style="position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,#ff6b6b,transparent);opacity:.6"></div>
+          <span class="tag" style="background:rgba(255,80,80,.10);border-color:rgba(255,80,80,.22);color:#ff9a9a">🎡 VIP MASA · TEK KİŞİLİK</span>
+          <div class="ic" style="font-size:2.2rem">🎡</div>
+          <h3 style="font-size:1.35rem">VIP Rulet — Tek Kişilik Masa</h3>
+          <p style="color:#b8ae9a">Kalabalık yok, bekleme yok. Fildişi topun ahşapta tok sesi, çarkın sürtünmesi — sadece sen ve krupiye.</p>
+          <div style="display:flex;gap:.5rem;margin-top:.6rem"><span style="font-size:.62rem;padding:.22rem .5rem;border:1px solid rgba(212,175,55,.22);border-radius:20px;color:var(--muted)">97.3% RTP</span><span style="font-size:.62rem;padding:.22rem .5rem;border:1px solid rgba(212,175,55,.22);border-radius:20px;color:var(--muted)">Özel Masa</span></div>
+          <button class="btn" style="margin-top:1rem" onclick="openTable('rl')">Masaya Otur</button>
         </div>
-        <div class="pick">
-          <span class="tag">🎴 Masa</span>
-          <div class="ic">🂡</div>
-          <h3>VIP Blackjack</h3>
-          <p>Özel krupiye ile tek masa. Stratejist profiline ayrıldı; yerin şu an müsait.</p>
-          <button class="btn" onclick="openTable('bj')">Katıl</button>
+        <div class="pick vip-pick" style="background:radial-gradient(120% 120% at 50% 0%,rgba(212,175,55,.16),rgba(16,14,10,.98) 60%),linear-gradient(180deg,#18140e,#0c0a08);border:1px solid rgba(212,175,55,.32);box-shadow:0 0 0 1px rgba(212,175,55,.12),0 18px 48px rgba(0,0,0,.7),0 0 28px rgba(212,175,55,.12);position:relative;overflow:hidden">
+          <div style="position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,#f6e27a,transparent);opacity:.8"></div>
+          <span class="tag" style="background:rgba(212,175,55,.15);border-color:rgba(212,175,55,.3);color:#f6e27a">💣 KULÜP ORİJİNALİ · YERALTI</span>
+          <div class="ic" style="font-size:2.2rem">💎</div>
+          <h3 style="font-size:1.35rem">Yeraltı Mines — Elmas Tarlası</h3>
+          <p style="color:#b8ae9a">5×5 karanlık tarla. Her güvenli adımda çarpan katlanır. Mayına basmadan kasaya gir — cesaretin kadar kazan.</p>
+          <div style="display:flex;gap:.5rem;margin-top:.6rem"><span style="font-size:.62rem;padding:.22rem .5rem;border:1px solid rgba(212,175,55,.22);border-radius:20px;color:var(--muted)">97% RTP</span><span style="font-size:.62rem;padding:.22rem .5rem;border:1px solid rgba(212,175,55,.22);border-radius:20px;color:var(--muted)">Gerçek Kombinatorik</span></div>
+          <button class="btn" style="margin-top:1rem" onclick="openMines()">Tarlaya İn</button>
         </div>
       </div>
 
@@ -813,14 +909,13 @@ body.tick footer{padding-bottom:34px}
         <button id="searchClearBtn" type="button" onclick="clearGameSearch()" class="hidden" style="position:absolute; right:.6rem; top:50%; transform:translateY(-50%); background:none; border:none; color:var(--muted); font-size:.85rem; cursor:pointer; padding:2px 6px;" title="Temizle">✕</button>
       </div>
 
-      <div class="filters rv" id="filters">
-        <button class="chip on" data-f="all">Tümü</button>
+      <div class="filters rv" id="filters" style="gap:.6rem">
+        <button class="chip on" data-f="all">Tümü (10)</button>
+        <button class="chip" data-f="slot">🎰 Slotlar (6)</button>
+        <button class="chip" data-f="table">🎴 Masa & Spor (3)</button>
+        <button class="chip" data-f="orig">💎 Kulüp Orijinalleri (6)</button>
         <button class="chip" data-f="fav" id="chipFav">❤️ Favorilerim (<span id="favCount">0</span>)</button>
-        <button class="chip" data-f="risk">🎩 Yüksek Risk, Yüksek Ödül</button>
-        <button class="chip" data-f="calm">🍷 Uzun Akşam</button>
-        <button class="chip" data-f="adren">⚡ Adrenalin</button>
-        <button class="chip" data-f="strat">🎯 Stratejist</button>
-        <button class="chip" style="border-style:dashed" onclick="renderGames(state.filter||'all');toast('🔄 <b>Kürasyon tazelendi</b> — sunucudan yeni seçki geldi.')">🔄 Tazele</button>
+        <button class="chip" style="border-style:dashed;opacity:.7" onclick="renderGames(state.filter||'all');toast('🔄 <b>Kürasyon tazelendi</b> — sunucudan yeni seçki geldi.')">🔄 Tazele</button>
       </div>
       <div class="ggrid rv" id="ggrid"></div>
     </section>
@@ -1343,149 +1438,110 @@ body.tick footer{padding-bottom:34px}
   </div>
 </div>
 
-<!-- KULÜP KASASI (VAULT) -->
+<!-- KULÜP KASASI (VAULT) — PRESTİJ KASASI v2 -->
 <div id="ovlVault" class="ovl hidden" onclick="ovlSelfClose(event,this)">
-  <div class="pnl vault-pnl">
+  <div class="pnl vault-pnl" style="width:min(580px,96vw)">
     <button class="close" onclick="closeOvl('ovlVault')">✕</button>
-    <span class="tag">✦ Kulüp Kasası</span>
-    <div style="display:flex;align-items:baseline;justify-content:space-between;gap:1rem">
-      <h3 style="margin:0">DÜRTÜ Finans Kasası</h3>
-      <span class="hc" style="font-size:.8rem">Bakiye: ◈ <span class="chipsVal">1.000</span> dürTL</span>
+    <span class="tag">✦ Prestij Kasası</span>
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap">
+      <h3 style="margin:0">DÜRTÜ Prestij Kasası</h3>
+      <span class="hc" style="font-size:.82rem;background:rgba(212,175,55,.12);border-color:rgba(212,175,55,.32)">◈ <span class="chipsVal">1.000</span> dürTL · <span id="vaultTierMini">Bronz</span></span>
     </div>
-    <p class="noteline" style="margin:.6rem 0 .9rem">Kapalı kulüp içi sanal fon transferleri, mevduat simülasyonu ve ayrıcalıklar.</p>
+    <p class="noteline" style="margin:.6rem 0 .9rem">Gerçek para yok — sadece kulüp içi prestij çipleri, sadakat ve başarımlar. Her çip, salonda geçirdiğin zamanın mührü.</p>
 
-    <!-- Navigasyon Sekmeleri -->
-    <div class="vault-nav">
-      <button class="vtab active" id="vtab-dep" onclick="switchVaultTab('dep')">💳 Yatırım</button>
-      <button class="vtab" id="vtab-with" onclick="switchVaultTab('with')">💸 Çekim</button>
-      <button class="vtab" id="vtab-bonus" onclick="switchVaultTab('bonus')">🎁 Ayrıcalıklar</button>
-      <button class="vtab" id="vtab-ledg" onclick="switchVaultTab('ledg')">📜 İşlem Defteri</button>
+    <div class="vault-nav" style="gap:.35rem">
+      <button class="vtab active" id="vtab-chips" onclick="switchVaultTab('chips')">◈ Çipler</button>
+      <button class="vtab" id="vtab-daily" onclick="switchVaultTab('daily')">☀️ Günlük Bonus</button>
+      <button class="vtab" id="vtab-cashback" onclick="switchVaultTab('cashback')">🍷 Cashback</button>
+      <button class="vtab" id="vtab-ach" onclick="switchVaultTab('ach')">🏆 Başarımlar</button>
+      <button class="vtab" id="vtab-ledg" onclick="switchVaultTab('ledg')">📜 Defter</button>
     </div>
 
-    <!-- 1. YATIRIM (MEVDUAT) -->
-    <div id="vsec-dep">
-      <div class="method-grid">
-        <div class="method-card active" id="mcard-fast" onclick="selectDepMethod('fast')">
-          <span class="m-icon">🏛️</span>
-          <div class="m-name">FAST / Havale</div>
-          <div class="m-sub">7/24 Anında</div>
+    <!-- 1. ÇİPLER -->
+    <div id="vsec-chips">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-bottom:1rem">
+        <div class="info-box" style="margin:0">
+          <div style="font-size:.62rem;letter-spacing:.14em;color:var(--muted);text-transform:uppercase">Kulüp Bakiyesi</div>
+          <div style="font-family:var(--serif);font-size:1.6rem;color:var(--gold);font-weight:700;margin:.2rem 0">◈ <span class="chipsVal">1.000</span> dürTL</div>
+          <div style="font-size:.66rem;color:var(--muted)" id="vaultWageredInfo">Toplam çevrim: ◈ 0 · Kazanç: ◈ 0</div>
         </div>
-        <div class="method-card" id="mcard-papara" onclick="selectDepMethod('papara')">
-          <span class="m-icon">🟪</span>
-          <div class="m-name">Papara</div>
-          <div class="m-sub">Cüzdandan Cüzdana</div>
-        </div>
-        <div class="method-card" id="mcard-usdt" onclick="selectDepMethod('usdt')">
-          <span class="m-icon">🟢</span>
-          <div class="m-name">USDT (TRC-20)</div>
-          <div class="m-sub">Blokzincir</div>
+        <div class="info-box" style="margin:0;background:linear-gradient(135deg,rgba(212,175,55,.10),rgba(0,0,0,.2))">
+          <div style="font-size:.62rem;letter-spacing:.14em;color:var(--muted);text-transform:uppercase">VIP Kademe</div>
+          <div style="display:flex;align-items:center;gap:.5rem;margin:.3rem 0"><span id="vaultVipIcon" style="font-size:1.3rem">🥉</span><b id="vaultVipName" style="color:var(--gold)">Bronz Üye</b></div>
+          <div style="font-size:.66rem;color:var(--muted)" id="vaultVipNext">Sonraki: Gümüş için ◈ 5.000</div>
+          <div style="height:5px;background:rgba(255,255,255,.08);border-radius:3px;margin-top:.5rem;overflow:hidden"><div id="vaultVipBar" style="height:100%;width:0%;background:linear-gradient(90deg,#8a6d1f,#D4AF37,#f6e27a);transition:width .6s"></div></div>
         </div>
       </div>
 
-      <div class="info-box" id="depInfoBox">
-        <div class="info-row">
-          <span class="muted">Banka / Kanal</span>
-          <b id="depBankName">Garanti BBVA · FAST</b>
-        </div>
-        <div class="info-row">
-          <span class="muted">Alıcı Ünvanı</span>
-          <b id="depReceiver">DÜRTÜ KULÜP HİZMETLERİ A.Ş.</b>
-        </div>
-        <div class="info-row">
-          <span class="muted" id="depAddrLbl">IBAN Numarası</span>
-          <div style="display:flex;align-items:center;gap:.4rem">
-            <span id="depIban" style="font-family:monospace;font-size:.7rem">TR33 0006 2000 0000 1928 3746 55</span>
-            <button class="copy-tag" onclick="copyDepInfo('depIban')">Kopyala</button>
-          </div>
-        </div>
-        <div class="info-row">
-          <span class="muted">Açıklama (Kod)</span>
-          <div style="display:flex;align-items:center;gap:.4rem">
-            <b id="depRefCode" style="color:var(--gold);font-family:monospace">DUR-7729</b>
-            <button class="copy-tag" onclick="copyDepInfo('depRefCode')">Kopyala</button>
-          </div>
-        </div>
-      </div>
-
-      <label style="font-size:.68rem;letter-spacing:.15em;text-transform:uppercase;color:var(--muted)">Yatırılacak Tutar (dürTL)</label>
-      <div class="amt-presets">
-        <button class="amt-btn" onclick="setDepAmt(250)">250 ₺</button>
-        <button class="amt-btn" onclick="setDepAmt(500)">500 ₺</button>
-        <button class="amt-btn" onclick="setDepAmt(1000)">1.000 ₺</button>
-        <button class="amt-btn" onclick="setDepAmt(2500)">2.500 ₺</button>
-        <button class="amt-btn" onclick="setDepAmt(5000)">5.000 ₺</button>
-        <button class="amt-btn" onclick="setDepAmt(10000)">10.000 ₺</button>
-      </div>
-
-      <input class="inp" id="depAmountInp" type="number" min="100" max="100000" placeholder="Tutar girin (min 100 dürTL)" style="margin-bottom:.8rem" value="1000">
-
-      <button class="btn solid" id="btnSubmitDep" style="width:100%;padding:.8rem;justify-content:center" onclick="submitDeposit()">
-        <span>YATIRIMI BİLDİR & BAKİYE YÜKLE</span>
-      </button>
-      <p class="muted" style="font-size:.62rem;text-align:center;margin-top:.6rem">Selin transferi onayladığında sanal dürTL bakiyeniz anında hesaba geçer.</p>
-    </div>
-
-    <!-- 2. ÇEKİM (TAHSİLAT) -->
-    <div id="vsec-with" class="hidden">
-      <div class="info-box">
-        <div class="info-row">
-          <span class="muted">Kullanılabilir Bakiye</span>
-          <b style="color:var(--gold)">◈ <span class="chipsVal">1.000</span> dürTL</b>
-        </div>
-        <div class="info-row">
-          <span class="muted">Minimum Çekim</span>
-          <b>500 dürTL</b>
-        </div>
-        <div class="info-row">
-          <span class="muted">İnceleme Süresi</span>
-          <span>~2 Dakika (Selin Kontrolü)</span>
-        </div>
-      </div>
-
-      <label style="font-size:.68rem;letter-spacing:.15em;text-transform:uppercase;color:var(--muted)">Çekim Yöntemi</label>
-      <select class="inp" id="withMethod" style="margin-bottom:.8rem" onchange="toggleWithFields()">
-        <option value="bank">Banka Hesabı (IBAN / FAST)</option>
-        <option value="papara">Papara Cüzdanı</option>
-        <option value="crypto">Tether USDT (TRC-20 Cüzdanı)</option>
-      </select>
-
-      <label style="font-size:.68rem;letter-spacing:.15em;text-transform:uppercase;color:var(--muted)" id="withTargetLbl">IBAN / Hesap Numarası</label>
-      <input class="inp" id="withTargetInp" placeholder="TR..." style="margin-bottom:.8rem">
-
-      <label style="font-size:.68rem;letter-spacing:.15em;text-transform:uppercase;color:var(--muted)">Çekilecek Miktar (dürTL)</label>
-      <input class="inp" id="withAmtInp" type="number" min="500" placeholder="Örn. 500" style="margin-bottom:.9rem">
-
-      <button class="btn solid" id="btnSubmitWith" style="width:100%;padding:.8rem;justify-content:center" onclick="submitWithdraw()">
-        <span>ÇEKİM TALEBİNİ İLET</span>
-      </button>
-      <p class="muted" style="font-size:.62rem;text-align:center;margin-top:.6rem">Çekim onaylandığında bakiye düşülür ve işlem defterine işlenir.</p>
-    </div>
-
-    <!-- 3. AYRICALIKLAR & BONUS MOTORU -->
-    <div id="vsec-bonus" class="hidden">
-      <div class="bonus-card">
+      <div class="bonus-card" style="margin-bottom:.7rem">
         <div style="display:flex;justify-content:space-between;align-items:center">
-          <span class="tag" style="margin:0">🍷 Sükûnet İadesi</span>
-          <span class="badge-ok">%10 Haftalık İade</span>
+          <span class="tag" style="margin:0">📊 Bu Hafta</span><span class="badge-ok" id="vaultNetBadge">Nötr</span>
         </div>
-        <h4 style="margin:.4rem 0 .2rem;font-family:var(--serif);font-size:.95rem">Kayıp Telafisi</h4>
-        <p class="muted" style="font-size:.72rem;line-height:1.5;margin:0">Bu hafta oyunlarda yaşanan şanssız serilerde kulüp yanınızda. Net kaybınızın %10'u hazır.</p>
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:.8rem;padding-top:.6rem;border-top:1px dashed rgba(255,255,255,.08)">
-          <div>
-            <span class="muted" style="font-size:.64rem">Hak Edilen İade:</span>
-            <div id="cashbackAmtVal" style="font-family:var(--serif);color:var(--gold);font-size:1.1rem;font-weight:600">◈ 150 dürTL</div>
-          </div>
-          <button class="btn btn-sm solid" id="btnClaimCashback" onclick="claimCashback()">İADEYİ AL</button>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.8rem;margin-top:.7rem;text-align:center">
+          <div><div style="font-size:.62rem;color:var(--muted);letter-spacing:.1em">DÖNÜŞ</div><b id="vaultStatSpins" style="font-family:var(--serif);font-size:1.1rem">0</b></div>
+          <div><div style="font-size:.62rem;color:var(--muted);letter-spacing:.1em">EN YÜKSEK ×</div><b id="vaultStatBest" style="font-family:var(--serif);font-size:1.1rem;color:var(--gold)">—</b></div>
+          <div><div style="font-size:.62rem;color:var(--muted);letter-spacing:.1em">SERİ</div><b id="vaultStatStreak" style="font-family:var(--serif);font-size:1.1rem">1 gün</b></div>
         </div>
       </div>
 
       <div class="bonus-card">
         <div style="display:flex;justify-content:space-between;align-items:center">
-          <span class="tag" style="margin:0">✈️ Gece Kuşu Yakıtı</span>
-          <span class="badge-wait">22:00 — 04:00</span>
+          <span class="tag" style="margin:0">🎫 Kulüp Kuponu</span><span class="badge-ok">Anında</span>
+        </div>
+        <h4 style="margin:.4rem 0 .2rem;font-family:var(--serif);font-size:.95rem">Davetiye & Etkinlik Kodu</h4>
+        <p class="muted" style="font-size:.72rem;margin:0">DÜRTÜ davetiyesi veya VIP bültenden gelen kodu bozdur.</p>
+        <div style="display:flex;gap:.5rem;margin-top:.8rem">
+          <input class="inp" id="promoInp" placeholder="Örn. DURTU-VIP" style="text-transform:uppercase;letter-spacing:.18em;font-size:.8rem;padding:.55rem .8rem" autocomplete="off">
+          <button class="btn solid" id="btnClaimPromo" onclick="claimPromoCode()" style="white-space:nowrap;padding:.55rem 1.1rem;font-size:.68rem">BOZDUR</button>
+        </div>
+        <p class="muted" id="promoMsg" style="font-size:.62rem;margin-top:.4rem;min-height:1.1em"></p>
+        <div style="margin-top:.6rem;display:flex;gap:.4rem;flex-wrap:wrap">
+          <span style="font-size:.58rem;padding:.18rem .45rem;border:1px dashed rgba(212,175,55,.22);border-radius:20px;color:var(--muted)">DURTU-VIP +500</span>
+          <span style="font-size:.58rem;padding:.18rem .45rem;border:1px dashed rgba(212,175,55,.22);border-radius:20px;color:var(--muted)">SELIN-2026 +350</span>
+          <span style="font-size:.58rem;padding:.18rem .45rem;border:1px dashed rgba(212,175,55,.22);border-radius:20px;color:var(--muted)">SPEAKEASY-77 +777</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. GÜNLÜK BONUS -->
+    <div id="vsec-daily" class="hidden">
+      <div class="bonus-card" style="background:radial-gradient(100% 100% at 20% 0%,rgba(246,226,122,.14),rgba(0,0,0,.2)),linear-gradient(135deg,rgba(212,175,55,.08),rgba(15,15,14,.9))">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span class="tag" style="margin:0">☀️ Günlük Ritüel</span><span class="badge-ok" id="dailyStreakBadge">Seri: 1 gün</span>
+        </div>
+        <h4 style="margin:.5rem 0 .3rem;font-family:var(--serif);font-size:1.15rem">Hoş Geldin, <span id="dailyName">Misafir</span> — bugün de buradasın.</h4>
+        <p class="muted" style="font-size:.76rem;line-height:1.6;margin:0">Dürtü düzenli misafirini sever. Her gün girişinde +100 dürTL + seri bonusu. 7 gün tamamla, Elmas sandık anahtarı düşer.</p>
+        <div style="display:flex;gap:.35rem;margin:1rem 0 .6rem" id="dailyDots">
+          <!-- dots via JS -->
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:.8rem;padding-top:.7rem;border-top:1px dashed rgba(255,255,255,.08)">
+          <div><span class="muted" style="font-size:.64rem">Bugünkü Ödül:</span><div id="dailyRewardVal" style="font-family:var(--serif);color:var(--gold);font-size:1.2rem;font-weight:700">◈ 100 dürTL</div></div>
+          <button class="btn solid" id="btnClaimDaily" onclick="claimDailyBonus()">RİTÜELİ AL</button>
+        </div>
+        <p class="muted" style="font-size:.62rem;margin-top:.5rem" id="dailyMsg"></p>
+      </div>
+    </div>
+
+    <!-- 3. CASHBACK -->
+    <div id="vsec-cashback" class="hidden">
+      <div class="bonus-card">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span class="tag" style="margin:0">🍷 Sükûnet İadesi</span><span class="badge-ok">%10 Haftalık</span>
+        </div>
+        <h4 style="margin:.4rem 0 .2rem;font-family:var(--serif);font-size:1.05rem">Kayıp Telafisi — Kulüp Yanında</h4>
+        <p class="muted" style="font-size:.74rem;line-height:1.55;margin:0">Bu hafta şanssız seride net kaybının %10'u her Pazartesi 00:00'da hazır. Disiplinli oyuncuya saygı.</p>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:.9rem;padding-top:.7rem;border-top:1px dashed rgba(255,255,255,.08)">
+          <div><span class="muted" style="font-size:.64rem">Hak Edilen İade:</span><div id="cashbackAmtVal" style="font-family:var(--serif);color:var(--gold);font-size:1.25rem;font-weight:700">◈ 0 dürTL</div><small class="muted" style="font-size:.62rem" id="cashbackDetail">Kayıp yok — bu hafta artıdasın</small></div>
+          <button class="btn solid" id="btnClaimCashback" onclick="claimCashback()">İADEYİ AL</button>
+        </div>
+      </div>
+
+      <div class="bonus-card">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span class="tag" style="margin:0">✈️ Gece Kuşu Yakıtı</span><span class="badge-wait">22:00—04:00</span>
         </div>
         <h4 style="margin:.4rem 0 .2rem;font-family:var(--serif);font-size:.95rem">Aviator Gece Desteği</h4>
-        <p class="muted" style="font-size:.72rem;line-height:1.5;margin:0">Gece seansında uçuş yapan kulüp üyelerine tek seferlik +500 dürTL yakıt jesti.</p>
+        <p class="muted" style="font-size:.72rem;line-height:1.5;margin:0">Gece seansında uçuş yapan üyeye tek seferlik +500 dürTL yakıt jesti.</p>
         <div style="display:flex;align-items:center;justify-content:space-between;margin-top:.8rem;padding-top:.6rem;border-top:1px dashed rgba(255,255,255,.08)">
           <div style="font-size:.75rem;color:var(--muted)">Durum: <b id="nightBonusStatus" style="color:var(--gold)">Kullanılabilir</b></div>
           <button class="btn btn-sm" id="btnClaimNight" onclick="claimNightBonus()">YAKITI YÜKLE (+500)</button>
@@ -1493,56 +1549,27 @@ body.tick footer{padding-bottom:34px}
       </div>
 
       <div class="bonus-card">
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <span class="muted" style="font-size:.66rem;letter-spacing:.12em;text-transform:uppercase">Kulüp Çevrim İlerlemesi</span>
-          <span id="turnoverPct" style="font-size:.7rem;color:var(--gold);font-weight:600">35%</span>
-        </div>
-        <div class="bonus-prog-bg">
-          <div class="bonus-prog-fill" id="turnoverBar" style="width:35%"></div>
-        </div>
-        <div style="display:flex;justify-content:space-between;font-size:.62rem;color:var(--muted)">
-          <span id="turnoverCurrent">3.500 dürTL çevrildi</span>
-          <span>Hedef: 10.000 dürTL</span>
-        </div>
-      </div>
-
-      <div class="bonus-card">
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <span class="tag" style="margin:0">🎫 Promosyon & Hediye</span>
-          <span class="badge-ok">Anında Bakiye</span>
-        </div>
-        <h4 style="margin:.4rem 0 .2rem;font-family:var(--serif);font-size:.95rem">Kulüp Kupon Kodu</h4>
-        <p class="muted" style="font-size:.72rem;line-height:1.5;margin:0">DÜRTÜ davetiyesi, VIP bülteni veya etkinliklerden kazandığınız kodu bozdurun.</p>
-        <div style="display:flex;gap:.5rem;margin-top:.8rem">
-          <input class="inp" id="promoInp" placeholder="Örn. DURTU2026" style="text-transform:uppercase;letter-spacing:.18em;font-size:.8rem;padding:.55rem .8rem" autocomplete="off">
-          <button class="btn solid" id="btnClaimPromo" onclick="claimPromoCode()" style="white-space:nowrap;padding:.55rem 1.1rem;font-size:.68rem">KODU BOZDUR</button>
-        </div>
-        <p class="muted" id="promoMsg" style="font-size:.62rem;margin-top:.4rem;min-height:1.1em"></p>
+        <div style="display:flex;justify-content:space-between;align-items:center"><span class="muted" style="font-size:.66rem;letter-spacing:.12em;text-transform:uppercase">Kulüp Çevrim İlerlemesi</span><span id="turnoverPct" style="font-size:.7rem;color:var(--gold);font-weight:600">0%</span></div>
+        <div class="bonus-prog-bg"><div class="bonus-prog-fill" id="turnoverBar" style="width:0%"></div></div>
+        <div style="display:flex;justify-content:space-between;font-size:.62rem;color:var(--muted)"><span id="turnoverCurrent">0 dürTL çevrildi</span><span>Hedef: 10.000 dürTL</span></div>
       </div>
     </div>
 
-    <!-- 4. İŞLEM DEFTERİ (LEDGER) -->
-    <div id="vsec-ledg" class="hidden">
-      <p class="muted" style="font-size:.7rem;margin:0 0 .5rem">Tüm para yatırma, çekme ve bonus hareketlerinin şeffaf kayıtları.</p>
-      <div style="max-height:280px;overflow-y:auto">
-        <table class="ledger-tbl">
-          <thead>
-            <tr>
-              <th>Zaman</th>
-              <th>İşlem</th>
-              <th>Tutar</th>
-              <th>Kanal</th>
-              <th>Durum</th>
-            </tr>
-          </thead>
-          <tbody id="ledgerRows">
-            <!-- Dinamik JS satırları -->
-          </tbody>
-        </table>
+    <!-- 4. BAŞARIMLAR -->
+    <div id="vsec-ach" class="hidden">
+      <div id="achGrid" style="display:grid;grid-template-columns:1fr;gap:.6rem">
+        <!-- via JS -->
       </div>
+    </div>
+
+    <!-- 5. DEFTER -->
+    <div id="vsec-ledg" class="hidden">
+      <p class="muted" style="font-size:.7rem;margin:0 0 .5rem">Kulüp içi prestij hareketlerinin şeffaf defteri — yatırma/çekme yok, sadece oyun ve sadakat.</p>
+      <div style="max-height:320px;overflow-y:auto"><table class="ledger-tbl"><thead><tr><th>Zaman</th><th>Hareket</th><th>Tutar</th><th>Kaynak</th><th>Durum</th></tr></thead><tbody id="ledgerRows"></tbody></table></div>
     </div>
   </div>
 </div>
+
 
 <div id="toasts"></div>
 
@@ -1826,26 +1853,28 @@ function runProvablyFairCalculator(){
 }
 
 const GAMES = [
- {id:'gates', icon:'⚡', name:'Gates of Olympus', cat:'risk', catL:'🎩 Yüksek Risk', rtp:'96.50', vol:'Yüksek', type:'slot',
-  note:'6×5 scatter — 8+ her yerde öder, tumble, çarpan küreleri FS’de birikir (15 FS).'},
- {id:'mt4', icon:'🚂', name:'Money Train 4', cat:'risk', catL:'🎩 Yüksek Risk', rtp:'96.10', vol:'Yüksek', type:'slot',
+ {id:'gates', icon:'👑', name:'Gates of Olympus', cat:'slot', catL:'💎 Kulüp Orijinalleri', rtp:'96.50', vol:'Yüksek', type:'slot', orig:true,
+  note:'Tapınak mühürleri — 6×5 scatter, altın rünler ve kalkanlar. Çarpan küreleri FS’de birikir (15 FS). Altın kıvılcım.'},
+ {id:'mt4', icon:'🚂', name:'Money Train 4', cat:'slot', catL:'💎 Kulüp Orijinalleri', rtp:'96.10', vol:'Yüksek', type:'slot', orig:true,
   note:'5×4 Hold&Win — 3+ 💰 ile 3 can respin, para değerleri yapışır.'},
- {id:'wdw', icon:'🤠', name:'Wanted Dead or a Wild', cat:'risk', catL:'🎩 Yüksek Risk', rtp:'96.38', vol:'Yüksek', type:'slot',
+ {id:'wdw', icon:'🤠', name:'Wanted Dead or a Wild', cat:'slot', catL:'💎 Kulüp Orijinalleri', rtp:'96.38', vol:'Yüksek', type:'slot', orig:true,
   note:'5×4 VS — genişleyen wild, düello çarpanı ×2-×100.'},
- {id:'sp', icon:'✨', name:'Starlight Princess', cat:'calm', catL:'🍷 Uzun Akşam', rtp:'96.50', vol:'Orta-Düşük', type:'slot',
+ {id:'sp', icon:'✨', name:'Starlight Princess', cat:'slot', catL:'🎰 Slotlar', rtp:'96.50', vol:'Orta-Düşük', type:'slot', orig:true,
   note:'6×5 scatter Starlight — tumble + ışın çarpanları birikir (15 FS).'},
- {id:'sb', icon:'🍬', name:'Sweet Bonanza', cat:'calm', catL:'🍷 Uzun Akşam', rtp:'96.48', vol:'Orta', type:'slot',
+ {id:'sb', icon:'🍬', name:'Sweet Bonanza', cat:'slot', catL:'🎰 Slotlar', rtp:'96.48', vol:'Orta', type:'slot', orig:false,
   note:'6×5 şeker — 8+ öder, tumble, bomba çarpanlar FS’de birikir (10 FS).'},
- {id:'bs', icon:'🦇', name:'Blood Suckers', cat:'calm', catL:'🍷 Uzun Akşam', rtp:'98.00', vol:'Düşük', type:'slot',
+ {id:'bs', icon:'🦇', name:'Blood Suckers', cat:'slot', catL:'🎰 Slotlar', rtp:'98.00', vol:'Düşük', type:'slot', orig:false,
   note:'5×3 25 çizgi — 3+ 🩸 tabut bonusu, en yüksek RTP.'},
- {id:'aviator', icon:'✈️', name:'Aviator', cat:'adren', catL:'⚡ Adrenalin', rtp:'97.00', vol:'Crash', type:'crash',
-  note:'Seçkideki tek crash oyunu — bilinçli seçim, hızlı karar.'},
- {id:'bj', icon:'🂡', name:'Türkçe Blackjack', cat:'strat', catL:'🎯 Stratejist', rtp:'99.40', vol:'Masa', type:'table',
+ {id:'aviator', icon:'✈️', name:'Aviator', cat:'orig', catL:'💎 Kulüp Orijinalleri', rtp:'97.00', vol:'Crash', type:'crash', orig:true,
+  note:'Kulüp orijinali crash — Dürtü bilinçli seçti, hızlı karar.'},
+ {id:'bj', icon:'🂡', name:'Türkçe Blackjack', cat:'table', catL:'🎴 Masa & Spor', rtp:'99.40', vol:'Masa', type:'table', orig:false,
   note:'Tek masa, özel krupiye — stratejist profiline ayrıldı.'},
- {id:'rl', icon:'🎡', name:'Tek Kişilik Rulet', cat:'strat', catL:'🎯 Stratejist', rtp:'97.30', vol:'Masa', type:'table',
-  note:'Kalabalık yok, bekleme yok; masa sadece senin.'},
- {id:'mines', icon:'💣', name:'Mines', cat:'adren', catL:'⚡ Adrenalin', rtp:'97.00', vol:'Tarla', type:'mines',
-  note:'5×5 tarla. Elmas buldukça çarpan katlanır — mayına basmadan kasaya gir.'},
+ {id:'rl', icon:'🎡', name:'Tek Kişilik Rulet', cat:'table', catL:'🎴 Masa & Spor', rtp:'97.30', vol:'Masa', type:'table', orig:false,
+  note:'Kalabalık yok, bekleme yok; masa sadece senin. Fildişi top tok sesi.'},
+ {id:'mines', icon:'💎', name:'Yeraltı Mines', cat:'orig', catL:'💎 Kulüp Orijinalleri', rtp:'97.00', vol:'Tarla', type:'mines', orig:true,
+  note:'5×5 yeraltı tarlası. Elmas buldukça çarpan katlanır — mayına basmadan kasaya gir.'},
+ {id:'sport', icon:'🏆', name:'Şampiyonlar Ligi', cat:'table', catL:'🎴 Masa & Spor', rtp:'94.50', vol:'Spor', type:'sport', orig:false,
+  note:'Tek maç, küratörlü oranlar. Kalabalık yok; sadece üyelerin masası.'},
 ];
 /* --- “Backend” simülasyon katmanı: gerçekte REST/WS endpoint’ler (bkz. TECH_NOTES) --- */
 const API = {
@@ -1894,79 +1923,435 @@ function renderChips(){ document.querySelectorAll('.chipsVal').forEach(e => e.te
 const io = new IntersectionObserver(es => es.forEach(e => { if(e.isIntersecting){ e.target.classList.add('on'); io.unobserve(e.target);} }), {threshold:.12});
 document.querySelectorAll('.rv').forEach(el => io.observe(el));
 
-/* ================= GATE ================= */
-$('gateForm').addEventListener('submit', e => {
-  e.preventDefault();
-  const code = $('gateCode').value.trim().toUpperCase();
-  const _sv = loadDemo();
-  const _inv = _sv && Array.isArray(_sv.codes) && _sv.codes.includes(code) && code.length >= 4;
-  if(_inv){ openDoor('Misafir', true); }
-  else if(code.length >= 4){ openDoor(_sv && _sv.name ? _sv.name : 'Emre'); }
-  else{
-    $('gateCode').classList.add('shake');
-    $('gateHint').innerHTML = 'Kod kapıyı açmadı. Davetin yoksa <b style="color:var(--gold)">başvuru</b> seni bekliyor.';
-    setTimeout(()=> $('gateCode').classList.remove('shake'), 550);
-  }
-});
-$('btnApply').addEventListener('click', () => openOvl('ovlApply'));
+/* ================= GATE — CINEMATIC v2 — FIXED (no TTS, ivory tick, seal, strict codes) ================= */
+let gateAC = null, gateMaster = null, gateFilter = null, gatePannerR = null, gatePannerL = null, gateBass = null, gateRouletteIv = null, gateSmoke = [], gateNoiseBuf = null;
+let gateGyroEnabled = false, gateAudioOn = false, gateKnockCount = 0, gatePeepholeOpen = false, gateSealed = true, gateLocked = false;
+let lobby = 0, preAngel = null;
+const GATE_PRICE = { luna: 40, vega: 30, mira: 70 };
+const VALID_CODES = ['DURTU-VIP','SELIN-2026','SPEAKEASY-77','KARA-KUZGUN','GECE-00'];
 
-function openDoor(name, invited){
-  $('doorMsg').classList.add('on');
+function gateACtx(){
+  if(gateAC) return gateAC;
+  try{
+    gateAC = new (window.AudioContext || window.webkitAudioContext)();
+    // pre-make noise buffer for ivory ticks / latch
+    const len = Math.floor(gateAC.sampleRate * 0.5);
+    const buf = gateAC.createBuffer(1, len, gateAC.sampleRate);
+    const ch = buf.getChannelData(0);
+    for(let i=0;i<len;i++) ch[i]=Math.random()*2-1;
+    gateNoiseBuf = buf;
+
+    gateMaster = gateAC.createGain(); gateMaster.gain.value = 0;
+    gateFilter = gateAC.createBiquadFilter(); gateFilter.type='lowpass'; gateFilter.frequency.value=350; gateFilter.Q.value=0.7;
+    gatePannerR = gateAC.createPanner(); gatePannerR.panningModel='HRTF'; gatePannerR.setPosition(2,0,-2);
+    gatePannerL = gateAC.createPanner(); gatePannerL.panningModel='HRTF'; gatePannerL.setPosition(-2,0,-2);
+    gateMaster.connect(gateFilter); gateFilter.connect(gateAC.destination);
+
+    gateBass = gateAC.createOscillator(); gateBass.type='sawtooth'; gateBass.frequency.value=46;
+    const gBass = gateAC.createGain(); gBass.gain.value=0.14;
+    const lpfBass = gateAC.createBiquadFilter(); lpfBass.type='lowpass'; lpfBass.frequency.value=120;
+    gateBass.connect(lpfBass); lpfBass.connect(gBass); gBass.connect(gatePannerR); gatePannerR.connect(gateMaster);
+    gateBass.start();
+
+    const oscL = gateAC.createOscillator(); oscL.type='triangle'; oscL.frequency.value=98;
+    const gL = gateAC.createGain(); gL.gain.value=0.055;
+    const lpfL = gateAC.createBiquadFilter(); lpfL.type='lowpass'; lpfL.frequency.value=420;
+    oscL.connect(lpfL); lpfL.connect(gL); gL.connect(gatePannerL); gatePannerL.connect(gateMaster);
+    oscL.start();
+
+    // roulette: organic ivory tick + wheel friction
+    gateRouletteIv = setInterval(()=>{
+      if(!gateAC || gateAC.state!=='running' || gateSealed) return;
+      gateIvoryTick();
+    }, 380 + Math.random()*220);
+
+    return gateAC;
+  }catch(e){ console.warn('gate audio',e); return null; }
+}
+function gateIvoryTick(){
+  const ac=gateAC; if(!ac||!gateNoiseBuf) return;
+  // 8ms filtered noise burst = ivory on wood
+  const src = ac.createBufferSource(); src.buffer=gateNoiseBuf;
+  const hp = ac.createBiquadFilter(); hp.type='bandpass'; hp.frequency.value=2200 + Math.random()*800; hp.Q.value=1.8;
+  const g = ac.createGain();
+  const now = ac.currentTime;
+  g.gain.setValueAtTime(0, now);
+  g.gain.linearRampToValueAtTime(0.22, now+0.002);
+  g.gain.exponentialRampToValueAtTime(0.0001, now+0.018);
+  src.connect(hp); hp.connect(g); g.connect(gatePannerR);
+  src.start(now); src.stop(now+0.02);
+  // subtle wood thud under it
+  const o = ac.createOscillator(), og=ac.createGain();
+  o.type='sine'; o.frequency.setValueAtTime(85+Math.random()*12, now);
+  og.gain.setValueAtTime(0.12, now);
+  og.gain.exponentialRampToValueAtTime(0.0001, now+0.06);
+  o.connect(og); og.connect(gatePannerR);
+  o.start(now); o.stop(now+0.07);
+}
+function gateLatchScrape(){
+  const ac=gateACtx(); if(!ac) return;
+  ac.resume();
+  const now=ac.currentTime;
+  // metallic scrape: noise + resonant bandpass sweep
+  const src = ac.createBufferSource(); src.buffer=gateNoiseBuf;
+  const bp = ac.createBiquadFilter(); bp.type='bandpass'; bp.frequency.setValueAtTime(1200, now); bp.frequency.linearRampToValueAtTime(2800, now+0.22); bp.Q.value=6;
+  const g = ac.createGain(); g.gain.setValueAtTime(0, now); g.gain.linearRampToValueAtTime(0.28, now+0.02); g.gain.exponentialRampToValueAtTime(0.0001, now+0.38);
+  src.connect(bp); bp.connect(g); g.connect(ac.destination);
+  src.start(now); src.stop(now+0.4);
+  // sub-reverb bass echo — deep 38Hz with long tail
+  const o = ac.createOscillator(), og=ac.createGain(), olp=ac.createBiquadFilter();
+  o.type='sine'; o.frequency.setValueAtTime(38, now); o.frequency.exponentialRampToValueAtTime(32, now+1.2);
+  olp.type='lowpass'; olp.frequency.value=180;
+  og.gain.setValueAtTime(0, now); og.gain.linearRampToValueAtTime(0.35, now+0.06); og.gain.exponentialRampToValueAtTime(0.0001, now+1.4);
+  o.connect(olp); olp.connect(og); og.connect(ac.destination);
+  o.start(now); o.stop(now+1.5);
+  buzz([22,40,28]);
+}
+function gateAudioToggle(){
+  const ac = gateACtx();
+  if(!ac) return;
+  if(ac.state==='suspended') ac.resume();
+  gateAudioOn = !gateAudioOn;
+  const dot=$('audioDot'), lbl=$('audioLabel');
+  if(gateAudioOn){
+    ac.resume();
+    gateMaster.gain.cancelScheduledValues(ac.currentTime);
+    gateMaster.gain.setValueAtTime(gateMaster.gain.value, ac.currentTime);
+    gateMaster.gain.linearRampToValueAtTime(0.26, ac.currentTime+0.7);
+    if(dot) dot.style.background='#4ade80';
+    if(lbl) lbl.textContent='3D ses açık — kulaklık tak';
+    toast('🎧 <b>3D uzamsal ses açık:</b> sağda fildişi rulet tıkırtısı, solda caz');
+  } else {
+    gateMaster.gain.linearRampToValueAtTime(0, ac.currentTime+0.4);
+    if(dot) dot.style.background='#555';
+    if(lbl) lbl.textContent='ses kapalı — dokun, aç';
+  }
+}
+function gateKnockSound(){
+  const ac=gateACtx(); if(!ac) return;
+  ac.resume();
+  [0,0.24].forEach(d=>{
+    const o=ac.createOscillator(), g=ac.createGain();
+    o.type='sine'; o.frequency.setValueAtTime(78, ac.currentTime+d);
+    o.frequency.exponentialRampToValueAtTime(32, ac.currentTime+d+0.20);
+    g.gain.setValueAtTime(0.55, ac.currentTime+d);
+    g.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime+d+0.28);
+    o.connect(g); g.connect(gateFilter);
+    o.start(ac.currentTime+d); o.stop(ac.currentTime+d+0.30);
+  });
+  // wood knock transient = filtered noise
+  const src=ac.createBufferSource(); src.buffer=gateNoiseBuf;
+  const lp=ac.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=900;
+  const gg=ac.createGain(); gg.gain.setValueAtTime(0.18, ac.currentTime); gg.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime+0.09);
+  src.connect(lp); lp.connect(gg); gg.connect(gateFilter);
+  src.start(); src.stop(ac.currentTime+0.1);
+  buzz([18,30,18]);
+}
+function gateMetalClick(){
+  const ac=gateACtx(); if(!ac) return;
+  const o=ac.createOscillator(), g=ac.createGain();
+  o.type='sine'; o.frequency.setValueAtTime(2600, ac.currentTime); o.frequency.exponentialRampToValueAtTime(800, ac.currentTime+0.18);
+  g.gain.setValueAtTime(0.24, ac.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime+0.26);
+  o.connect(g); g.connect(gateAC.destination);
+  o.start(); o.stop(ac.currentTime+0.28);
+  buzz(12);
+}
+function gateOpenFilter(){
+  const ac=gateACtx(); if(!ac||!gateFilter) return;
+  gateFilter.frequency.cancelScheduledValues(ac.currentTime);
+  gateFilter.frequency.setValueAtTime(gateFilter.frequency.value, ac.currentTime);
+  gateFilter.frequency.exponentialRampToValueAtTime(20000, ac.currentTime+1.6);
   setTimeout(()=>{
-    $('gate').classList.add('leaving');
-    setTimeout(()=>{ $('doorMsg').classList.remove('on'); enterApp(name, invited); }, 600);
-  }, 1900);
+    [523,659,784].forEach((f,i)=>{
+      const o=ac.createOscillator(), g=ac.createGain();
+      o.type='triangle'; o.frequency.value=f;
+      g.gain.setValueAtTime(0, ac.currentTime+i*0.07);
+      g.gain.linearRampToValueAtTime(0.10, ac.currentTime+i*0.07+0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime+i*0.07+0.6);
+      o.connect(g); g.connect(ac.destination);
+      o.start(ac.currentTime+i*0.07); o.stop(ac.currentTime+i*0.07+0.65);
+    });
+  }, 400);
+}
+function gateDenySound(){
+  const ac=gateACtx(); if(!ac) return;
+  ac.resume();
+  const o=ac.createOscillator(), g=ac.createGain();
+  o.type='sawtooth'; o.frequency.setValueAtTime(120, ac.currentTime); o.frequency.linearRampToValueAtTime(28, ac.currentTime+0.45);
+  g.gain.setValueAtTime(0.32, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime+0.6);
+  const lp=ac.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=400;
+  o.connect(lp); lp.connect(g); g.connect(ac.destination);
+  o.start(); o.stop(ac.currentTime+0.65);
+  buzz([60,40,60]);
 }
 
+let gateCanvas, gateCtx, gateW=0, gateH=0, gateParallax={x:0,y:0}, gateTilt={x:0,y:0};
+function gateFit(){
+  gateCanvas=$('gateCanvas'); if(!gateCanvas) return;
+  gateCtx=gateCanvas.getContext('2d');
+  const dpr=Math.min(2, window.devicePixelRatio||1);
+  gateW=gateCanvas.clientWidth||window.innerWidth;
+  gateH=gateCanvas.clientHeight||window.innerHeight;
+  gateCanvas.width=gateW*dpr; gateCanvas.height=gateH*dpr;
+  gateCtx.setTransform(dpr,0,0,dpr,0,0);
+}
+function gateDraw(){
+  if(!gateCtx) return;
+  const w=gateW, h=gateH;
+  const px = gateParallax.x + gateTilt.x*18;
+  const py = gateParallax.y + gateTilt.y*12;
+  gateCtx.fillStyle='#050505'; gateCtx.fillRect(0,0,w,h);
+  const cx=w/2+px, cy=h*0.42+py;
+  const gradF=gateCtx.createLinearGradient(0, cy, 0, h);
+  gradF.addColorStop(0,'#0e0c08'); gradF.addColorStop(1,'#1a1510');
+  gateCtx.fillStyle=gradF; gateCtx.beginPath(); gateCtx.moveTo(0,h); gateCtx.lineTo(cx-220, cy); gateCtx.lineTo(cx+220, cy); gateCtx.lineTo(w,h); gateCtx.closePath(); gateCtx.fill();
+  gateCtx.fillStyle='#0a0907'; gateCtx.fillRect(0,0,cx-220,h);
+  gateCtx.fillRect(cx+220,0,w-(cx+220),h);
+  gateCtx.strokeStyle='rgba(212,175,55,.18)'; gateCtx.lineWidth=1;
+  gateCtx.beginPath(); gateCtx.moveTo(cx-220, cy); gateCtx.lineTo(0,0); gateCtx.stroke();
+  gateCtx.beginPath(); gateCtx.moveTo(cx+220, cy); gateCtx.lineTo(w,0); gateCtx.stroke();
+  const gradC=gateCtx.createLinearGradient(0,0,0,cy);
+  gradC.addColorStop(0,'#12100c'); gradC.addColorStop(1,'#080604');
+  gateCtx.fillStyle=gradC; gateCtx.fillRect(0,0,w,cy);
+  gateCtx.fillStyle='rgba(212,175,55,.06)'; for(let i=0;i<6;i++){ const x=(w/6)*i+px*0.3; gateCtx.fillRect(x,0,1,cy); }
+  if(gateSmoke.length<46){
+    gateSmoke.push({x:cx+(Math.random()-0.5)*400, y:cy+Math.random()*h*0.6, vx:(Math.random()-0.5)*0.6, vy:-Math.random()*0.4-0.1, r:Math.random()*18+6, a:Math.random()*0.12+0.04});
+  }
+  gateSmoke.forEach(p=>{
+    p.x+=p.vx+px*0.02; p.y+=p.vy;
+    p.a*=0.998;
+    if(p.y<cy-20){ p.y=h-Math.random()*40; p.x=cx+(Math.random()-0.5)*300; p.a=Math.random()*0.12+0.04; }
+    gateCtx.globalAlpha=p.a; gateCtx.fillStyle='rgba(210,198,170,.9)';
+    gateCtx.beginPath(); gateCtx.arc(p.x, p.y, p.r, 0, Math.PI*2); gateCtx.fill();
+  });
+  gateCtx.globalAlpha=1;
+  const vg=gateCtx.createRadialGradient(cx, cy, 10, cx, cy, Math.max(w,h));
+  vg.addColorStop(0,'rgba(0,0,0,0)'); vg.addColorStop(1,'rgba(0,0,0,.55)');
+  gateCtx.fillStyle=vg; gateCtx.fillRect(0,0,w,h);
+  requestAnimationFrame(gateDraw);
+}
+function gateParallaxMove(e){
+  if(gateGyroEnabled||gateSealed) return;
+  const x = (e.clientX/window.innerWidth -0.5)*2;
+  const y = (e.clientY/window.innerHeight -0.5)*2;
+  gateParallax.x = x*18; gateParallax.y = y*10;
+  if(gatePannerR && gatePannerL && gateAC){
+    try{ gatePannerR.setPosition(2+x*0.8, y*0.5, -2); gatePannerL.setPosition(-2+x*0.8, y*0.5, -2);}catch(e){}
+  }
+}
+function gateGyroStart(){
+  if(typeof DeviceOrientationEvent!=='undefined' && typeof DeviceOrientationEvent.requestPermission==='function'){
+    DeviceOrientationEvent.requestPermission().then(s=>{
+      if(s==='granted'){ window.addEventListener('deviceorientation', gateOnOrient); gateGyroEnabled=true; toast('📱 Jiroskop aktif — telefonu sağa sola çevir'); }
+    }).catch(()=>{});
+  } else if('DeviceOrientationEvent' in window){
+    window.addEventListener('deviceorientation', gateOnOrient); gateGyroEnabled=true;
+    toast('📱 Jiroskop aktif');
+  } else {
+    toast('Jiroskop yok — mouse parallax aktif');
+  }
+  gateAudioToggle();
+}
+function gateOnOrient(ev){
+  if(gateSealed) return;
+  const g = ev.gamma||0, b = ev.beta||0;
+  gateTilt.x = Math.max(-1, Math.min(1, g/30));
+  gateTilt.y = Math.max(-1, Math.min(1, (b-45)/30));
+  if(gatePannerR && gatePannerL){
+    try{ gatePannerR.setPosition(2+gateTilt.x*1.5, gateTilt.y, -2); gatePannerL.setPosition(-2+gateTilt.x*1.5, gateTilt.y, -2);}catch(e){}
+  }
+}
+
+function gateApproach(){
+  if(!gateSealed) return;
+  const ac=gateACtx(); if(ac){ ac.resume(); gateAudioOn=true; gateMaster.gain.setValueAtTime(0, ac.currentTime); gateMaster.gain.linearRampToValueAtTime(0.26, ac.currentTime+0.8); }
+  gateSealed=false;
+  const seal=$('gateSealOverlay'); if(seal){ seal.style.opacity='0'; seal.style.pointerEvents='none'; seal.style.transform='scale(1.08)'; }
+  const center=$('gateCenter'); if(center){ center.style.transform='scale(1.04)'; setTimeout(()=>center.style.transform='scale(1)', 700); }
+  const dot=$('audioDot'), lbl=$('audioLabel'); if(dot) dot.style.background='#4ade80'; if(lbl) lbl.textContent='3D ses açık — kulaklık tak';
+  // cinematic zoom: move parallax to center
+  gateParallax.x=0; gateParallax.y=0;
+  toast('✦ Kapıya yaklaştın — içeriden uğultu geliyor. Tokmağa dokun.');
+}
+
+function gateKnock(){
+  if(gateSealed){ gateApproach(); return; }
+  if(gateLocked) return;
+  if(gateKnockCount>=2) return;
+  gateKnockCount++;
+  const door=$('door'), ring=$('knockerRing');
+  gateKnockSound();
+  if(door){ door.style.transform='translateX(-1px)'; setTimeout(()=>door.style.transform='translateX(0)',90); }
+  if(ring){ ring.style.transform='translateY(8px)'; setTimeout(()=>ring.style.transform='translateY(0)',160); }
+  const hint=$('gateHintCine');
+  if(gateKnockCount===1){
+    if(hint) hint.textContent='Tok... tok... içeriden bir gölge yaklaştı.';
+    setTimeout(()=>{ gatePeepholeOpen=true; openPeephole(); }, 620);
+  } else if(gateKnockCount===2){
+    if(hint) hint.textContent='Sürgü çekiliyor... ışık sızıyor.';
+    gateLatchScrape();
+    const slit=$('doorSlit'), light=$('peepholeLight');
+    if(slit) slit.style.opacity='1';
+    if(light) light.style.opacity='0.9';
+    setTimeout(()=>{ showGateForm(); }, 900);
+  }
+}
+function openPeephole(){
+  const inner=$('peepholeInner'), eye=$('peepholeEye'), light=$('peepholeLight');
+  if(inner) inner.style.transform='scale(1.15)';
+  if(eye) eye.style.opacity='0.9';
+  gateLatchScrape();
+  // typewriter + smoke text
+  const hint=$('gateHintCine');
+  const whisperEl=$('gateWhisper');
+  if(whisperEl){
+    whisperEl.style.opacity='1';
+    whisperEl.style.transform='translateY(0)';
+    typewriter(whisperEl, '— Kim o? Bu geceye ait mührünüzü fısıldayın.', 38);
+  }
+  if(hint) hint.textContent='Pirinç sürgü aralandı — fısıltı geliyor...';
+}
+function typewriter(el, text, speed){
+  el.textContent=''; let i=0;
+  const iv=setInterval(()=>{
+    el.textContent=text.slice(0, ++i);
+    if(i>=text.length) clearInterval(iv);
+  }, speed);
+}
+function showGateForm(){
+  const form=$('gateFormCine');
+  if(form){ form.style.opacity='1'; form.style.transform='translateY(0)'; form.style.pointerEvents='auto'; $('gateNameCine')?.focus(); }
+}
+function gateDeny(){
+  gateLocked=true;
+  gateDenySound();
+  const door=$('door'), inner=$('peepholeInner'), eye=$('peepholeEye'), light=$('peepholeLight'), slit=$('doorSlit'), whisper=$('gateWhisper');
+  if(inner) inner.style.transform='scale(0.88)';
+  if(eye) eye.style.opacity='0.1';
+  if(light){ light.style.background='radial-gradient(circle,rgba(239,68,68,.85),rgba(120,20,20,.45) 45%,transparent 75%)'; light.style.opacity='0.85'; }
+  if(slit){ slit.style.background='linear-gradient(90deg,transparent,rgba(239,68,68,.9),transparent)'; slit.style.opacity='0'; }
+  if(door){ door.style.transform='translateX(-6px)'; setTimeout(()=>door.style.transform='translateX(6px)',80); setTimeout(()=>door.style.transform='translateX(0)',180); }
+  const hint=$('gateHintCine');
+  if(hint){ hint.style.color='#fca5a5'; hint.textContent='Bu davetiye bu geceye ait değil. Kapıcıya başvuru bırakın.'; }
+  if(whisper){ whisper.style.color='#fca5a5'; whisper.textContent='— Bu mühür bu geceye ait değil.'; whisper.style.opacity='1'; }
+  // open application form after red flash
+  setTimeout(()=>{
+    const form=$('gateFormCine'); if(form){ form.style.opacity='0.4'; }
+    openOvl('ovlApply');
+    gateLocked=false;
+  }, 900);
+}
+function gateSubmit(){
+  const nameEl=$('gateNameCine');
+  const raw=(nameEl?.value||'').trim().toUpperCase();
+  if(raw.length<2){ nameEl.classList.add('shake'); setTimeout(()=>nameEl.classList.remove('shake'),500); toast('Mührünü fısılda — kod gir.'); return; }
+  // strict validation
+  let code = raw;
+  // allow "EMRE / DURTU-VIP" style: extract after /
+  if(raw.includes('/')){ const parts=raw.split('/'); code=parts[parts.length-1].trim().toUpperCase(); }
+  // also allow "AD KOD" second token
+  if(code.includes(' ')){ const tokens=code.split(' '); code=tokens[tokens.length-1]; }
+  const valid = VALID_CODES.includes(code);
+  if(!valid){
+    gateDeny();
+    return;
+  }
+  // success path
+  const door=$('door');
+  gateOpenFilter();
+  gateMetalClick();
+  if(door){ door.style.transform='rotateY(-92deg)'; door.style.boxShadow='0 0 60px rgba(246,226,122,.45)'; }
+  const de=$('doorEdge'); if(de) de.style.opacity='1';
+  const hint=$('gateHintCine'); if(hint){ hint.style.color='var(--muted)'; hint.textContent='Mühür doğrulandı — kapı ağır ağır açılıyor...'; }
+  const whisper=$('gateWhisper'); if(whisper){ whisper.textContent='— Hoş geldin. İçerisi seni bekliyor.'; whisper.style.color='#f6e27a'; }
+  setTimeout(()=>{
+    $('doorMsg').classList.add('on');
+    setTimeout(()=>{
+      $('gate').classList.add('leaving');
+      setTimeout(()=>{
+        $('doorMsg').classList.remove('on');
+        const name = (nameEl.value.split('/')[0]||'Misafir').trim()||'Misafir';
+        enterApp(name, true);
+        if(gateRouletteIv) clearInterval(gateRouletteIv);
+        if(gateAC){ try{ gateAC.close(); }catch(e){} }
+      }, 600);
+    }, 800);
+  }, 900);
+}
+
+
+// --- Gate wiring ---
+(function(){
+  function w(){
+    const gc=$('gateCanvas'); if(!gc) return;
+    gateFit(); gateDraw();
+    window.addEventListener('resize', gateFit);
+    window.addEventListener('mousemove', gateParallaxMove);
+    const door=$('door'), frame=$('doorFrame'), knocker=$('knocker');
+    if(door) door.addEventListener('click', gateKnock);
+    if(knocker) knocker.addEventListener('click', (e)=>{ e.stopPropagation(); gateKnock(); });
+    if(frame) frame.addEventListener('click', (e)=>{ if(e.target===frame) gateKnock(); });
+    const btnG=$('btnGyroCine'); if(btnG) btnG.addEventListener('click', gateGyroStart);
+    const btnS=$('gateSubmitCine'); if(btnS) btnS.addEventListener('click', gateSubmit);
+    const inp=$('gateNameCine'); if(inp) inp.addEventListener('keydown', (e)=>{ if(e.key==='Enter') gateSubmit(); });
+    const btnA=$('btnApplyCine'); if(btnA) btnA.addEventListener('click', ()=> openOvl('ovlApply'));
+    const sealBtn=$('gateSealBtn'); if(sealBtn) sealBtn.addEventListener('click', (e)=>{ e.stopPropagation(); gateApproach(); });
+    const sealOverlay=$('gateSealOverlay'); if(sealOverlay) sealOverlay.addEventListener('click', gateApproach);
+    setInterval(()=>{
+      const lc=$('liveCount'); if(lc){ const n=38+Math.floor(Math.random()*9); lc.textContent='🔴 Canlı: Salonda şu an '+n+' seçkin misafir var.'; }
+      const lt=$('lastTable'); if(lt){ const m=1+Math.floor(Math.random()*7); lt.textContent='⏱️ Son masa açılışı: '+m+' dk önce (VIP Blackjack)'; }
+    }, 4800);
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', w);
+  else w();
+})();
+
+function esc(s){ const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
 function submitApply(){
   const name = ($('apName') ? $('apName').value.trim() : '') || 'Misafir';
   const email = ($('apEmail') ? $('apEmail').value.trim() : '');
   const contact = ($('apContact') ? $('apContact').value.trim() : '');
   const why  = ($('apWhy') ? $('apWhy').value.trim() : '');
-
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const emailRegex = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
   if(!email || !emailRegex.test(email)){
-    toast('<b>Dürtü:</b> Geçerli bir e-posta adresi girin — davetiyeniz buraya gönderilecek.');
+    toast('<b>Dürtü:</b> Geçerli bir e-posta girin — davetiyeniz buraya gönderilecek.');
     if($('apEmail')) $('apEmail').focus();
     return;
   }
   if(why.length < 12){ toast('<b>Dürtü:</b> Üç cümle bekliyoruz — içtenlikle yaz.'); return; }
-
-  try{ // → backoffice kuyruğu (admin.html “Başvurular”)
+  try{
     const apps = JSON.parse(localStorage.getItem('durtu_apps') || '[]');
-    apps.push({
-      id: 'A' + Date.now().toString(36).toUpperCase(),
-      name,
-      email,
-      contact,
-      why,
-      type: $('apType') ? $('apType').value : '',
-      budget: $('apBudget') ? $('apBudget').value : '',
-      ts: Date.now(),
-      status: 'pending'
-    });
+    apps.push({ id: 'A' + Date.now().toString(36).toUpperCase(), name, email, contact, why, type: $('apType') ? $('apType').value : '', budget: $('apBudget') ? $('apBudget').value : '', ts: Date.now(), status: 'pending' });
     localStorage.setItem('durtu_apps', JSON.stringify(apps));
     cloudApply(name, why);
   }catch(e){}
-
   $('applyForm').classList.add('hidden');
   $('applyWait').classList.remove('hidden');
   setTimeout(()=>{ $('applyWaitTxt').textContent = 'Değerlendirme tamamlandı.'; }, 1600);
   setTimeout(()=>{
-    $('applyWaitTxt').innerHTML = `<span class="serif" style="font-size:1.15rem;color:var(--gold)">Onaylandın, ${esc(name)}. Davetiyen hazır.</span><br><small class="muted" style="font-size:.72rem;margin-top:.4rem;display:block">Davet mektubunuz <b>${esc(email)}</b> adresine iletildi.</small>`;
+    $('applyWaitTxt').innerHTML = '<span class="serif" style="font-size:1.15rem;color:var(--gold)">Onaylandın, '+esc(name)+'. Davetiyen hazır.</span><br><small class="muted" style="font-size:.72rem;margin-top:.4rem;display:block">Davet mektubunuz <b>'+esc(email)+'</b> adresine iletildi.</small>';
     $('applyDone').classList.remove('hidden');
   }, 2500);
 }
 function finishApply(){
   const name = $('apName').value.trim() || 'Misafir';
   closeOvl('ovlApply');
-  // reset form for next demo run
   setTimeout(()=>{ $('applyForm').classList.remove('hidden'); $('applyWait').classList.add('hidden'); $('applyDone').classList.add('hidden'); }, 600);
   if(!state.entered) openDoor(name); else toast('Zaten içeridesin, ' + esc(name) + '.');
 }
-function esc(s){ const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
+function openDoor(name, invited){
+  $('doorMsg').classList.add('on');
+  setTimeout(()=>{
+    $('gate').classList.add('leaving');
+    setTimeout(()=>{ $('doorMsg').classList.remove('on'); enterApp(name, invited); }, 600);
+  }, 900);
+}
 
 /* ================= ENTER APP ================= */
+
+
+
 let _ritualMsg = null;
 function enterApp(name, invited){
   state.entered = true;
@@ -2088,6 +2473,12 @@ function renderGames(filter){
     let filtered = list;
     if(state.filter === 'fav'){
       filtered = filtered.filter(x => favs.includes(x.id));
+    } else if(state.filter === 'slot'){
+      filtered = filtered.filter(x => x.type === 'slot');
+    } else if(state.filter === 'table'){
+      filtered = filtered.filter(x => x.cat === 'table');
+    } else if(state.filter === 'orig'){
+      filtered = filtered.filter(x => x.orig === true);
     } else if(state.filter !== 'all'){
       filtered = filtered.filter(x => x.cat === state.filter);
     }
@@ -2127,7 +2518,7 @@ function renderGames(filter){
         <div class="meta">RTP %${x.rtp} · ${x.vol}</div>
         <div class="note">“${x.note}”</div>
         <div style="margin-top:1rem"><span class="tag" style="letter-spacing:.2em">${x.type==='slot'?'Oyna →':x.type==='crash'?'Uç →':x.type==='mines'?'Mayınlar →':'Masaya git →'}</span></div>`;
-      c.onclick = () => x.type==='slot' ? openSlot(x.id) : x.type==='crash' ? openCrash() : x.type==='mines' ? openMines() : openTable(x.id);
+      c.onclick = () => x.type==='slot' ? openSlot(x.id) : x.type==='crash' ? openCrash() : x.type==='mines' ? openMines() : x.type==='sport' ? openSport() : openTable(x.id);
       g.appendChild(c);
     });
   });
@@ -2154,15 +2545,15 @@ document.addEventListener('keydown', e => { if(e.key === 'Escape'){ document.que
 // ---- REAL SLOT ENGINE V2 — 6 distinct mechanics ----
 const SLOT_DEFS = {
   gates: {
-    type:'scatter', cols:6, rows:5, scatter:'🏛️', scatterMin:4, fs:15,
-    bg1:'#241145', bg2:'#0b0518', glow:'#a78bfa',
+    type:'scatter', cols:6, rows:5, scatter:'TEMPLE', scatterMin:4, fs:15,
+    bg1:'#1a1408', bg2:'#070501', glow:'#f6e27a',
     syms:[
-      {s:'👑', pay:{8:2,9:5,10:15,11:25,12:50}, w:2},
-      {s:'⚡', pay:{8:1,9:3,10:10,11:20,12:30}, w:3},
-      {s:'💍', pay:{8:0.8,9:2,10:6,11:12,12:20}, w:4},
-      {s:'🏺', pay:{8:0.5,9:1.5,10:4,11:8,12:15}, w:5},
-      {s:'💎', pay:{8:0.3,9:1,10:2,11:5,12:10}, w:6},
-      {s:'🔮', pay:{8:0.2,9:0.5,10:1,11:2,12:5}, w:6}
+      {s:'CROWN', pay:{8:2,9:5,10:15,11:25,12:50}, w:2},
+      {s:'SHIELD', pay:{8:1,9:3,10:10,11:20,12:30}, w:3},
+      {s:'RING', pay:{8:0.8,9:2,10:6,11:12,12:20}, w:4},
+      {s:'VASE', pay:{8:0.5,9:1.5,10:4,11:8,12:15}, w:5},
+      {s:'GEM_R', pay:{8:0.3,9:1,10:2,11:5,12:10}, w:6},
+      {s:'RUNE', pay:{8:0.2,9:0.5,10:1,11:2,12:5}, w:6}
     ],
     mults:[2,3,4,5,6,8,10,15,20,25,50,100,250,500],
     multChance:0.08, fsMultChance:0.18,
@@ -2238,7 +2629,7 @@ const LINES25 = [...LINES,
   [0,1,2,2,2],[2,1,0,0,0],[0,2,2,1,0],[2,0,0,1,2],[1,0,2,0,1]
 ];
 const FEATS = {
-  gates:{ icon:'⚡', label:'Yıldırım Çarpanı', vals:[2,2,3,3,4,5,6,8,10], base:.30, fs:.60 },
+  gates:{ icon:'✦', label:'Tapınak Çarpanı', vals:[2,2,3,3,4,5,6,8,10], base:.30, fs:.60 },
   sb:   { icon:'🍬', label:'Şeker Bombası',    vals:[2,3,4,5,8,10,20],   base:.24, fs:.55 },
   mt4:  { icon:'💰', label:'Vagon Bonusu',     vals:[2,3,4,5,6],         base:.24, fs:.50 },
   wdw:  { icon:'🔫', label:'Düello Çarpanı',   vals:[2,3,4,5,8],         base:.24, fs:.50 },
@@ -2388,24 +2779,175 @@ function evalScatterGrid(grid, bet, def){
 
 /* --- drawing --- */
 function drawSym(sym, x, y, fast, small){
-  const s = typeof sym==='string'?sym:(sym.s||sym);
-  const special = s===WILD || s===SCAT || s.includes('×') || s===SLOT_DEFS.gates.scatter || s===SLOT_DEFS.sb.scatter || s===SLOT_DEFS.sp.scatter || s==='🏛️' || s==='🍭' || s==='🌙';
+  const raw = typeof sym==='string'?sym:(sym.s||sym);
+  const s = String(raw);
+  const isGatesLux = ['CROWN','SHIELD','RING','VASE','GEM_R','RUNE','TEMPLE'].includes(s) || s.startsWith('×');
+  const special = s===WILD || s===SCAT || s.includes('×') || isGatesLux || s==='TEMPLE' || s===SLOT_DEFS.gates.scatter;
   SX.save();
   SX.translate(x + SW/2, y + SH/2);
-  if(special){
+  if(special && !isGatesLux){
     const g = SX.createRadialGradient(0,0,8, 0,0,52);
     g.addColorStop(0, s.includes('×') ? 'rgba(246,226,122,.55)' : 'rgba(212,175,55,.35)');
     g.addColorStop(1, 'rgba(0,0,0,0)');
     SX.fillStyle = g; SX.beginPath(); SX.arc(0, 4, 52, 0, 7); SX.fill();
   }
   if(fast) SX.scale(1, 1.22);
-  SX.font = (small? (special?28:30) : (special? 38:40)) + 'px Georgia, serif';
-  SX.textAlign = 'center'; SX.textBaseline = 'middle';
-  if(special){ SX.shadowColor = SL.def.glow||'#D4AF37'; SX.shadowBlur = 14; }
-  if(s.includes('×')){ SX.fillStyle='#f6e27a'; SX.font='700 '+(small?18:22)+'px Georgia'; }
-  SX.fillText(s, 0, 4);
+  if(isGatesLux){
+    const scale = small?0.62:0.82;
+    SX.scale(scale,scale);
+    // luxury gold glow
+    SX.shadowColor = '#f6e27a'; SX.shadowBlur = small?10:18;
+    if(s==='CROWN'){ drawLuxCrown(); }
+    else if(s==='SHIELD'){ drawLuxShield(); }
+    else if(s==='RING'){ drawLuxRing(); }
+    else if(s==='VASE'){ drawLuxVase(); }
+    else if(s==='GEM_R'){ drawLuxGem('#ff4d6d','#7a0a1f'); }
+    else if(s==='RUNE'){ drawLuxRune(); }
+    else if(s==='TEMPLE'){ drawLuxTemple(); }
+    else if(s.startsWith('×')){ drawLuxMult(s); }
+    SX.shadowBlur=0;
+  } else {
+    SX.font = (small? (special?28:30) : (special? 38:40)) + 'px Georgia, serif';
+    SX.textAlign = 'center'; SX.textBaseline = 'middle';
+    if(special){ SX.shadowColor = SL.def.glow||'#D4AF37'; SX.shadowBlur = 14; }
+    if(s.includes('×')){ SX.fillStyle='#f6e27a'; SX.font='700 '+(small?18:22)+'px Georgia'; }
+    SX.fillText(s, 0, 4);
+  }
   SX.restore();
 }
+function drawLuxCrown(){
+  // base gold gradient
+  const g=SX.createLinearGradient(-22,-12,22,18);
+  g.addColorStop(0,'#f8e583'); g.addColorStop(0.5,'#D4AF37'); g.addColorStop(1,'#8a6a20');
+  SX.fillStyle=g;
+  SX.beginPath();
+  SX.moveTo(-28,-6); SX.lineTo(-22,-22); SX.lineTo(-8,-10); SX.lineTo(0,-26); SX.lineTo(8,-10); SX.lineTo(22,-22); SX.lineTo(28,-6); SX.lineTo(24,14); SX.lineTo(-24,14); SX.closePath();
+  SX.fill();
+  SX.strokeStyle='rgba(90,60,10,.8)'; SX.lineWidth=1; SX.stroke();
+  // inner jewel
+  const jg=SX.createRadialGradient(0,2,2,0,2,8);
+  jg.addColorStop(0,'#fff6cf'); jg.addColorStop(1,'#d8b143');
+  SX.fillStyle=jg; SX.beginPath(); SX.arc(0,4,6,0,7); SX.fill();
+  // small side gems
+  SX.fillStyle='#ff4d6d'; SX.beginPath(); SX.arc(-14,-2,3,0,7); SX.arc(14,-2,3,0,7); SX.fill();
+}
+function drawLuxShield(){
+  const g=SX.createLinearGradient(-18,-18,18,22);
+  g.addColorStop(0,'#2a2216'); g.addColorStop(1,'#0a0804');
+  SX.fillStyle=g;
+  SX.beginPath();
+  SX.moveTo(-20,-18); SX.lineTo(20,-18); SX.lineTo(18,8); SX.quadraticCurveTo(0,26,0,26); SX.quadraticCurveTo(0,26,-18,8); SX.closePath();
+  SX.fill();
+  SX.strokeStyle='#D4AF37'; SX.lineWidth=2.2; SX.stroke();
+  SX.strokeStyle='rgba(246,226,122,.6)'; SX.lineWidth=1; SX.beginPath(); SX.moveTo(-14,-12); SX.lineTo(14,-12); SX.lineTo(12,4); SX.quadraticCurveTo(0,18,0,18); SX.quadraticCurveTo(0,18,-12,4); SX.closePath(); SX.stroke();
+  // emblem rune inside
+  SX.strokeStyle='#f6e27a'; SX.lineWidth=1.6; SX.beginPath(); SX.moveTo(-6,-4); SX.lineTo(6,6); SX.moveTo(6,-4); SX.lineTo(-6,6); SX.stroke();
+}
+function drawLuxRing(){
+  const g=SX.createLinearGradient(-18,-18,18,18);
+  g.addColorStop(0,'#f6e27a'); g.addColorStop(1,'#8a6a20');
+  SX.fillStyle=g; SX.beginPath(); SX.arc(0,2,18,0,7); SX.fill();
+  SX.fillStyle='#0a0804'; SX.beginPath(); SX.arc(0,2,11,0,7); SX.fill();
+  // gem on top
+  const gg=SX.createRadialGradient(0,-12,2,0,-12,7);
+  gg.addColorStop(0,'#ffd6e0'); gg.addColorStop(1,'#c41a3a');
+  SX.fillStyle=gg; SX.beginPath(); SX.moveTo(-6,-10); SX.lineTo(6,-10); SX.lineTo(0,-22); SX.closePath(); SX.fill();
+  SX.fillStyle='rgba(255,255,255,.7)'; SX.beginPath(); SX.arc(-2,-14,2,0,7); SX.fill();
+}
+function drawLuxVase(){
+  const g=SX.createLinearGradient(-10,-20,10,20);
+  g.addColorStop(0,'#e8c85a'); g.addColorStop(1,'#7a5a12');
+  SX.fillStyle=g;
+  SX.beginPath();
+  SX.moveTo(-10,-18); SX.lineTo(10,-18); SX.lineTo(8,-12); SX.quadraticCurveTo(14,-2,12,8); SX.quadraticCurveTo(10,18,0,20); SX.quadraticCurveTo(-10,18,-12,8); SX.quadraticCurveTo(-14,-2,-8,-12); SX.closePath();
+  SX.fill();
+  SX.strokeStyle='#4a3510'; SX.lineWidth=1; SX.stroke();
+  // pattern lines
+  SX.strokeStyle='rgba(0,0,0,.35)'; SX.lineWidth=0.8;
+  SX.beginPath(); SX.moveTo(-8,0); SX.lineTo(8,0); SX.moveTo(-10,6); SX.lineTo(10,6); SX.stroke();
+}
+function drawLuxGem(c1,c2){
+  const col1=c1||'#ff4d6d', col2=c2||'#7a0a1f';
+  const g=SX.createLinearGradient(-12,-14,12,14);
+  g.addColorStop(0,'#fff6cf'); g.addColorStop(0.3,col1); g.addColorStop(1,col2);
+  SX.fillStyle=g;
+  SX.beginPath(); SX.moveTo(0,-18); SX.lineTo(14,-4); SX.lineTo(0,18); SX.lineTo(-14,-4); SX.closePath(); SX.fill();
+  SX.strokeStyle='#f6e27a'; SX.lineWidth=1.2; SX.stroke();
+  // facets
+  SX.strokeStyle='rgba(255,255,255,.55)'; SX.lineWidth=0.7;
+  SX.beginPath(); SX.moveTo(0,-18); SX.lineTo(0,18); SX.moveTo(-14,-4); SX.lineTo(14,-4); SX.stroke();
+  // spark
+  SX.fillStyle='rgba(255,255,255,.85)'; SX.beginPath(); SX.arc(-4,-8,2.2,0,7); SX.fill();
+}
+function drawLuxRune(){
+  // ancient rune stone
+  const g=SX.createRadialGradient(0,0,4,0,0,20);
+  g.addColorStop(0,'#3a2f18'); g.addColorStop(1,'#0e0a06');
+  SX.fillStyle=g; SX.beginPath(); SX.arc(0,0,20,0,7); SX.fill();
+  SX.strokeStyle='#D4AF37'; SX.lineWidth=1.8; SX.stroke();
+  // rune lines — ᛉ like
+  SX.strokeStyle='#f6e27a'; SX.lineWidth=2; SX.lineCap='round';
+  SX.beginPath();
+  SX.moveTo(0,-12); SX.lineTo(0,12);
+  SX.moveTo(0,-4); SX.lineTo(-8,-10);
+  SX.moveTo(0,-4); SX.lineTo(8,-10);
+  SX.moveTo(0,4); SX.lineTo(-8,10);
+  SX.moveTo(0,4); SX.lineTo(8,10);
+  SX.stroke();
+  // glow dots
+  SX.fillStyle='rgba(246,226,122,.9)'; SX.beginPath(); SX.arc(0,-12,1.5,0,7); SX.arc(0,12,1.5,0,7); SX.fill();
+}
+function drawLuxTemple(){
+  const g=SX.createLinearGradient(-20,-18,20,18);
+  g.addColorStop(0,'#f6e27a'); g.addColorStop(1,'#8a6a20');
+  SX.fillStyle=g;
+  // pediment
+  SX.beginPath(); SX.moveTo(-22,-6); SX.lineTo(22,-6); SX.lineTo(0,-18); SX.closePath(); SX.fill();
+  // columns
+  for(let i=-14;i<=14;i+=14){
+    SX.fillRect(i-3,-6,6,18);
+  }
+  SX.fillRect(-20,12,40,4);
+  // glow
+  SX.shadowColor='#f6e27a'; SX.shadowBlur=12;
+}
+function drawLuxMult(txt){
+  // txt like ×25
+  const m = parseInt(txt.replace('×',''))||2;
+  const r = 22 + Math.min(8, Math.log(m)*2);
+  const bg=SX.createRadialGradient(0,0,2,0,0,r);
+  bg.addColorStop(0,'rgba(246,226,122,.95)'); bg.addColorStop(0.4,'rgba(212,175,55,.85)'); bg.addColorStop(1,'rgba(120,80,10,.15)');
+  SX.fillStyle=bg; SX.beginPath(); SX.arc(0,0,r,0,7); SX.fill();
+  SX.strokeStyle='#f6e27a'; SX.lineWidth=2; SX.beginPath(); SX.arc(0,0,r,0,7); SX.stroke();
+  SX.fillStyle='#0a0804'; SX.font='700 16px Georgia'; SX.textAlign='center'; SX.textBaseline='middle';
+  SX.fillText(txt,0,1);
+  // inner spark
+  SX.fillStyle='rgba(255,255,255,.9)'; SX.beginPath(); SX.arc(-r*0.3,-r*0.3,2,0,7); SX.fill();
+}
+function triggerShake(intensity){
+  const el=$('slotStage'); if(!el) return;
+  el.classList.remove('shake-stage');
+  void el.offsetWidth;
+  el.style.setProperty('--shake-intensity', (intensity||1));
+  el.classList.add('shake-stage');
+  setTimeout(()=>el.classList.remove('shake-stage'), 500);
+}
+function goldSparkBurst(x,y,count){
+  const n=count|| (12+Math.random()*18|0);
+  for(let i=0;i<n;i++){
+    const ang=Math.random()*Math.PI*2, sp=80+Math.random()*260;
+    SL.parts.push({
+      x:x, y:y,
+      vx:Math.cos(ang)*sp, vy:Math.sin(ang)*sp - Math.random()*120,
+      g: 820+Math.random()*400,
+      life:0.7+Math.random()*0.7,
+      r:1.8+Math.random()*3.2,
+      spark:true,
+      gold:true
+    });
+  }
+}
+
 function drawReel(c){
   if(SL.mode!=='lines') return;
   const x = OX + c*(SW+GAP), winTop = OY, winH = 3*SH + 2*GAP, L = SL.strips[c].length;
@@ -2540,11 +3082,18 @@ function drawSlot(){
   } else {
     drawLines();
   }
-  // particles
+  // particles — gold sparks
   SL.parts.forEach(pt => {
     SX.globalAlpha = Math.max(0, pt.life);
-    SX.fillStyle = pt.spark ? '#f6e27a' : '#D4AF37';
-    SX.beginPath(); SX.arc(pt.x, pt.y, pt.r, 0, 7); SX.fill();
+    if(pt.gold){
+      const g=SX.createRadialGradient(pt.x,pt.y,0,pt.x,pt.y,pt.r*2.5);
+      g.addColorStop(0,'rgba(255,246,180,1)'); g.addColorStop(0.4,'rgba(246,226,122,.9)'); g.addColorStop(1,'rgba(212,175,55,0)');
+      SX.fillStyle=g;
+      SX.beginPath(); SX.arc(pt.x, pt.y, pt.r*2.2, 0, 7); SX.fill();
+    } else {
+      SX.fillStyle = pt.spark ? '#f6e27a' : '#D4AF37';
+      SX.beginPath(); SX.arc(pt.x, pt.y, pt.r, 0, 7); SX.fill();
+    }
   });
   SX.globalAlpha = 1;
   if(SL.flashT < .3){
@@ -2813,7 +3362,7 @@ async function scatterSpin(){
           winThis = winThis * ev.multSum;
           if(SL.fsPool>0) winThis = ev.win * accumulatedMult;
           else winThis = ev.win * ev.multSum;
-          sfxBomb(); SL.flashT=0; burst(LW/2, LH/2, 30);
+          sfxBomb(); SL.flashT=0; goldSparkBurst(LW/2, LH/2, 36); triggerShake(1.2); burst(LW/2, LH/2, 18);
           toast(def.scatter+' <b>Çarpan!</b> ×'+ev.multSum+' '+(SL.fsPool>0?' birikti → toplam ×'+accumulatedMult:''));
         }
       } else {
@@ -2870,7 +3419,7 @@ async function scatterSpin(){
         $('fsBanner').innerHTML = '✨ '+scat+' SCATTER! '+def.fs+' FS KAZANDIN ✨<small style="display:block;font-size:.7rem;margin-top:.3rem">TOPLAM ÇARPAN ×'+(SL.fsTotalMult||0)+'</small>';
         $('fsBanner').classList.remove('hidden');
         toast('✨ <b>'+scat+' Scatter!</b> '+def.fs+' ücretsiz dönüş kazandın! Toplam çarpan ×'+(SL.fsTotalMult||0));
-        burst(LW/2, LH/3, 60);
+        goldSparkBurst(LW/2, LH/3, 64); triggerShake(1.4); burst(LW/2, LH/3, 28);
       }
       break;
     }
@@ -2890,9 +3439,8 @@ async function scatterSpin(){
     if(m>=6){
       $('bigWin').innerHTML = 'BÜYÜK KAZANÇ<small>+'+fmt(Math.round(totalWin))+' dürTL</small>';
       $('bigWin').classList.remove('hidden');
-      $('slotStage').classList.add('shake-stage');
+      triggerShake(1.8); goldSparkBurst(LW/2, LH/2, 72);
       setTimeout(()=>$('bigWin').classList.add('hidden'), 1700);
-      setTimeout(()=>$('slotStage').classList.remove('shake-stage'), 500);
       buzz([40,55,40,55,150]);
       toast('🎉 <b>Büyük kazanç!</b> '+fmt(Math.round(totalWin))+' dürTL — '+tumbleCount+' tumble zinciri!');
     }
@@ -3185,9 +3733,8 @@ function onSettle(){
     if(mult >= 6){
       $('bigWin').innerHTML = 'BÜYÜK KAZANÇ<small>+' + fmt(total) + ' dürTL</small>';
       $('bigWin').classList.remove('hidden');
-      $('slotStage').classList.add('shake-stage');
+      triggerShake(1.6); goldSparkBurst(LW/2, LH/2, 56);
       setTimeout(() => $('bigWin').classList.add('hidden'), 1700);
-      setTimeout(() => $('slotStage').classList.remove('shake-stage'), 500);
       buzz([40,55,40,55,150]);
       toast('🎉 <b>Büyük kazanç!</b> ' + fmt(total) + ' dürTL — Selin bunu duymak isteyecek.');
     }
@@ -3755,232 +4302,7 @@ function replyFor(t){
   return fall[Math.random()*fall.length | 0];
 }
 
-/* ================= KAPI SAHNESİ: MİNİ MAKİNELER + RULET ================= */
-const MACHINES = [
- {id:'nazar', icon:'🧿', name:'NAZAR', desc:'klasik üçlü · dengeli',
-  set:['🍒','🍋','🔔','⭐','7️⃣'], rules:'ikili 2 · üçlü 30 · 7ler 80',
-  pay: s => (s[0]===s[1] && s[1]===s[2]) ? (s[0]==='7️⃣' ? 80 : 30)
-          : (s[0]===s[1] || s[1]===s[2] || s[0]===s[2] ? 2 : 0)},
- {id:'pati', icon:'🐈‍⬛', name:'PATİ', desc:'kedi şansı · sık küçük',
-  set:['🐟','🧶','🥛','🐾','🐈‍⬛'], rules:'her 6. çevirmede pati uzanır',
-  pay: s => (s[0]===s[1] && s[1]===s[2]) ? 25
-          : (s[0]===s[1] || s[1]===s[2] || s[0]===s[2] ? 3 : 0)},
- {id:'melek', icon:'😇', name:'MELEK', desc:'nadir ama büyük',
-  set:['☁️','🕊️','✨','🌟','😇'], rules:'😇😇😇 = 150 · ikili sayılmaz',
-  pay: s => (s[0]===s[1] && s[1]===s[2]) ? (s[0]==='😇' ? 150 : 40) : 0},
-];
-let lobby = 0;
-const mCount = {};
-let preAngel = null;
-const GATE_PRICE = { luna: 40, vega: 30, mira: 70 };   // kapı fiyatı < içerideki fiyat (60/45/100)
-
-function addLobby(w){
-  lobby += w;
-  const el = $('lobbyChips');
-  if(el) el.textContent = fmt(lobby);
-  renderGateAngels();
-}
-function renderGateAngels(){
-  const row = $('gaRow'); if(!row || typeof ANGELS === 'undefined') return;
-  row.innerHTML = ANGELS.map(a => {
-    const gp = GATE_PRICE[a.id], mine = preAngel === a.id, locked = lobby < gp && !mine;
-    return `<div class="ga-card ${locked ? 'ga-lock' : ''} ${mine ? 'ga-mine' : ''}">
-      <div class="ga-av">${a.icon}</div>
-      <div class="ga-nm">${a.name}</div>
-      <div class="ga-tg">${a.tag}</div>
-      <div class="ga-pr">${mine ? '✓ seninle geliyor' : '◈ ' + gp + ' dürTL <s>◈ ' + a.price + '</s>'}</div>
-      <button class="ga-btn" ${mine ? 'disabled' : ''} onclick="hireGateAngel('${a.id}')">${mine ? '✓ kazanıldı' : locked ? '🔒 oyna, kazan' : 'gönlünü kazan'}</button>
-    </div>`;
-  }).join('');
-}
-function hireGateAngel(id){
-  const a = ANGELS.find(x => x.id === id);
-  const gp = GATE_PRICE[id];
-  if(preAngel === id) return;
-  if(lobby < gp){ toast('🔒 Lobicin yetmiyor (' + fmt(lobby) + '/' + gp + ') — makineler ve çark seni bekliyor.'); return; }
-  lobby -= gp;
-  $('lobbyChips').textContent = fmt(lobby);
-  preAngel = id;
-  renderGateAngels();
-  buzz([30, 50, 30]);
-  sfxWin(2);
-  toast('🕊 <b>' + a.name + '</b> etkilendi — “' + a.hello + '” Kapı açıldığında yanında olacak.');
-}
-const SYM_H = 26, STRIP_COPY = 8;      // her set 8 kopya → 40 hücreli şerit
-const M_ALIGN = 24;                    // pencere ortasına hizalama (74px pencere, 26px hücre)                    // pencere ortasına hizalama (64px pencere, 26px hücre)
-
-function stripHTML(set){
-  let h = '';
-  for(let k = 0; k < STRIP_COPY; k++) set.forEach(sy => h += '<i>' + sy + '</i>');
-  return h;
-}
-function renderMachines(){
-  const row = $('m3dRow'); if(!row) return;
-  row.innerHTML = '';
-  MACHINES.forEach(m => {
-    row.insertAdjacentHTML('beforeend',
-     `<div class="m3d-g">
-        <div class="m3d" id="m3d-${m.id}">
-          <div class="mcandle"><i></i></div>
-          <div class="m3d-side"></div>
-          <button class="mlever" id="lv-${m.id}" title="Kolu çek" aria-label="Kolu çek"><i></i></button>
-          <div class="m3d-face">
-            <div class="m3d-top">${m.icon} ${m.name}</div>
-            <div class="mwin">${[0,1,2].map(i => `<div class="mcell"><div class="mstrip" id="st-${m.id}-${i}">${stripHTML(m.set)}</div></div>`).join('')}</div>
-            <div class="mmsg" id="mmsg-${m.id}">${m.rules}</div>
-          </div>
-          <div class="mbase"></div>
-          <div class="m3d-shadow"></div>
-        </div>
-        <div class="mlabel">${m.desc}</div>
-      </div>`);
-    [0,1,2].forEach(i => {
-      const el = $('st-' + m.id + '-' + i);
-      el.dataset.y = '0';
-      el.style.transform = 'translateY(' + M_ALIGN + 'px)';
-    });
-    $('lv-' + m.id).onclick = () => mspin(m.id);
-    const mElem = $('m3d-' + m.id);
-    if(mElem){
-      mElem.style.cursor = 'pointer';
-      mElem.onclick = (e) => { if(!e.target.closest('.mlever')) mspin(m.id); };
-    }
-  });
-  const ball = $('rlBall');
-  if(ball) ball.style.transform = 'translate(-50%,-50%) rotate(35deg) translateX(82px)';
-}
-function mspin(id){
-  const m = MACHINES.find(x => x.id === id);
-  const mc = $('m3d-' + id), lv = $('lv-' + id), msg = $('mmsg-' + id);
-  if(m._busy) return;
-  m._busy = true;
-  mCount[id] = (mCount[id] || 0) + 1;
-  lv.classList.add('pulled'); setTimeout(() => lv.classList.remove('pulled'), 430);
-  tone(170, 0, .05, 'square', .08); tone(110, .05, .07, 'square', .09);
-  msg.classList.remove('win'); msg.textContent = '…';
-  const L = m.set.length;
-  let picks = [0,1,2].map(() => Math.random()*L | 0);
-  if(id === 'pati' && mCount[id] % 6 === 0){
-    const aa = Math.random()*L | 0; let bb = Math.random()*L | 0;
-    if(bb === aa) bb = (aa + 1) % L;
-    picks = [aa, aa, bb];
-  }
-  [0,1,2].forEach(reel => {
-    const el = $('st-' + id + '-' + reel);
-    const curY = +el.dataset.y || 0;
-    const curIdx = ((Math.round(curY / SYM_H) % L) + L) % L;
-    const delta = ((picks[reel] - curIdx) % L + L) % L;
-    const newY = curY + ((5 + reel * 2) * L + delta) * SYM_H;
-    const dur = .85 + reel * .42;
-    el.style.transition = 'none';
-    el.style.transform = 'translateY(' + (M_ALIGN - curY) + 'px)';
-    void el.offsetHeight;
-    setTimeout(() => {
-      el.classList.add('spinning');
-      el.style.transition = 'transform ' + dur + 's cubic-bezier(.12,.55,.16,1)';
-      el.style.transform = 'translateY(' + (M_ALIGN - newY) + 'px)';
-    }, 25);
-    setTimeout(() => {
-      el.classList.remove('spinning');
-      const norm = (((Math.round(newY / SYM_H)) % (L * STRIP_COPY)) + L * STRIP_COPY) % (L * STRIP_COPY) * SYM_H;
-      el.dataset.y = String(norm);
-      el.style.transition = 'none';
-      el.style.transform = 'translateY(' + (M_ALIGN - norm) + 'px)';
-      tone(760 + reel * 160, 0, .05, 'square', .05); buzz(6);
-      if(reel === 2) msettle(m, picks, msg, mc);
-    }, dur * 1000 + 70);
-  });
-}
-function msettle(m, picks, msg, mc){
-  m._busy = false;
-  const syms = picks.map(i => m.set[i]);
-  const w = m.pay(syms);
-  if(w > 0){
-    addLobby(w);
-    msg.classList.add('win'); msg.textContent = '+' + w + ' dürTL';
-    mc.classList.add('glow'); setTimeout(() => mc.classList.remove('glow'), 1300);
-    sfxWin(w / 30); buzz(30);
-    if(w >= 80) toast('🎰 <b>' + m.name + ' patladı:</b> +' + w + ' dürTL. İçeride güzel harcanır.');
-  } else msg.textContent = m.rules;
-}
-
-/* ---- Avrupa ruleti (0-36, gerçek dizilim) ---- */
-const RL_ORD = [0,32,15,19,4,21,2,25,17,34,6,27,13,36,11,30,8,23,10,5,24,16,33,1,20,14,31,9,22,18,29,7,28,12,35,3,26];
-const RL_RED = new Set([1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36]);
-const RL = { rot: 0, spinning: false };
-function rlSmooth(x){ x = Math.max(0, Math.min(1, x)); return x*x*(3-2*x); }
-function rlBuild(){
-  const disc = $('rlDisc'), ring = $('rlRing');
-  if(!disc || !ring) return;
-  const seg = 360 / 37;
-  let con = '';
-  RL_ORD.forEach((n, i) => {
-    const col = n === 0 ? '#0e5c2e' : RL_RED.has(n) ? '#7e1b1b' : '#171310';
-    con += col + ' ' + (i*seg).toFixed(3) + 'deg ' + ((i+1)*seg).toFixed(3) + 'deg,';
-  });
-  ring.style.background = 'conic-gradient(from ' + (-seg/2).toFixed(3) + 'deg, ' + con.slice(0, -1) + ')';
-  RL_ORD.forEach((n, i) => {
-    const ang = i * seg + seg / 2;
-    disc.insertAdjacentHTML('beforeend',
-      '<span class="rl-num" style="transform:rotate(' + ang.toFixed(2) + 'deg) translateX(64px) rotate(90deg)">' + n + '</span>');
-  });
-  $('rlRoot').onclick = rlSpin;
-}
-function rlSpin(){
-  if(RL.spinning) return;
-  RL.spinning = true;
-  const msg = $('rlMsg'), ball = $('rlBall'), disc = $('rlDisc');
-  msg.classList.remove('win'); msg.textContent = 'Çark dönüyor…';
-  tone(1350, 0, .05, 'sine', .05);
-  const seg = 360 / 37;
-  const resIdx = Math.random()*37 | 0, resNum = RL_ORD[resIdx];
-  const T = 4700, t0 = performance.now();
-  const rot0 = RL.rot;
-  const rotF = RL.rot + 1440 + Math.random()*360;
-  let bang = Math.random()*360 | 0;
-  const bvel = -(1500 + Math.random()*450);
-  const R0 = 82, R1 = 62;
-  let radius = R0, clickAcc = 0, last = t0;
-  function frame(now){
-    const p = Math.min(1, (now - t0)/T);
-    const dt = Math.min(.05, (now - last)/1000 || .016); last = now;
-    const e = 1 - Math.pow(1 - p, 3);
-    const rot = rot0 + (rotF - rot0) * e;
-    disc.style.transform = 'rotate(' + rot + 'deg)';
-    if(p < 0.62){
-      const decay = Math.exp(-2.4 * ((now - t0)/1000) / 2.9);
-      bang += bvel * decay * dt;
-      radius = R0 - (R0 - R1) * rlSmooth(p / 0.62);
-      clickAcc += Math.abs(bvel * decay) * dt;
-      if(clickAcc > 46){ clickAcc = 0; tone(2100, 0, .012, 'square', .016); }
-    } else {
-      const target = rot + resIdx * seg + seg / 2;
-      bang += ((((target - bang) % 360) + 540) % 360 - 180) * 0.13;
-      radius += (R1 - radius) * 0.2;
-    }
-    ball.style.transform = 'translate(-50%,-50%) rotate(' + bang.toFixed(2) + 'deg) translateX(' + radius.toFixed(1) + 'px)';
-    RL.rot = rot;
-    if(p < 1) requestAnimationFrame(frame);
-    else rlWin(resNum, msg);
-  }
-  requestAnimationFrame(frame);
-}
-function rlWin(n, msg){
-  RL.spinning = false;
-  const renk = n === 0 ? 'yeşil' : (RL_RED.has(n) ? 'kırmızı' : 'siyah');
-  const w = n === 0 ? 50 : ([7,17,27].includes(n) ? 77 : (RL_RED.has(n) ? 10 : 5));
-  lobby += w;
-  $('lobbyChips').textContent = fmt(lobby);
-  msg.classList.add('win');
-  msg.textContent = n + ' ' + renk + ' — +' + w + ' dürTL lobiye düştü';
-  tone(880, 0, .12, 'triangle', .11); tone(1175, .1, .18, 'triangle', .11);
-  buzz([20, 30, 20]);
-  if(n === 0){ sfxWin(4); toast('🎯 <b>SIFIR!</b> Çark seni seçti: +50 dürTL.'); }
-  if([7,17,27].includes(n)) toast('7️⃣ <b>Şanslı seri:</b> ' + n + ' geldi — +77 dürTL.');
-}
-renderMachines();
-rlBuild();
-try{ if('speechSynthesis' in window){ speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged = () => speechSynthesis.getVoices(); } }catch(e){}
+/* old gate machines removed — cinematic v2 active */
 
 /* ================= ŞANS MELEKLERİ ================= */
 const ANGELS = [
@@ -4001,7 +4323,7 @@ const ANGELS = [
   streak:'Üç turdur düşmüyor… bir çay molası verelim mi? Uğur, molada da çalışır. 🍀'},
 ];
 let angel = null;
-renderGateAngels();
+if(typeof renderGateAngels==='function') renderGateAngels();
 
 function openAngels(){ renderPersonas(); openOvl('ovlAngels'); }
 function renderPersonas(){
@@ -4477,6 +4799,9 @@ function rouDraw(){
   const ball = $('rwBall');
   if(ball) ball.style.transform = 'translate(-50%,-50%) rotate(35deg) translateX(70px)';
 }
+/* ---- Avrupa ruleti (0-36) ---- */
+const RL_ORD = [0,32,15,19,4,21,2,25,17,34,6,27,13,36,11,30,8,23,10,5,24,16,33,1,20,14,31,9,22,18,29,7,28,12,35,3,26];
+const RL_RED = new Set([1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36]);
 function rouPays(b){
   if(b === 'red')   return x => x !== 0 && RL_RED.has(x) ? 2 : 0;
   if(b === 'black') return x => x !== 0 && !RL_RED.has(x) ? 2 : 0;
@@ -5007,322 +5332,209 @@ function crackleOn(){
   }catch(e){}
 }
 /* ================= KULÜP KASASI (VAULT) SİSTEMİ ================= */
+/* ================= KULÜP KASASI (VAULT) — PRESTİJ KASASI v2 ================= */
 const VAULT = {
-  activeTab: 'dep',
-  depMethod: 'fast',
-  nightBonusClaimed: false,
+  activeTab: 'chips',
+  dailyClaimed: false,
   cashbackClaimed: false,
+  nightBonusClaimed: false,
   ledger: []
 };
-
-try {
-  VAULT.ledger = JSON.parse(localStorage.getItem('durtu_ledger') || '[]');
-  if(!Array.isArray(VAULT.ledger)) VAULT.ledger = [];
-} catch(e){ VAULT.ledger = []; }
-
-if(VAULT.ledger.length === 0){
-  VAULT.ledger.push({
-    id: 'TX-INIT',
-    date: 'Bugün ' + new Date().toLocaleTimeString('tr-TR', {hour:'2-digit', minute:'2-digit'}),
-    type: 'Hoş Geldin Jesti',
-    amt: 1000,
-    method: 'Kulüp Hediyesi',
-    status: 'ok'
-  });
+try{
+  VAULT.ledger = JSON.parse(localStorage.getItem('durtu_ledger')||'[]');
+  if(!Array.isArray(VAULT.ledger)) VAULT.ledger=[];
+}catch(e){ VAULT.ledger=[]; }
+if(VAULT.ledger.length===0){
+  VAULT.ledger.push({id:'TX-INIT', date:'Bugün '+new Date().toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'}), type:'Hoş Geldin Jesti', amt:1000, method:'Kulüp Hediyesi', status:'ok'});
 }
-
-function openVault(){
-  switchVaultTab(VAULT.activeTab || 'dep');
-  renderLedger();
-  updateVaultBonus();
-  openOvl('ovlVault');
-  renderChips();
-}
-
-function switchVaultTab(tab){
-  VAULT.activeTab = tab;
-  ['dep','with','bonus','ledg'].forEach(t => {
-    const b = $('vtab-' + t);
-    const sec = $('vsec-' + t);
-    if(b) b.classList.toggle('active', t === tab);
-    if(sec) sec.classList.toggle('hidden', t !== tab);
-  });
-  if(tab === 'ledg') renderLedger();
-  if(tab === 'bonus') updateVaultBonus();
-}
-
-function selectDepMethod(m){
-  VAULT.depMethod = m;
-  ['fast','papara','usdt'].forEach(x => {
-    const card = $('mcard-' + x);
-    if(card) card.classList.toggle('active', x === m);
-  });
-  const bankName = $('depBankName');
-  const receiver = $('depReceiver');
-  const ibanLbl = $('depAddrLbl');
-  const ibanVal = $('depIban');
-  if(m === 'fast'){
-    bankName.textContent = 'Garanti BBVA · FAST';
-    receiver.textContent = 'DÜRTÜ KULÜP HİZMETLERİ A.Ş.';
-    ibanLbl.textContent = 'IBAN Numarası';
-    ibanVal.textContent = 'TR33 0006 2000 0000 1928 3746 55';
-  } else if(m === 'papara'){
-    bankName.textContent = 'Papara Elektronik Para A.Ş.';
-    receiver.textContent = 'DÜRTÜ KULÜP YÖNETİM';
-    ibanLbl.textContent = 'Papara No';
-    ibanVal.textContent = '1984273891';
-  } else if(m === 'usdt'){
-    bankName.textContent = 'Tether USD · TRC-20 (Tron)';
-    receiver.textContent = 'Kulüp Sıcak Cüzdanı #4';
-    ibanLbl.textContent = 'TRC-20 Adresi';
-    ibanVal.textContent = 'TX8kM49vB2eP91xLqZzY3w5aR7vT1cQp9e';
-  }
-}
-
-function setDepAmt(val){
-  $('depAmountInp').value = val;
-}
-
-function copyDepInfo(id){
-  const el = $(id);
-  if(!el) return;
-  const text = el.textContent;
-  navigator.clipboard.writeText(text).then(() => {
-    toast('📋 Kopyalandı: <b>' + text + '</b>');
-  }).catch(() => {
-    toast('Kopyalandı: ' + text);
-  });
-}
-
-function submitDeposit(){
-  const amt = parseInt($('depAmountInp').value, 10);
-  if(isNaN(amt) || amt < 100){
-    toast('⚠️ Minimum yatırım tutarı 100 dürTL’dir.');
-    return;
-  }
-  const btn = $('btnSubmitDep');
-  btn.disabled = true;
-  btn.innerHTML = '<span>⏳ Selin işlemi doğruluyor (Banka sorgulanıyor)...</span>';
-  
-  setTimeout(() => {
-    btn.disabled = false;
-    btn.innerHTML = '<span>YATIRIMI BİLDİR & BAKİYE YÜKLE</span>';
-    
-    state.chips += amt;
-    renderChips();
-    
-    const methodName = VAULT.depMethod === 'fast' ? 'FAST/Havale' : (VAULT.depMethod === 'papara' ? 'Papara' : 'USDT');
-    addLedgerEntry('Mevduat (Yatırım)', amt, methodName, 'ok');
-    saveDemo();
-    
-    sfxWin(2);
-    buzz([30, 40, 50]);
-    toast('💳 <b>Yatırım Onaylandı!</b> ◈ +' + fmt(amt) + ' dürTL hesabınıza yüklendi.');
-  }, 1800);
-}
-
-function toggleWithFields(){
-  const m = $('withMethod').value;
-  const lbl = $('withTargetLbl');
-  const inp = $('withTargetInp');
-  if(m === 'bank'){
-    lbl.textContent = 'Banka IBAN Numarası (Ad Soyad ile uyumlu)';
-    inp.placeholder = 'TR...';
-  } else if(m === 'papara'){
-    lbl.textContent = 'Papara Hesap No / Kullanıcı Adı';
-    inp.placeholder = '10 haneli Papara numarası';
-  } else if(m === 'crypto'){
-    lbl.textContent = 'USDT TRC-20 Cüzdan Adresi';
-    inp.placeholder = 'T ile başlayan TRC-20 adresi';
-  }
-}
-
-function submitWithdraw(){
-  const amt = parseInt($('withAmtInp').value, 10);
-  const target = ($('withTargetInp').value || '').trim();
-  if(isNaN(amt) || amt < 500){
-    toast('⚠️ Minimum çekim tutarı 500 dürTL’dir.');
-    return;
-  }
-  if(amt > state.chips){
-    toast('⚠️ Yetersiz bakiye! Mevcut: ◈ ' + fmt(state.chips) + ' dürTL');
-    return;
-  }
-  if(!target || target.length < 5){
-    toast('⚠️ Lütfen geçerli bir hesap/cüzdan adresi giriniz.');
-    return;
-  }
-  
-  state.chips -= amt;
-  renderChips();
-  
-  const mVal = $('withMethod').value;
-  const mName = mVal === 'bank' ? 'Banka/FAST' : (mVal === 'papara' ? 'Papara' : 'USDT');
-  
-  const tx = addLedgerEntry('Tahsilat (Çekim)', -amt, mName, 'wait');
-  saveDemo();
-  
-  toast('💸 <b>Çekim Talebi Alındı:</b> ◈ ' + fmt(amt) + ' dürTL incelemeye alındı. Selin 2 dk içinde onaylayacak.');
-  closeOvl('ovlVault');
-  
-  setTimeout(() => {
-    tx.status = 'ok';
-    try { localStorage.setItem('durtu_ledger', JSON.stringify(VAULT.ledger)); }catch(e){}
-    toast('✅ <b>Transfer Tamamlandı:</b> ◈ ' + fmt(amt) + ' dürTL ' + mName + ' hesabınıza aktarıldı.');
-  }, 4500);
-}
-
-function updateVaultBonus(){
-  const wagered = (state.stats && state.stats.wagered) || 1200;
-  const won = (state.stats && state.stats.won) || 800;
-  const netLoss = Math.max(0, wagered - won);
-  const cb = Math.max(150, Math.round(netLoss * 0.1));
-  $('cashbackAmtVal').textContent = '◈ ' + fmt(cb) + ' dürTL';
-  
-  const targetTurnover = 10000;
-  const currentTurnover = Math.min(targetTurnover, wagered);
-  const pct = Math.round((currentTurnover / targetTurnover) * 100);
-  $('turnoverPct').textContent = pct + '%';
-  $('turnoverBar').style.width = pct + '%';
-  $('turnoverCurrent').textContent = fmt(currentTurnover) + ' dürTL çevrildi';
-  
-  const hr = new Date().getHours();
-  const isNight = (hr >= 22 || hr < 6);
-  const stBadge = $('nightBonusStatus');
-  const btnNight = $('btnClaimNight');
-  if(VAULT.nightBonusClaimed){
-    stBadge.textContent = 'Kullanıldı (Yarın tekrar)';
-    stBadge.style.color = 'var(--muted)';
-    btnNight.disabled = true;
-  } else if(isNight){
-    stBadge.textContent = 'Kullanılabilir (Gece Saati)';
-    stBadge.style.color = '#4ade80';
-    btnNight.disabled = false;
-  } else {
-    stBadge.textContent = 'Saat 22:00’de açılır';
-    stBadge.style.color = '#facc15';
-    btnNight.disabled = false;
-  }
-}
-
-function claimCashback(){
-  if(VAULT.cashbackClaimed){
-    toast('Bu haftaki sükûnet iadesini zaten aldınız.');
-    return;
-  }
-  const amt = parseInt($('cashbackAmtVal').textContent.replace(/[^\d]/g, ''), 10) || 150;
-  VAULT.cashbackClaimed = true;
-  state.chips += amt;
-  renderChips();
-  addLedgerEntry('Sükûnet İadesi', amt, 'Kulüp Cashback', 'ok');
-  saveDemo();
-  sfxWin(1.5);
-  toast('🍷 <b>Sükûnet İadesi Alındı!</b> ◈ +' + fmt(amt) + ' dürTL hesabınıza eklendi.');
-  $('btnClaimCashback').disabled = true;
-  $('btnClaimCashback').textContent = 'ALINDI';
-}
-
-function claimNightBonus(){
-  if(VAULT.nightBonusClaimed){
-    toast('Gece kuşu yakıtını bu gece için zaten aldınız.');
-    return;
-  }
-  VAULT.nightBonusClaimed = true;
-  const amt = 500;
-  state.chips += amt;
-  renderChips();
-  addLedgerEntry('Gece Kuşu Yakıtı', amt, 'Aviator Promosyon', 'ok');
-  saveDemo();
-  sfxWin(1.8);
-  toast('✈️ <b>Gece Yakıtı Yüklendi!</b> ◈ +' + fmt(amt) + ' dürTL hesabınıza tanımlandı.');
-  updateVaultBonus();
-}
-
 const PROMO_CODES = {
-  'DURTU2026': { amt: 500, label: 'Kulüp Hoş Geldin Kuponu' },
-  'VIP-KULUP': { amt: 1000, label: 'VIP Kurucu Bakiyesi' },
-  'SELIN-GIFT': { amt: 350, label: "Selin'in Şans İkramı" },
-  'TURBO777': { amt: 777, label: 'Yüksek Adrenalin Paketi' },
-  'KASA50': { amt: 50, label: 'Mini Lobi Çipi' }
+  'DURTU-VIP': {amt:500, label:'Kapı Mühürü — VIP'},
+  'SELIN-2026': {amt:350, label:"Selin'in Davetiyesi"},
+  'SPEAKEASY-77': {amt:777, label:'Speakeasy Gizli Kasa'},
+  'KARA-KUZGUN': {amt:666, label:'Kara Kuzgun Sandığı'},
+  'GECE-00': {amt:400, label:'Gece 00 Ritüeli'},
+  'DURTU2026': {amt:500, label:'Kulüp Hoş Geldin'},
+  'VIP-KULUP': {amt:1000, label:'VIP Kurucu'},
+  'TURBO777': {amt:777, label:'Yüksek Adrenalin'},
 };
 
-function claimPromoCode(){
-  const inp = $('promoInp'); if(!inp) return;
-  const msg = $('promoMsg');
-  const code = (inp.value || '').trim().toUpperCase();
-  if(!code){
-    if(msg) { msg.style.color = 'var(--red)'; msg.textContent = 'Lütfen bir promosyon kodu girin.'; }
-    return;
+function openVault(){
+  renderVaultStats();
+  switchVaultTab(VAULT.activeTab||'chips');
+  openOvl('ovlVault');
+}
+function switchVaultTab(tab){
+  VAULT.activeTab=tab;
+  ['chips','daily','cashback','ach','ledg'].forEach(t=>{
+    const b=$('vtab-'+t), sec=$('vsec-'+t);
+    if(b) b.classList.toggle('active', t===tab);
+    if(sec) sec.classList.toggle('hidden', t!==tab);
+  });
+  if(tab==='ledg') renderLedger();
+  if(tab==='chips') renderVaultStats();
+  if(tab==='daily') renderDaily();
+  if(tab==='cashback') updateVaultBonus();
+  if(tab==='ach') renderAchievements();
+}
+function renderVaultStats(){
+  const wagered = (state.stats&&state.stats.wagered)||0;
+  const won = (state.stats&&state.stats.won)||0;
+  const net = won - wagered;
+  const vInfo = getVipInfo(wagered);
+  const elW=$('vaultWageredInfo'); if(elW) elW.textContent=`Toplam çevrim: ◈ ${fmt(wagered)} · Kazanç: ◈ ${fmt(won)} · Net: ${net>=0?'+':''}${fmt(net)}`;
+  const icon=$('vaultVipIcon'), name=$('vaultVipName'), next=$('vaultVipNext'), bar=$('vaultVipBar'), mini=$('vaultTierMini');
+  if(icon) icon.textContent=vInfo.tier.icon;
+  if(name) name.textContent=vInfo.tier.name+' Üye';
+  if(mini) mini.textContent=vInfo.tier.name;
+  if(next) next.textContent= vInfo.next ? `Sonraki: ${vInfo.next.name} için ◈ ${fmt(vInfo.remaining)}` : 'Zirve — Elmas Kulüp';
+  if(bar) bar.style.width=vInfo.pct+'%';
+  const spins=$('vaultStatSpins'), best=$('vaultStatBest'), streak=$('vaultStatStreak'), badge=$('vaultNetBadge');
+  if(spins) spins.textContent=fmt((state.stats&&state.stats.spins)||0);
+  if(best) best.textContent= (typeof CR!=='undefined'&&CR.best)? CR.best.toFixed(2)+'×' : '—';
+  if(streak) streak.textContent=(state.streakDays||1)+' gün';
+  if(badge){ badge.textContent= net>0?'Artıda': net<0?'Ekside':'Nötr'; badge.className= net>0?'badge-ok': net<0?'badge-wait':'badge-ok'; }
+  updateVaultBonus();
+}
+function renderDaily(){
+  const dots=$('dailyDots'), nameEl=$('dailyName'), badge=$('dailyStreakBadge'), reward=$('dailyRewardVal'), msg=$('dailyMsg');
+  const streak = state.streakDays||1;
+  const today = new Date().toDateString();
+  const sv = loadDemo();
+  const claimedToday = sv && sv.lastDay===today;
+  if(nameEl) nameEl.textContent=state.name||'Misafir';
+  if(badge) badge.textContent=`Seri: ${streak} gün`;
+  if(dots){
+    let h=''; for(let i=1;i<=7;i++){ const done=i<streak, cur=i===streak; h+=`<div style="width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.72rem;border:1px solid ${done?'var(--gold)':cur?'#f6e27a':'var(--line)'};background:${done?'rgba(212,175,55,.18)':cur?'rgba(246,226,122,.18)':'transparent'};color:${done||cur?'var(--gold)':'var(--muted)'}">${done?'✓':i}</div>`; }
+    dots.innerHTML=h;
   }
-  state.claimedPromos = state.claimedPromos || [];
-  if(state.claimedPromos.includes(code)){
-    if(msg) { msg.style.color = 'var(--red)'; msg.textContent = 'Bu kodu daha önce kullandınız.'; }
-    toast('Bu promosyon kodu daha önce tahsil edildi.');
-    return;
-  }
-  const promo = PROMO_CODES[code];
-  if(!promo){
-    if(msg) { msg.style.color = 'var(--red)'; msg.textContent = 'Geçersiz veya süresi dolmuş kod.'; }
-    toast('Geçersiz promosyon kodu.');
-    return;
-  }
-  state.claimedPromos.push(code);
-  state.chips += promo.amt;
-  renderChips();
-  if(typeof addLedgerEntry === 'function'){
-    addLedgerEntry('Promosyon Kodu', promo.amt, promo.label, 'ok');
-  }
-  tone(523, 0, .08, 'triangle', .1);
-  setTimeout(() => tone(659, 0, .08, 'triangle', .1), 90);
-  setTimeout(() => tone(784, 0, .14, 'triangle', .15), 180);
-  buzz([20, 30, 45]);
-  if(msg) { msg.style.color = 'var(--gold)'; msg.textContent = '✓ ' + promo.label + ' tanımlandı: +◈ ' + fmt(promo.amt) + ' dürTL!'; }
-  toast('🎁 <b>Promosyon aktif:</b> +' + fmt(promo.amt) + ' dürTL (' + promo.label + ') hesabına geçti.');
-  inp.value = '';
+  const base=100, bonus=Math.min(70, (streak-1)*12);
+  if(reward) reward.textContent=`◈ ${fmt(base+bonus)} dürTL`;
+  const btn=$('btnClaimDaily');
+  if(btn){ btn.disabled=!!claimedToday; btn.textContent= claimedToday ? 'ALINDI' : 'RİTÜELİ AL'; }
+  if(msg) msg.textContent= claimedToday ? 'Bugünkü ritüel alındı — yarın tekrar gel, seri bozulmasın.' : 'Seri bozulmadan devam ederse 7. günde Elmas anahtar düşer.';
+}
+function claimDailyBonus(){
+  const today=new Date().toDateString();
+  const sv=loadDemo();
+  if(sv && sv.lastDay===today){ toast('Bugünkü ritüel zaten alındı.'); return; }
+  const streak=state.streakDays||1;
+  const amt=100+Math.min(70,(streak-1)*12);
+  state.chips+=amt; renderChips();
+  addLedgerEntry('Günlük Giriş Bonusu', amt, `${streak} gün seri`, 'ok');
   saveDemo();
+  sfxWin(1.2); buzz([20,30]);
+  toast(`☀️ <b>Günlük ritüel:</b> +${fmt(amt)} dürTL — seri ${streak} gün`);
+  renderDaily(); renderVaultStats();
 }
-
+function updateVaultBonus(){
+  const wagered=(state.stats&&state.stats.wagered)||0;
+  const won=(state.stats&&state.stats.won)||0;
+  const netLoss=Math.max(0, wagered-won);
+  const cb=Math.max(0, Math.round(netLoss*0.10));
+  const el=$('cashbackAmtVal'); if(el) el.textContent=`◈ ${fmt(cb)} dürTL`;
+  const detail=$('cashbackDetail'); if(detail) detail.textContent= netLoss>0 ? `Net kayıp ◈ ${fmt(netLoss)} · %10 iade` : 'Kayıp yok — bu hafta artıdasın';
+  const target=10000, cur=Math.min(target,wagered), pct=Math.round((cur/target)*100);
+  const pctEl=$('turnoverPct'), bar=$('turnoverBar'), curEl=$('turnoverCurrent');
+  if(pctEl) pctEl.textContent=pct+'%';
+  if(bar) bar.style.width=pct+'%';
+  if(curEl) curEl.textContent=fmt(cur)+' dürTL çevrildi';
+  const hr=new Date().getHours(), isNight=(hr>=22||hr<6);
+  const stBadge=$('nightBonusStatus'), btnNight=$('btnClaimNight');
+  if(VAULT.nightBonusClaimed){ if(stBadge){stBadge.textContent='Kullanıldı (Yarın tekrar)'; stBadge.style.color='var(--muted)';} if(btnNight) btnNight.disabled=true; }
+  else if(isNight){ if(stBadge){stBadge.textContent='Kullanılabilir (Gece)'; stBadge.style.color='#4ade80';} if(btnNight) btnNight.disabled=false; }
+  else { if(stBadge){stBadge.textContent='22:00’de açılır'; stBadge.style.color='#facc15';} if(btnNight) btnNight.disabled=false; }
+}
+function claimCashback(){
+  if(VAULT.cashbackClaimed){ toast('Bu haftaki iade zaten alındı.'); return; }
+  const wagered=(state.stats&&state.stats.wagered)||0, won=(state.stats&&state.stats.won)||0;
+  const netLoss=Math.max(0,wagered-won);
+  const amt=Math.round(netLoss*0.10);
+  if(amt<=0){ toast('İade edilecek kayıp yok — bu hafta artıdasın, ne güzel.'); return; }
+  VAULT.cashbackClaimed=true;
+  state.chips+=amt; renderChips();
+  addLedgerEntry('Haftalık Cashback %10', amt, 'Sükûnet İadesi', 'ok');
+  saveDemo(); sfxWin(1.5);
+  toast(`🍷 <b>Cashback alındı:</b> ◈ +${fmt(amt)} dürTL`);
+  const btn=$('btnClaimCashback'); if(btn){btn.disabled=true; btn.textContent='ALINDI';}
+}
+function claimNightBonus(){
+  if(VAULT.nightBonusClaimed){ toast('Gece yakıtı zaten alındı.'); return; }
+  VAULT.nightBonusClaimed=true;
+  const amt=500;
+  state.chips+=amt; renderChips();
+  addLedgerEntry('Gece Kuşu Yakıtı', amt, 'Aviator 22-04', 'ok');
+  saveDemo(); sfxWin(1.8);
+  toast(`✈️ <b>Gece yakıtı:</b> +${fmt(amt)} dürTL`);
+  updateVaultBonus();
+}
+function claimPromoCode(){
+  const inp=$('promoInp'); if(!inp) return;
+  const msg=$('promoMsg');
+  const code=(inp.value||'').trim().toUpperCase();
+  if(!code){ if(msg){msg.style.color='#ef4444'; msg.textContent='Kod gir.';} return; }
+  state.claimedPromos=state.claimedPromos||[];
+  if(state.claimedPromos.includes(code)){ if(msg){msg.style.color='#ef4444'; msg.textContent='Bu kod zaten kullanıldı.';} toast('Kod daha önce kullanıldı.'); return; }
+  const promo=PROMO_CODES[code];
+  if(!promo){ if(msg){msg.style.color='#ef4444'; msg.textContent='Geçersiz kod.';} toast('Geçersiz kod.'); return; }
+  state.claimedPromos.push(code);
+  state.chips+=promo.amt; renderChips();
+  addLedgerEntry('Kupon Kodu', promo.amt, promo.label, 'ok');
+  tone(523,0,.08,'triangle',.1); setTimeout(()=>tone(659,0,.08,'triangle',.1),90); setTimeout(()=>tone(784,0,.14,'triangle',.15),180); buzz([20,30,45]);
+  if(msg){msg.style.color='var(--gold)'; msg.textContent=`✓ ${promo.label}: +◈ ${fmt(promo.amt)} dürTL!`;}
+  toast(`🎁 <b>${promo.label}:</b> +${fmt(promo.amt)} dürTL`);
+  inp.value=''; saveDemo(); renderVaultStats();
+}
 function addLedgerEntry(type, amt, method, status){
-  const now = new Date();
-  const dateStr = now.toLocaleTimeString('tr-TR', {hour:'2-digit', minute:'2-digit'});
-  const entry = {
-    id: 'TX-' + Math.random().toString(36).substr(2,6).toUpperCase(),
-    date: dateStr,
-    type: type,
-    amt: amt,
-    method: method,
-    status: status
-  };
+  const now=new Date();
+  const dateStr=now.toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'});
+  const entry={id:'TX-'+Math.random().toString(36).substr(2,6).toUpperCase(), date:dateStr, type:type, amt:amt, method:method, status:status};
   VAULT.ledger.unshift(entry);
-  if(VAULT.ledger.length > 40) VAULT.ledger = VAULT.ledger.slice(0, 40);
-  try{ localStorage.setItem('durtu_ledger', JSON.stringify(VAULT.ledger)); }catch(e){}
-  renderLedger();
-  return entry;
+  if(VAULT.ledger.length>50) VAULT.ledger=VAULT.ledger.slice(0,50);
+  try{localStorage.setItem('durtu_ledger', JSON.stringify(VAULT.ledger));}catch(e){}
+  renderLedger(); return entry;
 }
-
 function renderLedger(){
-  const tbody = $('ledgerRows');
-  if(!tbody) return;
-  if(VAULT.ledger.length === 0){
-    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:1.4rem">Henüz finansal işlem hareketi yok.</td></tr>';
-    return;
-  }
-  tbody.innerHTML = VAULT.ledger.map(row => {
-    const isPos = row.amt >= 0;
-    const amtStr = (isPos ? '+' : '') + fmt(row.amt) + ' dürTL';
-    const amtColor = isPos ? '#4ade80' : 'var(--red)';
-    const statusBadge = row.status === 'ok' 
-      ? '<span class="badge-ok">Tamamlandı</span>' 
-      : '<span class="badge-wait">İnceleniyor</span>';
-    return '<tr>' +
-      '<td style="font-family:monospace;color:var(--muted)">' + row.date + '</td>' +
-      '<td style="font-weight:600">' + row.type + '</td>' +
-      '<td style="font-family:var(--serif);font-weight:600;color:' + amtColor + '">◈ ' + amtStr + '</td>' +
-      '<td style="color:var(--muted)">' + row.method + '</td>' +
-      '<td>' + statusBadge + '</td>' +
-    '</tr>';
+  const tbody=$('ledgerRows'); if(!tbody) return;
+  if(VAULT.ledger.length===0){ tbody.innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:1.2rem">Henüz hareket yok.</td></tr>'; return; }
+  tbody.innerHTML=VAULT.ledger.map(row=>{
+    const isPos=row.amt>=0, amtStr=(isPos?'+':'')+fmt(row.amt)+' dürTL', col=isPos?'#4ade80':'#ef4444';
+    const badge=row.status==='ok'?'<span class="badge-ok">Tamam</span>':'<span class="badge-wait">Beklemede</span>';
+    return `<tr><td style="font-family:monospace;color:var(--muted)">${row.date}</td><td style="font-weight:600">${row.type}</td><td style="font-family:var(--serif);font-weight:700;color:${col}">◈ ${amtStr}</td><td style="color:var(--muted)">${row.method}</td><td>${badge}</td></tr>`;
   }).join('');
 }
+function renderAchievements(){
+  const grid=$('achGrid'); if(!grid) return;
+  const s=st();
+  const achs=[
+    {id:'first_spin', name:'İlk Adım', desc:'İlk dönüşünü yap', icon:'🎰', done:(s.spins||0)>=1, reward:50},
+    {id:'ten_spins', name:'Isınma', desc:'10 dönüş tamamla', icon:'🔥', done:(s.spins||0)>=10, reward:100},
+    {id:'big_win', name:'Büyük Vuruş', desc:'Tek seferde +500 dürTL kazan', icon:'💥', done:(s.big||0)>=500, reward:250},
+    {id:'aviator_5x', name:'Usta Pilot', desc:'Aviator’da 5× üzeri çıkış yap', icon:'✈️', done:(typeof CR!=='undefined'&&CR.best>=5), reward:300},
+    {id:'mines_5', name:'Mayın Temizleyici', desc:'Mines’te 5 güvenli karo aç', icon:'💎', done:false, reward:200},
+    {id:'streak_3', name:'Sadık Misafir', desc:'3 gün üst üste giriş yap', icon:'☀️', done:(state.streakDays||0)>=3, reward:150},
+    {id:'vip_silver', name:'Gümüş Kulüp', desc:'Gümüş kademeye ulaş', icon:'🥈', done:(s.wagered||0)>=5000, reward:500},
+    {id:'fav', name:'Küratör', desc:'Bir oyunu favorilere ekle', icon:'❤️', done:(state.favorites&&state.favorites.length>0), reward:50},
+  ];
+  grid.innerHTML=achs.map(a=>{
+    const claimed = (state.claimedAch||[]).includes(a.id);
+    return `<div class="bonus-card" style="display:flex;align-items:center;gap:.9rem;margin:0;opacity:${a.done?1:.55}">
+      <div style="font-size:1.6rem;width:44px;height:44px;border-radius:50%;background:${a.done?'rgba(212,175,55,.15)':'rgba(255,255,255,.04)'};display:flex;align-items:center;justify-content:center;border:1px solid ${a.done?'rgba(212,175,55,.32)':'var(--line)'}">${a.icon}</div>
+      <div style="flex:1"><div style="font-weight:600;color:${a.done?'var(--cream)':'var(--muted)'}">${a.name} ${a.done?'✓':''}</div><div style="font-size:.72rem;color:var(--muted)">${a.desc} · <span style="color:var(--gold)">+◈ ${fmt(a.reward)} dürTL</span></div></div>
+      <button class="btn ${a.done&&!claimed?'solid':'ghost'}" style="padding:.35rem .7rem;font-size:.62rem" ${!a.done||claimed?'disabled':''} onclick="claimAch('${a.id}',${a.reward})">${claimed?'Alındı':a.done?'Al':'Kilitli'}</button>
+    </div>`;
+  }).join('');
+}
+function claimAch(id, reward){
+  state.claimedAch=state.claimedAch||[];
+  if(state.claimedAch.includes(id)) return;
+  state.claimedAch.push(id);
+  state.chips+=reward; renderChips();
+  addLedgerEntry('Başarım: '+id, reward, 'Prestij Ödülü', 'ok');
+  saveDemo(); sfxWin(1.3);
+  toast(`🏆 <b>Başarım:</b> +${fmt(reward)} dürTL`);
+  renderAchievements();
+}
+
 
 $('ambBtn').onclick = jazzToggle;
 
