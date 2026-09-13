@@ -646,6 +646,16 @@ body.tick footer{padding-bottom:34px}
   *,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}
 }
 </style>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+
 </head>
 <body>
 <div class="grain"></div>
@@ -1926,12 +1936,13 @@ document.querySelectorAll('.rv').forEach(el => io.observe(el));
 /* ================= GATE — CINEMATIC v2 — FIXED (no TTS, ivory tick, seal, strict codes) ================= */
 let gateAC = null, gateMaster = null, gateFilter = null, gatePannerR = null, gatePannerL = null, gateBass = null, gateRouletteIv = null, gateSmoke = [], gateNoiseBuf = null;
 let gateGyroEnabled = false, gateAudioOn = false, gateKnockCount = 0, gatePeepholeOpen = false, gateSealed = true, gateLocked = false;
+Object.defineProperty(window,'gateSealed',{get:()=>gateSealed,set:(v)=>{gateSealed=v;}});
 let lobby = 0, preAngel = null;
 const GATE_PRICE = { luna: 40, vega: 30, mira: 70 };
 const VALID_CODES = ['DURTU-VIP','SELIN-2026','SPEAKEASY-77','KARA-KUZGUN','GECE-00'];
 
 function gateACtx(){
-  if(gateAC) return gateAC;
+  if(gateAC){ window.gateAC=gateAC; window.gateFilter=gateFilter; window.gatePannerR=gatePannerR; window.gatePannerL=gatePannerL; return gateAC; }
   try{
     gateAC = new (window.AudioContext || window.webkitAudioContext)();
     // pre-make noise buffer for ivory ticks / latch
@@ -1940,6 +1951,7 @@ function gateACtx(){
     const ch = buf.getChannelData(0);
     for(let i=0;i<len;i++) ch[i]=Math.random()*2-1;
     gateNoiseBuf = buf;
+    window.gateAC=gateAC; window.gateFilter=gateFilter; window.gatePannerR=gatePannerR; window.gatePannerL=gatePannerL; window.gateMaster=gateMaster;
 
     gateMaster = gateAC.createGain(); gateMaster.gain.value = 0;
     gateFilter = gateAC.createBiquadFilter(); gateFilter.type='lowpass'; gateFilter.frequency.value=350; gateFilter.Q.value=0.7;
@@ -2097,6 +2109,7 @@ function gateFit(){
   gateCtx.setTransform(dpr,0,0,dpr,0,0);
 }
 function gateDraw(){
+  if(window._threeActive) return;
   if(!gateCtx) return;
   const w=gateW, h=gateH;
   const px = gateParallax.x + gateTilt.x*18;
@@ -2162,6 +2175,29 @@ function gateOnOrient(ev){
     try{ gatePannerR.setPosition(2+gateTilt.x*1.5, gateTilt.y, -2); gatePannerL.setPosition(-2+gateTilt.x*1.5, gateTilt.y, -2);}catch(e){}
   }
 }
+
+function gateAudioListenerUpdate(yaw, pitch){
+  // yaw = left/right, pitch = up/down from Three.js camera
+  if(!gatePannerR || !gatePannerL || !gateAC) return;
+  try{
+    // organic 3D shift: roulette right, jazz left, move with head
+    const rX = 2 + yaw*1.4;
+    const rY = pitch*0.6;
+    const lX = -2 + yaw*1.4;
+    const lY = pitch*0.6;
+    gatePannerR.setPosition(rX, rY, -2.2);
+    gatePannerL.setPosition(lX, lY, -1.8);
+  }catch(e){}
+}
+window.gateAudioListenerUpdate=gateAudioListenerUpdate;
+
+window.gateApproach=gateApproach;
+window.gateKnock=gateKnock;
+window.gateLatchScrape=gateLatchScrape;
+window.gateSealedGetter=()=>gateSealed;
+
+
+
 
 function gateApproach(){
   if(!gateSealed) return;
@@ -3310,13 +3346,13 @@ function slotSpin(){
   } else if(SL.mode==='blood'){
     bloodSpin();
   } else {
-    // lines
+    // lines + turbo from origin/main
+    const spSpeed = SL.turbo ? 0.38 : 1;
     SL.strips.forEach((st, c) => {
       const L = st.length, target = Math.random()*L | 0;
       const cur = ((SL.pos[c] % L) + L) % L;
       const dist = (2 + c) * L + (((target - cur) % L) + L) % L;
-    const spSpeed = SL.turbo ? 0.38 : 1;
-    const dur = (.85 + .3 * c) * spSpeed;
+      const dur = (.85 + .3 * c) * spSpeed;
       SL.stopAt[c] = SL.pos[c] + dist;
       SL.vel[c] = 2 * dist / dur;
       SL.decel[c] = SL.vel[c] / dur;
@@ -5546,5 +5582,13 @@ if('serviceWorker' in navigator){
 }
 </script>
   <div id="ticker"><div class="ticker-track" id="tickerTrack"></div></div>
-</body>
+
+<script type="module">
+import { initThreeGate } from './gate-3d-photogrammetry.js';
+window.addEventListener('DOMContentLoaded', () => {
+  setTimeout(()=>{ try{ window._threeActive=true; initThreeGate(); console.log('Three.js photogrammetric gate active — LiDAR PBR + damping 0.05 + micro-shake 0.002 + Bokeh + Convolution Reverb + hotspots'); }catch(e){ console.error(e); } }, 300);
+});
+</script>
+
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a3a3c993ba95aeb3',t:'MTc4OTI2NzIyOA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
