@@ -1,13 +1,9 @@
 /* Three.js 360° Photogrammetric Virtual Tour Engine — VIP Lounge
- * LiDAR PBR + Inverted Equirectangular Sphere + Camera Inertia + Perlin Breathing + Bokeh + HRTF Spatial Audio + 3D Hotspots
+ * LiDAR PBR + Inverted Equirectangular Sphere + Inertia Damping + Perlin Breathing + HRTF Spatial Audio + 3D Hotspots
  */
 import * as THREE from 'three';
-import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
-import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
-import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
-import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 
-// ─── Perlin Noise (Smooth handheld camera breathing) ──────────────────────
+// --- Perlin Noise (Camera breathing) ---
 function fade(t) { return t * t * t * (t * (t * 6 - 15) + 10); }
 function lerp(a, b, t) { return a + t * (b - a); }
 function grad(hash, x, y, z) {
@@ -33,46 +29,11 @@ function noise3(x, y, z) {
          lerp(grad(perm[AB + 1], x, y - 1, z - 1), grad(perm[BB + 1], x - 1, y - 1, z - 1), u), v), w);
 }
 
-// ─── Film Grain + Warm Amber Grade Shader ────────────────────────────────
-const FilmGrainShader = {
-  uniforms: {
-    tDiffuse: { value: null },
-    time: { value: 0.0 },
-    grainAmount: { value: 0.035 },
-  },
-  vertexShader: 
-    varying vec2 vUv;
-    void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }
-  ,
-  fragmentShader: 
-    uniform sampler2D tDiffuse;
-    uniform float time;
-    uniform float grainAmount;
-    varying vec2 vUv;
-    float random(vec2 p) {
-      return fract(sin(dot(p + time * 0.001, vec2(127.1, 311.7))) * 43758.5453);
-    }
-    void main() {
-      vec4 color = texture2D(tDiffuse, vUv);
-      float grain = (random(vUv) - 0.5) * grainAmount;
-      vec3 c = color.rgb + grain;
-      float luma = dot(c, vec3(0.299, 0.587, 0.114));
-      c = mix(vec3(luma), c, 0.88);
-      c *= vec3(1.05, 0.98, 0.88);
-      // Vignette
-      vec2 uv2 = vUv * 2.0 - 1.0;
-      float vig = 1.0 - dot(uv2 * vec2(0.65, 0.8), uv2 * vec2(0.65, 0.8));
-      vig = clamp(pow(vig, 1.6), 0.0, 1.0);
-      gl_FragColor = vec4(clamp(c * (0.75 + 0.25 * vig), 0.0, 1.0), 1.0);
-    }
-  
-};
-
-// ─── Hotspot Definitions ──────────────────────────────────────────────────
+// --- Hotspot definitions ---
 export const HOTSPOTS = [
   {
     id: 'entrance',
-    label: '🚪 VIP Kapı',
+    label: '🚪 VIP Giriş',
     worldPos: new THREE.Vector3(0, -0.4, 4.5),
     targetLook: new THREE.Euler(0, Math.PI, 0),
     color: 0xD4AF37,
@@ -104,18 +65,17 @@ export const HOTSPOTS = [
   }
 ];
 
-// ─── Procedural Panorama Fallback (Guarantees no black screen) ───────────
 function createProceduralPanorama() {
   const c = document.createElement('canvas');
   c.width = 2048; c.height = 1024;
   const ctx = c.getContext('2d');
 
   const g = ctx.createLinearGradient(0, 0, 0, 1024);
-  g.addColorStop(0, '#0a0907');
-  g.addColorStop(0.35, '#191309');
-  g.addColorStop(0.5, '#2c2111');
-  g.addColorStop(0.55, '#16120b');
-  g.addColorStop(1, '#080705');
+  g.addColorStop(0, '#0c0a07');
+  g.addColorStop(0.35, '#1e180d');
+  g.addColorStop(0.5, '#352714');
+  g.addColorStop(0.55, '#1a140c');
+  g.addColorStop(1, '#0a0806');
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, 2048, 1024);
 
@@ -123,20 +83,20 @@ function createProceduralPanorama() {
     const x = i * (2048 / 8) + 128;
     const colG = ctx.createLinearGradient(x - 30, 0, x + 30, 0);
     colG.addColorStop(0, 'rgba(212,175,55,0.02)');
-    colG.addColorStop(0.5, 'rgba(212,175,55,0.18)');
+    colG.addColorStop(0.5, 'rgba(212,175,55,0.22)');
     colG.addColorStop(1, 'rgba(212,175,55,0.02)');
     ctx.fillStyle = colG;
-    ctx.fillRect(x - 30, 300, 60, 420);
+    ctx.fillRect(x - 30, 280, 60, 460);
   }
 
   for (let j = 0; j < 4; j++) {
-    const cx = j * 512 + 256, cy = 280;
-    const rad = ctx.createRadialGradient(cx, cy, 2, cx, cy, 140);
-    rad.addColorStop(0, 'rgba(246,226,122,0.65)');
-    rad.addColorStop(0.3, 'rgba(212,175,55,0.22)');
+    const cx = j * 512 + 256, cy = 260;
+    const rad = ctx.createRadialGradient(cx, cy, 4, cx, cy, 160);
+    rad.addColorStop(0, 'rgba(246,226,122,0.75)');
+    rad.addColorStop(0.35, 'rgba(212,175,55,0.28)');
     rad.addColorStop(1, 'transparent');
     ctx.fillStyle = rad;
-    ctx.beginPath(); ctx.arc(cx, cy, 140, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(cx, cy, 160, 0, Math.PI * 2); ctx.fill();
   }
 
   const tex = new THREE.CanvasTexture(c);
@@ -145,7 +105,6 @@ function createProceduralPanorama() {
   return tex;
 }
 
-// ─── Main Scene Class ─────────────────────────────────────────────────────
 export class VIPLoungeTour {
   constructor(canvas) {
     this.canvas = canvas;
@@ -158,7 +117,7 @@ export class VIPLoungeTour {
     this.isDragging = false;
     this.lastMouse = { x: 0, y: 0 };
     this.velocity = { phi: 0, theta: 0 };
-    this.dampingFactor = 0.05;
+    this.dampingFactor = 0.055;
 
     this.clock = new THREE.Clock();
     this.lerpTarget = null;
@@ -172,7 +131,6 @@ export class VIPLoungeTour {
 
     this.initRenderer();
     this.initScene();
-    this.initPost();
     this.initHotspots();
     this.bindEvents();
     this.animate();
@@ -188,16 +146,15 @@ export class VIPLoungeTour {
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     this.renderer.setSize(window.innerWidth, window.innerHeight);
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    this.renderer.toneMappingExposure = 1.25;
+    this.renderer.toneMappingExposure = 1.3;
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
   }
 
   initScene() {
     this.scene = new THREE.Scene();
-    this.camera = new THREE.PerspectiveCamera(72, window.innerWidth / window.innerHeight, 0.1, 100);
+    this.camera = new THREE.PerspectiveCamera(74, window.innerWidth / window.innerHeight, 0.1, 100);
     this.camera.position.set(0, 0, 0.01);
 
-    // Inverted 360 sphere
     const sphereGeo = new THREE.SphereGeometry(50, 96, 48);
     sphereGeo.scale(-1, 1, 1);
 
@@ -207,16 +164,15 @@ export class VIPLoungeTour {
     this.scene.add(this.sphereMesh);
 
     const loader = new THREE.TextureLoader();
-    const candidateUrls = [
-      './images/vip_lounge_equirect.jpg',
+    const urls = [
       '/images/vip_lounge_equirect.jpg',
-      './assets/vip_lounge_equirect.jpg',
-      'images/vip_lounge_equirect.jpg'
+      './images/vip_lounge_equirect.jpg',
+      '/assets/vip_lounge_equirect.jpg',
+      './assets/vip_lounge_equirect.jpg'
     ];
-
     const tryLoad = (idx) => {
-      if (idx >= candidateUrls.length) return;
-      loader.load(candidateUrls[idx], (tex) => {
+      if (idx >= urls.length) return;
+      loader.load(urls[idx], (tex) => {
         tex.colorSpace = THREE.SRGBColorSpace;
         tex.mapping = THREE.EquirectangularReflectionMapping;
         sphereMat.map = tex;
@@ -240,7 +196,7 @@ export class VIPLoungeTour {
       metalness: 0.15,
       roughness: 0.22,
       envMap: fallbackTex,
-      envMapIntensity: 1.4,
+      envMapIntensity: 1.5,
     });
     const floor = new THREE.Mesh(floorGeo, this.floorMat);
     floor.rotation.x = -Math.PI / 2;
@@ -267,7 +223,7 @@ export class VIPLoungeTour {
       roughness: 0.95,
     });
 
-    // Bar counter
+    // Bar counter (left)
     const bar = new THREE.Mesh(new THREE.BoxGeometry(3.6, 0.14, 1.0), marbleMat);
     bar.position.set(-5, -0.9, -4.5);
     this.scene.add(bar);
@@ -278,7 +234,7 @@ export class VIPLoungeTour {
       this.scene.add(leg);
     }
 
-    // Roulette table
+    // Roulette table (right)
     const rouletteTable = new THREE.Mesh(new THREE.BoxGeometry(2.8, 0.1, 1.4), velvetMat);
     rouletteTable.position.set(5, -0.96, -3.8);
     this.scene.add(rouletteTable);
@@ -319,7 +275,7 @@ export class VIPLoungeTour {
     }
 
     // Lights
-    this.scene.add(new THREE.AmbientLight(0xfff5e0, 0.45));
+    this.scene.add(new THREE.AmbientLight(0xfff5e0, 0.5));
 
     const chLight = new THREE.PointLight(0xffd580, 2.8, 25);
     chLight.position.set(0, 5.4, 0);
@@ -334,37 +290,22 @@ export class VIPLoungeTour {
     rouletteLight.target = rouletteTable;
     this.scene.add(rouletteLight);
 
-    const dirLight = new THREE.DirectionalLight(0xfff0cc, 0.75);
+    const dirLight = new THREE.DirectionalLight(0xfff0cc, 0.8);
     dirLight.position.set(5, 8, 4);
     this.scene.add(dirLight);
   }
 
-  initPost() {
-    this.composer = new EffectComposer(this.renderer);
-    this.composer.addPass(new RenderPass(this.scene, this.camera));
-
-    const bloomPass = new UnrealBloomPass(
-      new THREE.Vector2(window.innerWidth, window.innerHeight),
-      0.32, 0.45, 0.82
-    );
-    this.composer.addPass(bloomPass);
-
-    this.filmPass = new ShaderPass(FilmGrainShader);
-    this.filmPass.uniforms['grainAmount'].value = 0.032;
-    this.composer.addPass(this.filmPass);
-  }
-
   initHotspots() {
     HOTSPOTS.forEach(hs => {
-      const ringGeo = new THREE.TorusGeometry(0.28, 0.035, 12, 36);
+      const ringGeo = new THREE.TorusGeometry(0.3, 0.038, 12, 36);
       const ringMat = new THREE.MeshStandardMaterial({
         color: hs.color,
         emissive: hs.color,
-        emissiveIntensity: 2.2,
+        emissiveIntensity: 2.5,
         metalness: 0.6,
         roughness: 0.2,
         transparent: true,
-        opacity: 0.92
+        opacity: 0.95
       });
       const ring = new THREE.Mesh(ringGeo, ringMat);
       ring.rotation.x = Math.PI / 2;
@@ -373,13 +314,13 @@ export class VIPLoungeTour {
       this.scene.add(ring);
       this.hotspotMeshes.push(ring);
 
-      const discGeo = new THREE.CircleGeometry(0.18, 28);
+      const discGeo = new THREE.CircleGeometry(0.2, 28);
       const discMat = new THREE.MeshStandardMaterial({
         color: hs.color,
         emissive: hs.color,
-        emissiveIntensity: 1.1,
+        emissiveIntensity: 1.2,
         transparent: true,
-        opacity: 0.75,
+        opacity: 0.8,
         side: THREE.DoubleSide
       });
       const disc = new THREE.Mesh(discGeo, discMat);
@@ -390,16 +331,16 @@ export class VIPLoungeTour {
       this.scene.add(disc);
       this.hotspotMeshes.push(disc);
 
-      const beamGeo = new THREE.CylinderGeometry(0.01, 0.1, 1.4, 12, 1, true);
+      const beamGeo = new THREE.CylinderGeometry(0.012, 0.12, 1.5, 12, 1, true);
       const beamMat = new THREE.MeshBasicMaterial({
         color: hs.color,
         transparent: true,
-        opacity: 0.22,
+        opacity: 0.25,
         side: THREE.DoubleSide
       });
       const beam = new THREE.Mesh(beamGeo, beamMat);
       beam.position.copy(hs.worldPos);
-      beam.position.y += 0.7;
+      beam.position.y += 0.75;
       this.scene.add(beam);
     });
   }
@@ -477,7 +418,6 @@ export class VIPLoungeTour {
       this.camera.aspect = w / h;
       this.camera.updateProjectionMatrix();
       this.renderer.setSize(w, h);
-      this.composer.setSize(w, h);
     });
   }
 
@@ -488,7 +428,7 @@ export class VIPLoungeTour {
     if (hits.length > 0) {
       const hs = hits[0].object.userData.def;
       if (hs && tip) {
-        tip.innerHTML = <b></b> —  <small style="color:var(--gold);display:block;margin-top:2px">TIKLAYARAK ODAKLAN</small>;
+        tip.innerHTML = `<b>${hs.label}</b> &mdash; ${hs.description} <small style="color:var(--gold);display:block;margin-top:2px">TIKLAYARAK ODAKLAN</small>`;
         tip.style.opacity = '1';
       }
       document.body.style.cursor = 'pointer';
@@ -508,7 +448,7 @@ export class VIPLoungeTour {
 
     const tip = document.getElementById('gateWhisper');
     if (tip) {
-      tip.textContent = ${hs.label} odaklanıldı: ;
+      tip.textContent = `${hs.label} odaklanıldı: ${hs.description}`;
       tip.style.opacity = '1';
       setTimeout(() => { tip.style.opacity = '0'; }, 3600);
     }
@@ -577,6 +517,10 @@ export class VIPLoungeTour {
       this.roulettePanner.connect(ctx.destination);
       this.initRouletteClicks(ctx, this.roulettePanner);
 
+      const dot = document.getElementById('audioDot');
+      const lbl = document.getElementById('audioLabel');
+      if (dot) dot.style.background = '#4ade80';
+      if (lbl) lbl.textContent = '3D ses açık — kulaklık tak';
     } catch (e) {
       console.warn('Web Audio spatial init fallback:', e);
     }
@@ -664,7 +608,6 @@ export class VIPLoungeTour {
     this.targetSpherical.phi += this.velocity.phi;
     this.targetSpherical.phi = Math.max(0.18, Math.min(Math.PI - 0.18, this.targetSpherical.phi));
 
-    // LERP zoom to hotspot
     if (this.lerpTarget) {
       this.lerpProgress += dt * 0.9;
       const t = Math.min(this.lerpProgress, 1.0);
@@ -683,7 +626,6 @@ export class VIPLoungeTour {
       this.currentSpherical.theta += (this.targetSpherical.theta - this.currentSpherical.theta) * 0.12;
     }
 
-    // Natural camera breathing (Perlin micro-shake)
     const breathFreq = 0.18;
     const shakeAmt = 0.0018;
     const bPhi = noise3(elapsed * breathFreq, 0, 0) * shakeAmt;
@@ -702,7 +644,6 @@ export class VIPLoungeTour {
     this.camera.position.set(0, bY, 0.01);
     this.camera.lookAt(lookDir.multiplyScalar(10));
 
-    // Hotspot pulse & spin
     this.hotspotMeshes.forEach(mesh => {
       if (mesh.userData.type === 'outer') {
         const pulse = 0.86 + 0.14 * Math.sin(elapsed * 2.5);
@@ -716,12 +657,8 @@ export class VIPLoungeTour {
       }
     });
 
-    if (this.filmPass) {
-      this.filmPass.uniforms['time'].value = elapsed * 1000;
-    }
-
     this.updateAudioListener();
-    this.composer.render();
+    this.renderer.render(this.scene, this.camera);
   }
 }
 
