@@ -1,0 +1,1231 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DÜRTÜ — 3D VIP Casino & Lounge</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@400;500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --gold: #D4AF37;
+  --gold-light: #f6e27a;
+  --gold-dim: rgba(212, 175, 55, 0.4);
+  --bg: #050507;
+  --panel: rgba(10, 10, 15, 0.88);
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  width: 100vw; height: 100vh;
+  overflow: hidden;
+  background: var(--bg);
+  font-family: 'Inter', -apple-system, sans-serif;
+  color: #fff;
+  user-select: none;
+}
+#canvas3d {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  display: block;
+}
+
+/* Crosshair */
+#crosshair {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none; z-index: 10;
+  display: none;
+}
+.cross-dot {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: var(--gold);
+  box-shadow: 0 0 8px var(--gold);
+}
+.cross-ring {
+  position: absolute; top: 50%; left: 50%;
+  width: 24px; height: 24px;
+  transform: translate(-50%, -50%);
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+#crosshair.active .cross-ring {
+  width: 38px; height: 38px;
+  border-color: var(--gold-light);
+  box-shadow: 0 0 16px var(--gold);
+}
+
+/* Interactor Prompt */
+#promptBadge {
+  position: absolute; top: 56%; left: 50%;
+  transform: translate(-50%, 0);
+  background: rgba(15, 12, 5, 0.92);
+  border: 1px solid var(--gold);
+  padding: 6px 14px;
+  border-radius: 4px;
+  color: var(--gold-light);
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  font-weight: 500;
+  display: none;
+  pointer-events: none;
+  z-index: 15;
+  box-shadow: 0 0 20px rgba(212, 175, 55, 0.4);
+  animation: promptPulse 1.5s infinite alternate;
+}
+@keyframes promptPulse {
+  0% { transform: translate(-50%, 0) scale(1); }
+  100% { transform: translate(-50%, 0) scale(1.05); }
+}
+
+/* HUD Top Bars */
+.hud-top-left {
+  position: absolute; top: 20px; left: 24px; z-index: 20;
+  display: flex; align-items: center; gap: 12px;
+}
+.brand-mark {
+  font-family: 'Playfair Display', serif;
+  font-size: 22px; font-weight: 700;
+  letter-spacing: 0.25em;
+  color: var(--gold);
+  text-shadow: 0 0 20px rgba(212, 175, 55, 0.6);
+}
+.brand-sub {
+  font-size: 9px; letter-spacing: 0.4em;
+  color: rgba(212, 175, 55, 0.6);
+  text-transform: uppercase;
+}
+
+.hud-top-right {
+  position: absolute; top: 20px; right: 24px; z-index: 20;
+  display: flex; align-items: center; gap: 10px;
+}
+.hud-btn {
+  background: rgba(10, 10, 15, 0.7);
+  border: 1px solid var(--gold-dim);
+  color: var(--gold);
+  font-size: 11px; letter-spacing: 0.15em;
+  padding: 8px 16px; border-radius: 2px;
+  cursor: pointer; transition: all 0.25s;
+  text-transform: uppercase;
+  backdrop-filter: blur(8px);
+}
+.hud-btn:hover {
+  background: var(--gold);
+  color: #000;
+  box-shadow: 0 0 16px rgba(212, 175, 55, 0.5);
+}
+
+/* HUD Bottom Stats */
+.hud-bottom-left {
+  position: absolute; bottom: 18px; left: 24px; z-index: 20;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; line-height: 1.5;
+  color: rgba(212, 175, 55, 0.75);
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9);
+  pointer-events: none;
+}
+.hud-bottom-right {
+  position: absolute; bottom: 18px; right: 24px; z-index: 20;
+  font-size: 10px; letter-spacing: 0.2em;
+  color: rgba(255, 255, 255, 0.4);
+  pointer-events: none;
+}
+
+/* Blocker / Intro Modal */
+#blocker {
+  position: absolute; inset: 0; z-index: 100;
+  background: rgba(4, 4, 6, 0.92);
+  backdrop-filter: blur(10px);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: opacity 0.5s ease;
+}
+.intro-card {
+  position: relative;
+  max-width: 540px; width: 90%;
+  padding: 44px 38px;
+  background: linear-gradient(180deg, rgba(20, 18, 14, 0.95) 0%, rgba(10, 10, 12, 0.98) 100%);
+  border: 1px solid var(--gold);
+  box-shadow: 0 0 80px rgba(212, 175, 55, 0.25), inset 0 0 40px rgba(0, 0, 0, 0.8);
+  text-align: center;
+}
+.ornament {
+  position: absolute; width: 14px; height: 14px;
+  border-color: var(--gold);
+}
+.orn-tl { top: -1px; left: -1px; border-top: 2px solid var(--gold); border-left: 2px solid var(--gold); }
+.orn-tr { top: -1px; right: -1px; border-top: 2px solid var(--gold); border-right: 2px solid var(--gold); }
+.orn-bl { bottom: -1px; left: -1px; border-bottom: 2px solid var(--gold); border-left: 2px solid var(--gold); }
+.orn-br { bottom: -1px; right: -1px; border-bottom: 2px solid var(--gold); border-right: 2px solid var(--gold); }
+
+.intro-pre {
+  font-size: 10px; letter-spacing: 0.5em;
+  color: var(--gold); text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.intro-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 42px; font-weight: 700;
+  letter-spacing: 0.25em; color: var(--gold-light);
+  text-shadow: 0 0 30px rgba(212, 175, 55, 0.8);
+  margin-bottom: 4px;
+}
+.intro-sub {
+  font-size: 11px; letter-spacing: 0.6em;
+  color: rgba(212, 175, 55, 0.7); text-transform: uppercase;
+  margin-bottom: 24px;
+}
+.intro-divider {
+  display: flex; align-items: center; gap: 12px;
+  margin: 0 auto 28px; width: 70%;
+}
+.div-line {
+  flex: 1; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+}
+.div-gem { color: var(--gold); font-size: 12px; }
+
+.enter-cta {
+  display: block; width: 100%;
+  padding: 15px 0;
+  border: 1px solid var(--gold);
+  background: linear-gradient(180deg, rgba(212, 175, 55, 0.25) 0%, rgba(212, 175, 55, 0.05) 100%);
+  color: var(--gold-light);
+  font-size: 12px; letter-spacing: 0.35em; font-weight: 600;
+  text-transform: uppercase;
+  cursor: pointer; transition: all 0.3s ease;
+  margin-bottom: 24px;
+}
+.enter-cta:hover {
+  background: var(--gold); color: #000;
+  box-shadow: 0 0 32px rgba(212, 175, 55, 0.7);
+  transform: translateY(-1px);
+}
+
+.controls-grid {
+  display: grid; grid-template-columns: repeat(2, 1fr);
+  gap: 10px; text-align: left;
+  background: rgba(0, 0, 0, 0.4);
+  padding: 14px 18px; border-radius: 4px;
+  border: 1px solid rgba(212, 175, 55, 0.15);
+}
+.ctrl-row {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 11px; color: rgba(255, 255, 255, 0.7);
+}
+.ctrl-key {
+  background: rgba(212, 175, 55, 0.15);
+  border: 1px solid rgba(212, 175, 55, 0.4);
+  color: var(--gold-light);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; padding: 2px 7px;
+  border-radius: 2px;
+}
+</style>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+</head>
+<body>
+
+<canvas id="canvas3d"></canvas>
+
+<!-- Crosshair -->
+<div id="crosshair">
+  <div class="cross-dot"></div>
+  <div class="cross-ring"></div>
+</div>
+
+<!-- Interactor Prompt -->
+<div id="promptBadge"><span id="promptText">[E] OYNA</span></div>
+
+<!-- HUD Top -->
+<div class="hud-top-left">
+  <div class="brand-mark">DÜRTÜ</div>
+  <div class="brand-sub">VIP SALON</div>
+</div>
+
+<div class="hud-top-right">
+  <button class="hud-btn" id="soundBtn">🔊 SES: AÇIK</button>
+  <button class="hud-btn" id="fullScreenBtn">⛶ TAM EKRAN</button>
+  <button class="hud-btn" id="exitClubBtn">🚪 KULÜBE DÖN</button>
+</div>
+
+<!-- HUD Bottom -->
+<div class="hud-bottom-left">
+  <div id="hudFps">60 FPS</div>
+  <div id="hudPos">X: 0.0  Y: 1.7  Z: 10.0</div>
+</div>
+
+<div class="hud-bottom-right">
+  WASD: Yürü | SHIFT: Koş | FARE: Bakış | SPACE: Zıpla | ESC: Duraklat
+</div>
+
+<!-- Blocker / Entrance Modal -->
+<div id="blocker">
+  <div class="intro-card">
+    <div class="ornament orn-tl"></div>
+    <div class="ornament orn-tr"></div>
+    <div class="ornament orn-bl"></div>
+    <div class="ornament orn-br"></div>
+
+    <div class="intro-pre">DÜRTÜ GİZLİ KULÜBÜ SUNAR</div>
+    <div class="intro-title">VIP CASINO</div>
+    <div class="intro-sub">3D FIRST-PERSON MEKÂNSAL YÜRÜYÜŞ</div>
+
+    <div class="intro-divider">
+      <div class="div-line"></div>
+      <div class="div-gem">◆</div>
+      <div class="div-line"></div>
+    </div>
+
+    <button class="enter-cta" id="enterBtn">SALONA ADIM AT</button>
+
+    <div class="controls-grid">
+      <div class="ctrl-row"><span class="ctrl-key">WASD</span><span>Mekânda Gezin</span></div>
+      <div class="ctrl-row"><span class="ctrl-key">FARE</span><span>360° Çevreye Bak</span></div>
+      <div class="ctrl-row"><span class="ctrl-key">SHIFT</span><span>Hızlı Koş</span></div>
+      <div class="ctrl-row"><span class="ctrl-key">SPACE</span><span>Zıplama</span></div>
+      <div class="ctrl-row"><span class="ctrl-key">E / TIK</span><span>Oyun / Etkileşim</span></div>
+      <div class="ctrl-row"><span class="ctrl-key">ESC</span><span>Fare Kilidini Aç</span></div>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import * as THREE from 'three';
+import { Octree } from 'three/addons/math/Octree.js';
+import { Capsule } from 'three/addons/math/Capsule.js';
+
+// ═══════════════════════════════════════════════════════════
+// CASINO BOYUTLARI VE FİZİK SABİTLERİ
+// ═══════════════════════════════════════════════════════════
+const ROOM_W = 18.0;
+const ROOM_D = 24.0;
+const CEIL_H = 4.20;
+const WALL_T = 0.3;
+
+const GRAVITY = 30.0;
+const CAPSULE_RADIUS = 0.35;
+const CAPSULE_HEIGHT = 1.70;
+const STEPS_PER_FRAME = 5;
+
+const WALK_SPEED = 5.5;
+const RUN_SPEED = 11.5;
+const JUMP_VELOCITY = 8.0;
+
+// ═══════════════════════════════════════════════════════════
+// THREE.JS SAHNE VE KAMERA KURULUMU
+// ═══════════════════════════════════════════════════════════
+const canvas = document.getElementById('canvas3d');
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x050508);
+scene.fog = new THREE.FogExp2(0x050508, 0.018);
+
+const camera = new THREE.PerspectiveCamera(72, window.innerWidth / window.innerHeight, 0.1, 120);
+camera.rotation.order = 'YXZ';
+
+const renderer = new THREE.WebGLRenderer({
+  canvas,
+  antialias: true,
+  powerPreference: 'high-performance'
+});
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.05;
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+// ═══════════════════════════════════════════════════════════
+// 1. KIRMIZI CASINO HALIFLEKS DOKUSU (PROSEDÜREL ART DECO)
+// ═══════════════════════════════════════════════════════════
+function createLuxuryCarpetTexture() {
+  const cv = document.createElement('canvas');
+  cv.width = 512;
+  cv.height = 512;
+  const ctx = cv.getContext('2d');
+
+  // Derin Bordo / Şarap Rengi Kadife Zemin
+  const bgGrad = ctx.createRadialGradient(256, 256, 20, 256, 256, 360);
+  bgGrad.addColorStop(0, '#54101d');
+  bgGrad.addColorStop(0.5, '#3a0812');
+  bgGrad.addColorStop(1, '#24040a');
+  ctx.fillStyle = bgGrad;
+  ctx.fillRect(0, 0, 512, 512);
+
+  // Mikro Kadife Doku Paraziti
+  for (let i = 0; i < 40000; i++) {
+    const nx = Math.random() * 512;
+    const ny = Math.random() * 512;
+    const lum = Math.random() * 25;
+    ctx.fillStyle = `rgba(${50 + lum}, ${10 + lum/3}, ${20 + lum/2}, 0.12)`;
+    ctx.fillRect(nx, ny, 1.5, 1.5);
+  }
+
+  // Art Deco Altın Geometrik Baklava & Yıldız Deseni
+  ctx.lineWidth = 2.5;
+  ctx.strokeStyle = 'rgba(212, 175, 55, 0.45)';
+  ctx.fillStyle = 'rgba(246, 226, 122, 0.25)';
+
+  const step = 64;
+  for (let x = 0; x <= 512; x += step) {
+    for (let y = 0; y <= 512; y += step) {
+      // Çapraz Baklava Kafesi
+      ctx.beginPath();
+      ctx.moveTo(x, y - step / 2);
+      ctx.lineTo(x + step / 2, y);
+      ctx.lineTo(x, y + step / 2);
+      ctx.lineTo(x - step / 2, y);
+      ctx.closePath();
+      ctx.stroke();
+
+      // Merkez Yıldız Motifi
+      if ((x + y) % (step * 2) === 0) {
+        ctx.beginPath();
+        ctx.arc(x, y, 4, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Küçük Art Deco Çiçek Yaprakları
+        ctx.strokeStyle = 'rgba(212, 175, 55, 0.6)';
+        ctx.beginPath();
+        ctx.moveTo(x - 8, y); ctx.lineTo(x + 8, y);
+        ctx.moveTo(x, y - 8); ctx.lineTo(x, y + 8);
+        ctx.stroke();
+      }
+    }
+  }
+
+  const texture = new THREE.CanvasTexture(cv);
+  texture.wrapS = THREE.RepeatWrapping;
+  texture.wrapT = THREE.RepeatWrapping;
+  texture.repeat.set(10, 14);
+  texture.generateMipmaps = true;
+  return texture;
+}
+
+const carpetTexture = createLuxuryCarpetTexture();
+
+// ═══════════════════════════════════════════════════════════
+// 2. DİNAMİK CANLI SLOT MAKİNESİ EKRANLARI (7 ADET)
+// ═══════════════════════════════════════════════════════════
+const SLOT_THEMES = [
+  { title: "GATES OF OLYMPUS", color: "#f6e27a", accent: "#ff8800", symbols: ['⚡', '👑', '💎', '🏺', '⭐'] },
+  { title: "SWEET BONANZA", color: "#ff66cc", accent: "#33ffff", symbols: ['🍭', '🍬', '🍇', '🍉', '🍌'] },
+  { title: "DÜRTÜ GRAND 777", color: "#ff3333", accent: "#D4AF37", symbols: ['7️⃣', '🔔', '🍒', '💎', 'BAR'] },
+  { title: "BIG BASS ROYALE", color: "#00ffaa", accent: "#0088ff", symbols: ['🐟', '🎣', '🚤', '📦', '⭐'] },
+  { title: "MONTE CARLO VIP", color: "#D4AF37", accent: "#ffffff", symbols: ['♠️', '♥️', '♣️', '♦️', '👑'] },
+  { title: "WILD CASINO 88", color: "#ff9900", accent: "#ffff00", symbols: ['🐉', '💰', '🧧', '🏮', '7️⃣'] },
+  { title: "SPEAKEASY HIGH", color: "#cc99ff", accent: "#f6e27a", symbols: ['🍸', '🎷', '🎲', '💎', '👑'] }
+];
+
+const slotCanvases = [];
+const slotTextures = [];
+
+function createSlotScreen(theme, index) {
+  const cv = document.createElement('canvas');
+  cv.width = 256;
+  cv.height = 256;
+  const ctx = cv.getContext('2d');
+  
+  const tex = new THREE.CanvasTexture(cv);
+  slotCanvases.push({ cv, ctx, theme, index, reelOffset: Math.random() * 100, jackpot: 1450000 + index * 85000 });
+  slotTextures.push(tex);
+  return tex;
+}
+
+function updateSlotScreens(time) {
+  for (let s of slotCanvases) {
+    const { ctx, theme, index } = s;
+    s.reelOffset += 0.05 + index * 0.01;
+    s.jackpot += Math.floor(Math.random() * 3);
+
+    // Ekran Arka Planı (Karanlık Cam & CRT Tarzı)
+    ctx.fillStyle = '#06060c';
+    ctx.fillRect(0, 0, 256, 256);
+
+    // Başlık Bandı
+    ctx.fillStyle = 'rgba(20, 20, 35, 0.9)';
+    ctx.fillRect(8, 8, 240, 42);
+    ctx.strokeStyle = theme.color;
+    ctx.lineWidth = 1.5;
+    ctx.strokeRect(8, 8, 240, 42);
+
+    ctx.font = 'bold 12px sans-serif';
+    ctx.fillStyle = theme.color;
+    ctx.textAlign = 'center';
+    ctx.fillText(theme.title, 128, 28);
+
+    ctx.font = '9px monospace';
+    ctx.fillStyle = theme.accent;
+    ctx.fillText(`JACKPOT: ₺${s.jackpot.toLocaleString('tr-TR')}`, 128, 42);
+
+    // 3 Çark Alanı (Reels)
+    const reelW = 70;
+    const reelH = 130;
+    const startX = 18;
+    const startY = 60;
+
+    for (let r = 0; r < 3; r++) {
+      const rx = startX + r * (reelW + 10);
+      ctx.fillStyle = '#0f101a';
+      ctx.fillRect(rx, startY, reelW, reelH);
+      ctx.strokeStyle = 'rgba(212, 175, 55, 0.4)';
+      ctx.strokeRect(rx, startY, reelW, reelH);
+
+      // Çark Sembolleri Döner
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(rx, startY, reelW, reelH);
+      ctx.clip();
+
+      ctx.font = '26px sans-serif';
+      ctx.textAlign = 'center';
+      const offset = (s.reelOffset * (1 + r * 0.3)) % theme.symbols.length;
+      const baseIdx = Math.floor(offset);
+      const frac = offset - baseIdx;
+
+      for (let i = -1; i <= 3; i++) {
+        const symIdx = (baseIdx + i + theme.symbols.length * 10) % theme.symbols.length;
+        const sym = theme.symbols[symIdx];
+        const sy = startY + 44 + (i - frac) * 44;
+        ctx.fillStyle = '#fff';
+        ctx.fillText(sym, rx + reelW / 2, sy);
+      }
+      ctx.restore();
+    }
+
+    // Alt Win / Bet Göstergesi
+    ctx.fillStyle = 'rgba(10, 10, 15, 0.85)';
+    ctx.fillRect(8, 202, 240, 44);
+    ctx.strokeStyle = theme.accent;
+    ctx.strokeRect(8, 202, 240, 44);
+
+    const pulse = Math.sin(time * 6 + index) > 0;
+    ctx.font = 'bold 11px monospace';
+    ctx.fillStyle = pulse ? '#ffea75' : '#888';
+    ctx.fillText('WIN: ₺24,500.00  •  BET: ₺250', 128, 222);
+
+    ctx.font = '9px sans-serif';
+    ctx.fillStyle = '#aaa';
+    ctx.fillText('[E] VEYA TIKLA VE DÖNDÜR', 128, 238);
+
+    slotTextures[index].needsUpdate = true;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// 3. MATERYAL KÜTÜPHANESİ
+// ═══════════════════════════════════════════════════════════
+const M = {
+  carpet: new THREE.MeshStandardMaterial({
+    map: carpetTexture,
+    roughness: 0.85,
+    metalness: 0.05
+  }),
+  marbleNero: new THREE.MeshStandardMaterial({
+    color: 0x111113,
+    roughness: 0.18,
+    metalness: 0.2
+  }),
+  velvetWall: new THREE.MeshStandardMaterial({
+    color: 0x140e10,
+    roughness: 0.92,
+    metalness: 0.0
+  }),
+  ceiling: new THREE.MeshStandardMaterial({
+    color: 0x0c0c0e,
+    roughness: 0.75
+  }),
+  gold: new THREE.MeshStandardMaterial({
+    color: 0xd4af37,
+    roughness: 0.25,
+    metalness: 0.92
+  }),
+  brass: new THREE.MeshStandardMaterial({
+    color: 0xc89b3c,
+    roughness: 0.3,
+    metalness: 0.85
+  }),
+  burgundy: new THREE.MeshStandardMaterial({
+    color: 0x3d0d16,
+    roughness: 0.88
+  }),
+  chrome: new THREE.MeshStandardMaterial({
+    color: 0xd0d0d8,
+    roughness: 0.1,
+    metalness: 0.98
+  }),
+  greenFelt: new THREE.MeshStandardMaterial({
+    color: 0x073b18,
+    roughness: 0.82
+  }),
+  darkWood: new THREE.MeshStandardMaterial({
+    color: 0x221109,
+    roughness: 0.65,
+    metalness: 0.05
+  }),
+  amberLight: new THREE.MeshStandardMaterial({
+    color: 0xffaa22,
+    emissive: 0xff8811,
+    emissiveIntensity: 3.5,
+    roughness: 0.3
+  }),
+  crystal: new THREE.MeshStandardMaterial({
+    color: 0xfffae8,
+    roughness: 0.08,
+    metalness: 0.15,
+    emissive: 0xfff0b0,
+    emissiveIntensity: 0.6
+  }),
+  signGlow: new THREE.MeshStandardMaterial({
+    color: 0xffd24d,
+    emissive: 0xffb81a,
+    emissiveIntensity: 4.5,
+    roughness: 0.2
+  })
+};
+
+// ═══════════════════════════════════════════════════════════
+// 4. OCTREE & COLLISION SİSTEMİ
+// ═══════════════════════════════════════════════════════════
+const worldOctree = new Octree();
+const colliders = [];
+
+function addBox(scene, name, x, y, z, w, h, d, material, isCollider = true) {
+  const geo = new THREE.BoxGeometry(w, h, d);
+  const mesh = new THREE.Mesh(geo, material);
+  mesh.name = name;
+  mesh.position.set(x, y, z);
+  mesh.castShadow = true;
+  mesh.receiveShadow = true;
+  scene.add(mesh);
+  if (isCollider) {
+    colliders.push(mesh);
+    worldOctree.fromGraphNode(mesh);
+  }
+  return mesh;
+}
+
+function addCylinder(scene, name, x, y, z, r, h, material, isCollider = true, segs = 24) {
+  const geo = new THREE.CylinderGeometry(r, r, h, segs);
+  const mesh = new THREE.Mesh(geo, material);
+  mesh.name = name;
+  mesh.position.set(x, y, z);
+  mesh.castShadow = true;
+  mesh.receiveShadow = true;
+  scene.add(mesh);
+  if (isCollider) {
+    colliders.push(mesh);
+    worldOctree.fromGraphNode(mesh);
+  }
+  return mesh;
+}
+
+// ═══════════════════════════════════════════════════════════
+// 5. 3D CASINO MİMARİSİ İNŞASI
+// ═══════════════════════════════════════════════════════════
+const interactiveObjects = [];
+
+function buildCasino() {
+  // 1. Zemin (Kırmızı Lüks Halıfleks)
+  addBox(scene, 'Floor_Carpet', 0, -0.05, 0, ROOM_W, 0.1, ROOM_D, M.carpet, true);
+
+  // Mermer Giriş Yolu & Çevre Şeritleri
+  addBox(scene, 'Marble_Border_N', 0, 0.01, ROOM_D / 2 - 0.4, ROOM_W, 0.02, 0.8, M.marbleNero, false);
+  addBox(scene, 'Marble_Border_S', 0, 0.01, -ROOM_D / 2 + 0.4, ROOM_W, 0.02, 0.8, M.marbleNero, false);
+  addBox(scene, 'Marble_Border_E', ROOM_W / 2 - 0.4, 0.01, 0, 0.8, 0.02, ROOM_D, M.marbleNero, false);
+  addBox(scene, 'Marble_Border_W', -ROOM_W / 2 + 0.4, 0.01, 0, 0.8, 0.02, ROOM_D, M.marbleNero, false);
+
+  // 2. Tavan ve Kornişler
+  addBox(scene, 'Ceiling', 0, CEIL_H + 0.05, 0, ROOM_W, 0.1, ROOM_D, M.ceiling, true);
+
+  // 3. Duvarlar (Akustik Siyah/Bordo Kadife)
+  addBox(scene, 'Wall_North', 0, CEIL_H / 2, ROOM_D / 2, ROOM_W, CEIL_H, WALL_T, M.velvetWall, true);
+  addBox(scene, 'Wall_South', 0, CEIL_H / 2, -ROOM_D / 2, ROOM_W, CEIL_H, WALL_T, M.velvetWall, true);
+  addBox(scene, 'Wall_East', ROOM_W / 2, CEIL_H / 2, 0, WALL_T, CEIL_H, ROOM_D, M.velvetWall, true);
+  addBox(scene, 'Wall_West', -ROOM_W / 2, CEIL_H / 2, 0, WALL_T, CEIL_H, ROOM_D, M.velvetWall, true);
+
+  // Altın Süpürgelikler
+  addBox(scene, 'Skirting_N', 0, 0.15, ROOM_D / 2 - 0.05, ROOM_W, 0.3, 0.08, M.gold, false);
+  addBox(scene, 'Skirting_S', 0, 0.15, -ROOM_D / 2 + 0.05, ROOM_W, 0.3, 0.08, M.gold, false);
+  addBox(scene, 'Skirting_E', ROOM_W / 2 - 0.05, 0.15, 0, 0.08, 0.3, ROOM_D, M.gold, false);
+  addBox(scene, 'Skirting_W', -ROOM_W / 2 + 0.05, 0.15, 0, 0.08, 0.3, ROOM_D, M.gold, false);
+
+  // 4. Taşıyıcı Altın Sütunlar (6 Adet)
+  const colPositions = [
+    [-ROOM_W / 2 + 2.8, -ROOM_D / 2 + 4.5],
+    [ ROOM_W / 2 - 2.8, -ROOM_D / 2 + 4.5],
+    [-ROOM_W / 2 + 2.8,  ROOM_D / 2 - 4.5],
+    [ ROOM_W / 2 - 2.8,  ROOM_D / 2 - 4.5],
+    [-ROOM_W / 2 + 2.8,  0],
+    [ ROOM_W / 2 - 2.8,  0],
+  ];
+  colPositions.forEach(([cx, cz], i) => {
+    // Sütun Gövdesi
+    addCylinder(scene, `Col_Shaft_${i}`, cx, CEIL_H / 2, cz, 0.36, CEIL_H, M.gold, true, 20);
+    // Sütun Kaidesi ve Başlığı
+    addBox(scene, `Col_Base_${i}`, cx, 0.15, cz, 0.85, 0.3, 0.85, M.gold, false);
+    addBox(scene, `Col_Cap_${i}`, cx, CEIL_H - 0.15, cz, 0.9, 0.3, 0.9, M.gold, false);
+  });
+
+  // 5. Kristal Avize (Merkez)
+  buildChandelier(0, CEIL_H - 0.8, 0);
+
+  // 6. Merkez Rulet Masası
+  buildRouletteTable(0, -4);
+
+  // 7. Blackjack / Kart Masaları (4 Adet)
+  const cardTables = [
+    [-4.5, -6.5], [4.5, -6.5],
+    [-4.5, 4.0],  [4.5, 4.0]
+  ];
+  cardTables.forEach(([tx, tz], i) => buildCardTable(tx, tz, i));
+
+  // 8. Slot Makineleri Sırası (7 Adet - Canlı Ekranlı)
+  buildSlotRow();
+
+  // 9. Lüks VIP Bar (Sağ Kanat)
+  buildBar();
+
+  // 10. VIP Lounge Oturma Alanı (Sol Kanat)
+  buildLounge();
+
+  // 11. Sahne ve Neon Tabela
+  buildStage();
+  buildNeonSign();
+}
+
+function buildChandelier(cx, cy, cz) {
+  // Gövde Halkası
+  const ringGeo = new THREE.TorusGeometry(1.0, 0.08, 8, 32);
+  const ring = new THREE.Mesh(ringGeo, M.crystal);
+  ring.rotation.x = Math.PI / 2;
+  ring.position.set(cx, cy, cz);
+  scene.add(ring);
+
+  // Kristal Sarkıtlar
+  const pendantGeo = new THREE.ConeGeometry(0.03, 0.25, 6);
+  for (let i = 0; i < 20; i++) {
+    const angle = (i / 20) * Math.PI * 2;
+    const px = cx + Math.cos(angle) * 1.0;
+    const pz = cz + Math.sin(angle) * 1.0;
+    const p = new THREE.Mesh(pendantGeo, M.crystal);
+    p.position.set(px, cy - 0.15, pz);
+    p.rotation.z = Math.PI;
+    scene.add(p);
+  }
+
+  // İç Işık
+  const cLight = new THREE.PointLight(0xfffae0, 120, 16, 1.4);
+  cLight.position.set(cx, cy - 0.2, cz);
+  cLight.castShadow = true;
+  scene.add(cLight);
+}
+
+function buildRouletteTable(tx, tz) {
+  // Ahşap Gövde
+  const base = addCylinder(scene, 'Roulette_Base', tx, 0.4, tz, 1.2, 0.8, M.darkWood, true, 32);
+  // Yeşil Çuha
+  addCylinder(scene, 'Roulette_Felt', tx, 0.81, tz, 1.15, 0.04, M.greenFelt, false, 32);
+  // Pirinç Çark
+  addCylinder(scene, 'Roulette_Wheel', tx, 0.85, tz, 0.45, 0.08, M.brass, false, 24);
+  addCylinder(scene, 'Roulette_Center', tx, 0.90, tz, 0.08, 0.08, M.chrome, false, 12);
+  
+  // Masanın Üst Işığı
+  const spot = new THREE.SpotLight(0xfff6d0, 65, 7, Math.PI / 7, 0.3, 1.5);
+  spot.position.set(tx, CEIL_H - 0.3, tz);
+  spot.target.position.set(tx, 0.8, tz);
+  spot.castShadow = true;
+  scene.add(spot);
+  scene.add(spot.target);
+
+  interactiveObjects.push({
+    mesh: base,
+    name: "VIP RULET MASASI",
+    action: () => alert("🎡 VIP Rulet Masasına Yaklaştınız! Bahis yapılıyor...")
+  });
+}
+
+function buildCardTable(tx, tz, id) {
+  const table = addBox(scene, `CardTable_${id}`, tx, 0.76, tz, 2.5, 0.08, 1.5, M.greenFelt, true);
+  addBox(scene, `CardApron_${id}`, tx, 0.42, tz, 2.4, 0.65, 1.4, M.darkWood, true);
+  addBox(scene, `CardRim_${id}`, tx, 0.81, tz, 2.56, 0.05, 1.56, M.gold, false);
+
+  // Tabureler
+  [-1.0, 0, 1.0].forEach((dx, j) => {
+    addCylinder(scene, `CT_Stool_${id}_${j}`, tx + dx, 0.45, tz + 1.1, 0.24, 0.1, M.burgundy, false, 12);
+    addCylinder(scene, `CT_Leg_${id}_${j}`, tx + dx, 0.22, tz + 1.1, 0.04, 0.45, M.chrome, false, 8);
+  });
+
+  interactiveObjects.push({
+    mesh: table,
+    name: `BLACKJACK MASASI #${id + 1}`,
+    action: () => alert(`🂡 Blackjack Masası #${id + 1}: Kartlar dağıtılıyor...`)
+  });
+}
+
+function buildSlotRow() {
+  const zPos = ROOM_D / 2 - 1.4;
+  const count = 7;
+  const startX = -((count - 1) * 1.6) / 2;
+
+  for (let i = 0; i < count; i++) {
+    const sx = startX + i * 1.6;
+
+    // Kasa
+    const body = addBox(scene, `Slot_${i}_Body`, sx, 0.95, zPos, 0.95, 1.9, 0.75, M.darkWood, true);
+
+    // Canlı Dinamik Ekran
+    const screenTexture = createSlotScreen(SLOT_THEMES[i], i);
+    const screenMat = new THREE.MeshStandardMaterial({
+      map: screenTexture,
+      emissiveMap: screenTexture,
+      emissive: 0xffffff,
+      emissiveIntensity: 1.2,
+      roughness: 0.2
+    });
+    addBox(scene, `Slot_${i}_Screen`, sx, 1.25, zPos - 0.38, 0.72, 0.65, 0.05, screenMat, false);
+
+    // Tepe Işıklı Tabela
+    addBox(scene, `Slot_${i}_Marquee`, sx, 1.92, zPos - 0.1, 0.95, 0.25, 0.5, M.gold, false);
+
+    // Buton Paneli
+    addBox(scene, `Slot_${i}_Buttons`, sx, 0.65, zPos - 0.42, 0.75, 0.08, 0.2, M.chrome, false);
+
+    // Kol (Lever)
+    addCylinder(scene, `Slot_${i}_Lever`, sx + 0.54, 1.1, zPos - 0.1, 0.03, 0.6, M.chrome, false, 8);
+    addBox(scene, `Slot_${i}_Handle`, sx + 0.54, 1.42, zPos - 0.1, 0.08, 0.08, 0.08, M.gold, false);
+
+    // Tabure
+    addCylinder(scene, `Slot_${i}_Stool`, sx, 0.45, zPos - 0.95, 0.25, 0.1, M.burgundy, false, 12);
+    addCylinder(scene, `Slot_${i}_Leg`, sx, 0.22, zPos - 0.95, 0.04, 0.45, M.chrome, false, 8);
+
+    interactiveObjects.push({
+      mesh: body,
+      name: SLOT_THEMES[i].title,
+      action: () => playSlotChime(SLOT_THEMES[i].title)
+    });
+  }
+}
+
+function buildBar() {
+  const bx = ROOM_W / 2 - 2.2;
+  const bz = 6.0;
+  const bLen = 8.5;
+
+  // Tezgâh ve Ayak
+  const bar = addBox(scene, 'Bar_Counter', bx, 1.05, bz, 1.35, 0.1, bLen, M.brass, true);
+  addBox(scene, 'Bar_Body', bx + 0.05, 0.5, bz, 1.25, 1.0, bLen, M.darkWood, true);
+  addBox(scene, 'Bar_Footrail', bx - 0.55, 0.15, bz, 0.06, 0.06, bLen - 0.4, M.brass, false);
+
+  // Arka Raf Duvarı
+  addBox(scene, 'Bar_BackWall', bx + 0.8, 1.6, bz, 0.15, 2.4, bLen, M.darkWood, false);
+  addBox(scene, 'Bar_BackGlow', bx + 0.85, 1.3, bz, 0.05, 1.8, bLen - 0.6, M.amberLight, false);
+
+  // Şişeler (3 Raf x 8 Şişe = 24 Şişe)
+  [0.95, 1.5, 2.05].forEach((sy, r) => {
+    addBox(scene, `Bar_Shelf_${r}`, bx + 0.72, sy, bz, 0.45, 0.04, bLen - 0.4, M.darkWood, false);
+    for (let b = 0; b < 8; b++) {
+      const bottleZ = bz - bLen / 2 + 0.6 + b * (bLen - 0.8) / 8;
+      addCylinder(scene, `Bottle_${r}_${b}`, bx + 0.62, sy + 0.15, bottleZ, 0.045, 0.26, M.amberLight, false, 8);
+    }
+  });
+
+  // Bar Tabureleri
+  for (let i = 0; i < 6; i++) {
+    const sz = bz - bLen / 2 + 0.9 + i * 1.35;
+    addCylinder(scene, `BarStool_${i}`, bx - 0.95, 0.75, sz, 0.24, 0.08, M.burgundy, false, 12);
+    addCylinder(scene, `BarStool_Leg_${i}`, bx - 0.95, 0.37, sz, 0.035, 0.75, M.chrome, false, 8);
+  }
+
+  // Bar Tavan Sarkıt Lambaları
+  for (let i = 0; i < 4; i++) {
+    const lz = bz - bLen / 2 + 1.2 + i * 2.1;
+    const pl = new THREE.PointLight(0xffb84d, 15, 4.5, 2);
+    pl.position.set(bx - 0.2, CEIL_H - 1.2, lz);
+    scene.add(pl);
+  }
+
+  interactiveObjects.push({
+    mesh: bar,
+    name: "VIP LOUNGE BAR",
+    action: () => alert("🍸 Barmen: 'Hoş geldiniz efendim. Viski mi yoksa şampanya mı arzu edersiniz?'")
+  });
+}
+
+function buildLounge() {
+  const lx = -ROOM_W / 2 + 2.5;
+  const sofaZ = [-8, -3, 2, 7];
+
+  sofaZ.forEach((sz, i) => {
+    // Kanepe
+    const sofa = addBox(scene, `Sofa_${i}`, lx, 0.42, sz, 1.9, 0.4, 0.9, M.burgundy, true);
+    addBox(scene, `Sofa_Back_${i}`, lx, 0.85, sz + 0.45, 1.9, 0.8, 0.15, M.burgundy, true);
+    addBox(scene, `Sofa_ArmL_${i}`, lx - 0.95, 0.6, sz, 0.12, 0.65, 0.9, M.burgundy, false);
+    addBox(scene, `Sofa_ArmR_${i}`, lx + 0.95, 0.6, sz, 0.12, 0.65, 0.9, M.burgundy, false);
+
+    // Sehpa ve Abajur
+    addCylinder(scene, `CoffeeTable_${i}`, lx + 1.6, 0.35, sz, 0.45, 0.06, M.gold, false, 24);
+    addCylinder(scene, `TableLamp_${i}`, lx + 1.6, 0.7, sz, 0.15, 0.3, M.amberLight, false, 12);
+
+    const lampLight = new THREE.PointLight(0xffaa33, 8, 3.5, 2);
+    lampLight.position.set(lx + 1.6, 0.8, sz);
+    scene.add(lampLight);
+
+    interactiveObjects.push({
+      mesh: sofa,
+      name: `VIP LOCA #${i + 1}`,
+      action: () => alert(`🛋 VIP Loca #${i + 1}: Dinlenmektesiniz...`)
+    });
+  });
+}
+
+function buildStage() {
+  const sz = -ROOM_D / 2 + 2.8;
+  // Sahne Platformu
+  addBox(scene, 'Stage_Platform', 0, 0.3, sz, 8.5, 0.6, 3.8, M.darkWood, true);
+  addBox(scene, 'Stage_Carpet', 0, 0.62, sz, 8.2, 0.04, 3.5, M.burgundy, false);
+
+  // Arka Kadife Perde
+  addBox(scene, 'Stage_Curtain', 0, CEIL_H / 2, sz - 1.8, 8.0, CEIL_H, 0.12, M.burgundy, true);
+  addBox(scene, 'Curtain_GoldL', -4.0, CEIL_H / 2, sz - 1.75, 0.15, CEIL_H, 0.15, M.gold, false);
+  addBox(scene, 'Curtain_GoldR',  4.0, CEIL_H / 2, sz - 1.75, 0.15, CEIL_H, 0.15, M.gold, false);
+
+  // Sahne Spotları
+  [-2.2, 0, 2.2].forEach((sx) => {
+    const sl = new THREE.SpotLight(0xfffae0, 70, 9, Math.PI / 9, 0.3, 1.4);
+    sl.position.set(sx, CEIL_H - 0.2, sz + 2.5);
+    sl.target.position.set(sx, 0.6, sz);
+    scene.add(sl);
+    scene.add(sl.target);
+  });
+}
+
+function buildNeonSign() {
+  // Giriş Üstü DÜRTÜ VIP Tabelası
+  const sign = addBox(scene, 'NeonSign', 0, CEIL_H - 0.7, -ROOM_D / 2 + 0.3, 6.5, 0.7, 0.1, M.signGlow, false);
+  const signLight = new THREE.PointLight(0xffaa22, 22, 8, 1.6);
+  signLight.position.set(0, CEIL_H - 0.7, -ROOM_D / 2 + 0.8);
+  scene.add(signLight);
+}
+
+// ═══════════════════════════════════════════════════════════
+// 6. AYDINLATMA VE AMBİYANS
+// ═══════════════════════════════════════════════════════════
+function setupLighting() {
+  const ambient = new THREE.AmbientLight(0x22150a, 1.4);
+  scene.add(ambient);
+
+  const hemi = new THREE.HemisphereLight(0xD4AF37, 0x08080d, 0.7);
+  scene.add(hemi);
+
+  // Köşe Sıcak Işıkları
+  [
+    [-6, -8], [6, -8], [-6, 8], [6, 8], [-6, 0], [6, 0]
+  ].forEach(([x, z]) => {
+    const pl = new THREE.PointLight(0xffc866, 30, 11, 1.8);
+    pl.position.set(x, CEIL_H - 0.4, z);
+    scene.add(pl);
+  });
+}
+
+// ═══════════════════════════════════════════════════════════
+// 7. OYUNCU FİZİĞİ & KONTROLLER (OCTREE + CAPSULE)
+// ═══════════════════════════════════════════════════════════
+const playerCollider = new Capsule(
+  new THREE.Vector3(0, CAPSULE_RADIUS, 10),
+  new THREE.Vector3(0, CAPSULE_HEIGHT - CAPSULE_RADIUS, 10),
+  CAPSULE_RADIUS
+);
+
+const playerVelocity = new THREE.Vector3();
+const playerDirection = new THREE.Vector3();
+let playerOnFloor = false;
+
+const keyStates = {};
+document.addEventListener('keydown', e => {
+  keyStates[e.code] = true;
+  if (e.code === 'KeyE') triggerInteraction();
+});
+document.addEventListener('keyup', e => keyStates[e.code] = false);
+
+// Pointer Lock
+const blocker = document.getElementById('blocker');
+const enterBtn = document.getElementById('enterBtn');
+const crosshair = document.getElementById('crosshair');
+
+function requestLock() {
+  document.body.requestPointerLock();
+  initAudio();
+}
+
+enterBtn.addEventListener('click', requestLock);
+blocker.addEventListener('click', requestLock);
+
+if (new URLSearchParams(window.location.search).has('autostart')) {
+  blocker.style.display = 'none';
+  if (new URLSearchParams(window.location.search).get('autostart') === 'slots') {
+    camera.position.set(0, 1.7, 7.5);
+    camera.rotation.y = Math.PI; // facing +Z towards slots
+  }
+}
+
+document.addEventListener('pointerlockchange', () => {
+  const isLocked = document.pointerLockElement === document.body;
+  blocker.style.display = isLocked ? 'none' : 'flex';
+  crosshair.style.display = isLocked ? 'block' : 'none';
+});
+
+document.body.addEventListener('mousemove', (e) => {
+  if (document.pointerLockElement === document.body) {
+    camera.rotation.y -= e.movementX / 480;
+    camera.rotation.x -= e.movementY / 480;
+    camera.rotation.x = Math.max(-Math.PI / 2.1, Math.min(Math.PI / 2.1, camera.rotation.x));
+  }
+});
+
+// Raycaster for Interactivity
+const raycaster = new THREE.Raycaster();
+const centerScreen = new THREE.Vector2(0, 0);
+let currentTarget = null;
+const promptBadge = document.getElementById('promptBadge');
+const promptText = document.getElementById('promptText');
+
+function checkInteraction() {
+  raycaster.setFromCamera(centerScreen, camera);
+  const targets = interactiveObjects.map(o => o.mesh);
+  const intersects = raycaster.intersectObjects(targets, true);
+
+  if (intersects.length > 0 && intersects[0].distance < 3.5) {
+    let hitMesh = intersects[0].object;
+    // Find parent object registered
+    let found = interactiveObjects.find(o => o.mesh === hitMesh || o.mesh.children.includes(hitMesh));
+    if (found) {
+      currentTarget = found;
+      crosshair.classList.add('active');
+      promptText.innerText = `[E] ${found.name}`;
+      promptBadge.style.display = 'block';
+      return;
+    }
+  }
+  currentTarget = null;
+  crosshair.classList.remove('active');
+  promptBadge.style.display = 'none';
+}
+
+function triggerInteraction() {
+  if (currentTarget && currentTarget.action) {
+    currentTarget.action();
+  }
+}
+
+document.body.addEventListener('click', () => {
+  if (document.pointerLockElement === document.body) {
+    triggerInteraction();
+  }
+});
+
+// Çarpışma Çözümleme (Kapsül vs Octree)
+function playerCollisions() {
+  const result = worldOctree.capsuleIntersect(playerCollider);
+  playerOnFloor = false;
+
+  if (result) {
+    playerOnFloor = result.normal.y > 0;
+    if (!playerOnFloor) {
+      playerVelocity.addScaledVector(result.normal, -result.normal.dot(playerVelocity));
+    }
+    if (result.depth >= 1e-10) {
+      playerCollider.translate(result.normal.multiplyScalar(result.depth));
+    }
+  }
+}
+
+function updatePlayer(deltaTime) {
+  let damping = Math.exp(-4 * deltaTime) - 1;
+  if (!playerOnFloor) {
+    playerVelocity.y -= GRAVITY * deltaTime;
+    damping *= 0.1;
+  }
+  playerVelocity.addScaledVector(playerVelocity, damping);
+
+  const deltaPos = playerVelocity.clone().multiplyScalar(deltaTime);
+  playerCollider.translate(deltaPos);
+
+  playerCollisions();
+
+  camera.position.copy(playerCollider.end);
+}
+
+function getForwardVector() {
+  camera.getWorldDirection(playerDirection);
+  playerDirection.y = 0;
+  playerDirection.normalize();
+  return playerDirection;
+}
+
+function getSideVector() {
+  camera.getWorldDirection(playerDirection);
+  playerDirection.y = 0;
+  playerDirection.normalize();
+  playerDirection.cross(camera.up);
+  return playerDirection;
+}
+
+function applyControls(deltaTime) {
+  const speed = (keyStates['ShiftLeft'] || keyStates['ShiftRight'] ? RUN_SPEED : WALK_SPEED) * deltaTime;
+
+  if (keyStates['KeyW'] || keyStates['ArrowUp']) playerVelocity.add(getForwardVector().multiplyScalar(speed));
+  if (keyStates['KeyS'] || keyStates['ArrowDown']) playerVelocity.add(getForwardVector().multiplyScalar(-speed));
+  if (keyStates['KeyA'] || keyStates['ArrowLeft']) playerVelocity.add(getSideVector().multiplyScalar(-speed));
+  if (keyStates['KeyD'] || keyStates['ArrowRight']) playerVelocity.add(getSideVector().multiplyScalar(speed));
+
+  if (playerOnFloor && keyStates['Space']) {
+    playerVelocity.y = JUMP_VELOCITY;
+  }
+}
+
+function teleportIfOob() {
+  if (camera.position.y <= -15) {
+    playerCollider.start.set(0, CAPSULE_RADIUS, 10);
+    playerCollider.end.set(0, CAPSULE_HEIGHT - CAPSULE_RADIUS, 10);
+    playerVelocity.set(0, 0, 0);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// 8. WEB AUDIO SENTEZLEYİCİ (HARİCİ DOSYA GEREKTİRMEZ)
+// ═══════════════════════════════════════════════════════════
+let audioCtx = null;
+let soundEnabled = true;
+
+function initAudio() {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    playAmbientChords();
+  }
+  if (audioCtx.state === 'suspended') {
+    audioCtx.resume();
+  }
+}
+
+function playAmbientChords() {
+  if (!audioCtx || !soundEnabled) return;
+  // Speakeasy Caz Akoru (C minor 9)
+  const freqs = [130.81, 155.56, 196.00, 233.08, 293.66];
+  freqs.forEach((f, i) => {
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'sine';
+    osc.frequency.value = f + Math.sin(i) * 0.5;
+    gain.gain.setValueAtTime(0.008, audioCtx.currentTime);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start();
+  });
+}
+
+function playSlotChime(title) {
+  if (!audioCtx || !soundEnabled) {
+    alert(`🎰 ${title} Çevrildi! 777 JACKPOT!`);
+    return;
+  }
+  const now = audioCtx.currentTime;
+  const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+  notes.forEach((freq, idx) => {
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(freq, now + idx * 0.08);
+    gain.gain.setValueAtTime(0.12, now + idx * 0.08);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.08 + 0.35);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start(now + idx * 0.08);
+    osc.stop(now + idx * 0.08 + 0.4);
+  });
+}
+
+// ═══════════════════════════════════════════════════════════
+// 9. UI BUTONLARI & EVENTLER
+// ═══════════════════════════════════════════════════════════
+document.getElementById('soundBtn').onclick = () => {
+  soundEnabled = !soundEnabled;
+  document.getElementById('soundBtn').innerText = soundEnabled ? "🔊 SES: AÇIK" : "🔇 SES: KAPALI";
+};
+
+document.getElementById('fullScreenBtn').onclick = () => {
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen().catch(() => {});
+  } else {
+    document.exitFullscreen().catch(() => {});
+  }
+};
+
+document.getElementById('exitClubBtn').onclick = () => {
+  window.location.href = 'index.html';
+};
+
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+// ═══════════════════════════════════════════════════════════
+// 10. ANA RENDER VE ANİMASYON DÖNGÜSÜ
+// ═══════════════════════════════════════════════════════════
+buildCasino();
+setupLighting();
+
+const clock = new THREE.Clock();
+let frameCount = 0;
+let lastFpsUpdate = 0;
+const hudFps = document.getElementById('hudFps');
+const hudPos = document.getElementById('hudPos');
+
+function animate() {
+  requestAnimationFrame(animate);
+
+  const time = performance.now() * 0.001;
+  const deltaTime = Math.min(0.05, clock.getDelta()) / STEPS_PER_FRAME;
+
+  // 5 Adımlı Fizik Hesaplaması (Duvardan Geçmeyi %100 Önler)
+  for (let i = 0; i < STEPS_PER_FRAME; i++) {
+    applyControls(deltaTime);
+    updatePlayer(deltaTime);
+    teleportIfOob();
+  }
+
+  // Slot Ekranlarını Canlı Güncelle
+  updateSlotScreens(time);
+
+  // Etkileşim Kontrolü
+  checkInteraction();
+
+  // HUD Güncelle
+  frameCount++;
+  if (time - lastFpsUpdate > 0.5) {
+    const fps = Math.round(frameCount / (time - lastFpsUpdate));
+    hudFps.innerText = `${fps} FPS`;
+    hudPos.innerText = `X: ${camera.position.x.toFixed(1)}  Y: ${camera.position.y.toFixed(1)}  Z: ${camera.position.z.toFixed(1)}`;
+    frameCount = 0;
+    lastFpsUpdate = time;
+  }
+
+  renderer.render(scene, camera);
+}
+
+animate();
+</script>
+</body>
+</html>
