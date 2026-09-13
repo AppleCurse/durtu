@@ -533,6 +533,12 @@ body {
         <div class="reel-frame" id="reel2">💎</div>
       </div>
 
+      <!-- DEDE (ZEUS) ÖZEL ÇARPAN ALANI -->
+      <div id="dedeBox" style="display: none; background: rgba(212, 175, 55, 0.12); border: 1px solid var(--gold); border-radius: 6px; padding: 10px; margin: 10px 0;">
+        <div style="font-size: 13px; color: var(--gold-light); font-weight: 700;">⚡ DEDE (ZEUS): <span id="dedeQuote" style="color: #fff; font-weight: 400;">"Kolu çek evladım, şimşekleri hazırladım!"</span></div>
+        <div id="dedeMultiplier" style="font-family: 'JetBrains Mono', monospace; font-size: 18px; font-weight: 700; color: #f6e27a; margin-top: 4px; min-height: 22px;"></div>
+      </div>
+
       <div id="slotWinMsg" style="font-size: 13px; font-weight: 700; min-height: 20px; color: var(--gold-light); margin-bottom: 12px;">
         BAHİS SEÇİN VE ÇEVİRİN
       </div>
@@ -617,6 +623,75 @@ body {
       <button class="action-btn" onclick="openVaultDirect()" style="background: linear-gradient(135deg, #D4AF37, #9a7818); color: #000;">
         ◈ KULÜP KASASI (+1.000 DEMO YÜKLE)
       </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     AVİATOR (CRASH) SAHNE MODALI
+     ═══════════════════════════════════════════════════════════ -->
+<div class="game-modal" id="modalAviator">
+  <div class="modal-dialog" style="max-width: 580px;">
+    <div class="modal-header">
+      <div class="modal-title">✈️ SAHNE EKRANI: AVİATOR (CRASH)</div>
+      <button class="modal-close" onclick="closeGameModal()">✕</button>
+    </div>
+
+    <div style="position: relative; width: 100%; height: 260px; background: #060810; border: 1px solid var(--gold); border-radius: 4px; overflow: hidden; margin-bottom: 14px;">
+      <canvas id="aviatorCanvas" width="540" height="260" style="width: 100%; height: 100%; display: block;"></canvas>
+      <div id="aviatorMultiplier" style="position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); font-family: 'JetBrains Mono', monospace; font-size: 52px; font-weight: 700; color: #f6e27a; text-shadow: 0 0 30px rgba(212, 175, 55, 0.8);">
+        1.00×
+      </div>
+      <div id="aviatorStatus" style="position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%); font-size: 13px; font-weight: 600; color: #aaa; text-transform: uppercase;">
+        BAHİS YAPIP UÇAĞI KALDIRIN
+      </div>
+    </div>
+
+    <div class="chip-selector">
+      <button class="chip-btn" onclick="selectAviatorBet(10)">10</button>
+      <button class="chip-btn active" onclick="selectAviatorBet(25)">25</button>
+      <button class="chip-btn" onclick="selectAviatorBet(50)">50</button>
+      <button class="chip-btn" onclick="selectAviatorBet(100)">100</button>
+      <button class="chip-btn" onclick="selectAviatorBet(250)">250</button>
+    </div>
+
+    <div style="display: flex; gap: 10px; justify-content: center;">
+      <button class="action-btn" id="aviatorStartBtn" onclick="startAviatorFlight()">UÇAĞI KALDIR</button>
+      <button class="action-btn" id="aviatorCashBtn" onclick="cashOutAviator()" style="display: none; background: #1E6B37; color: #fff; border-color: #4ade80;">PARAYI ÇEK (CASH OUT)</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     MİNES (MAYIN TARLASI) VIP LOCA MODALI
+     ═══════════════════════════════════════════════════════════ -->
+<div class="game-modal" id="modalMines">
+  <div class="modal-dialog" style="max-width: 480px;">
+    <div class="modal-header">
+      <div class="modal-title">💣 VIP LOCA: MİNES (MAYIN TARLASI)</div>
+      <button class="modal-close" onclick="closeGameModal()">✕</button>
+    </div>
+
+    <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.4); padding: 8px 16px; border: 1px solid rgba(212,175,55,0.3); border-radius: 4px; margin-bottom: 12px;">
+      <div style="font-size: 11px; color: var(--gold-light);">MAYIN SAYISI: <b>3 MAYIN</b></div>
+      <div style="font-family: 'JetBrains Mono', monospace; font-size: 14px; color: #4ade80;" id="minesCurrentMul">ÇARPAN: 1.00×</div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-bottom: 14px;" id="minesGrid">
+      <!-- 25 Karolar JS ile üretilir -->
+    </div>
+
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
+      <div class="chip-selector" style="margin: 0;">
+        <button class="chip-btn" onclick="selectMinesBet(10)">10</button>
+        <button class="chip-btn active" onclick="selectMinesBet(25)">25</button>
+        <button class="chip-btn" onclick="selectMinesBet(50)">50</button>
+        <button class="chip-btn" onclick="selectMinesBet(100)">100</button>
+      </div>
+      <div style="display: flex; gap: 8px;">
+        <button class="action-btn" id="minesStartBtn" onclick="startMinesGame()">BAŞLA</button>
+        <button class="action-btn" id="minesCashBtn" onclick="cashOutMines()" style="display: none; background: #1E6B37; color: #fff; border-color: #4ade80;">TAHSİL ET</button>
+      </div>
     </div>
   </div>
 </div>
@@ -845,7 +920,7 @@ const carpetTexture = createLuxuryCarpetTexture();
 // 2. DİNAMİK CANLI SLOT MAKİNESİ EKRANLARI (7 ADET)
 // ═══════════════════════════════════════════════════════════
 const SLOT_THEMES = [
-  { title: "GATES OF OLYMPUS", color: "#f6e27a", accent: "#ff8800", symbols: ['⚡', '👑', '💎', '🏺', '⭐'] },
+  { title: "GATES OF OLYMPUS (DEDE)", color: "#f6e27a", accent: "#ff8800", symbols: ['⚡', '👑', '💎', '🏺', '👴', '⭐'] },
   { title: "SWEET BONANZA", color: "#ff66cc", accent: "#33ffff", symbols: ['🍭', '🍬', '🍇', '🍉', '🍌'] },
   { title: "DÜRTÜ GRAND 777", color: "#ff3333", accent: "#D4AF37", symbols: ['7️⃣', '🔔', '🍒', '💎', 'BAR'] },
   { title: "BIG BASS ROYALE", color: "#00ffaa", accent: "#0088ff", symbols: ['🐟', '🎣', '🚤', '📦', '⭐'] },
@@ -1279,18 +1354,15 @@ function buildLounge() {
 
     interactiveObjects.push({
       mesh: sofa,
-      name: `VIP LOCA #${i + 1}`,
-      action: () => {
-        addXp(25, '(Loca Ziyareti)');
-        alert(`🛋 VIP Loca #${i + 1}: Seçkin atmosferde dinleniyorsunuz. (+25 XP Keşif Bonusu)`);
-      }
+      name: `💣 VIP LOCA #${i + 1}: MİNES (MAYIN TARLASI)`,
+      action: () => openMinesModal()
     });
   });
 }
 
 function buildStage() {
   const sz = -ROOM_D / 2 + 2.8;
-  addBox(scene, 'Stage_Platform', 0, 0.3, sz, 8.5, 0.6, 3.8, M.darkWood, true);
+  const stagePlat = addBox(scene, 'Stage_Platform', 0, 0.3, sz, 8.5, 0.6, 3.8, M.darkWood, true);
   addBox(scene, 'Stage_Carpet', 0, 0.62, sz, 8.2, 0.04, 3.5, M.burgundy, false);
 
   addBox(scene, 'Stage_Curtain', 0, CEIL_H / 2, sz - 1.8, 8.0, CEIL_H, 0.12, M.burgundy, true);
@@ -1303,6 +1375,12 @@ function buildStage() {
     sl.target.position.set(sx, 0.6, sz);
     scene.add(sl);
     scene.add(sl.target);
+  });
+
+  interactiveObjects.push({
+    mesh: stagePlat,
+    name: "✈️ DEV SAHNE EKRANI: AVİATOR (CRASH)",
+    action: () => openAviatorModal()
   });
 }
 
@@ -1609,6 +1687,24 @@ function openSlotModal(index) {
   currentActiveSlot = index;
   document.exitPointerLock();
   document.getElementById('slotModalTitle').innerText = `🎰 ${SLOT_THEMES[index].title}`;
+
+  const dedeBox = document.getElementById('dedeBox');
+  if (dedeBox) {
+    if (index === 0) {
+      dedeBox.style.display = 'block';
+      const quotes = [
+        "Kolu çek evladım, şimşekler hazır! (⚡)",
+        "Beni seviyor musun yavrum? 500x geliyor! (⚡)",
+        "Gözlerimi kapattım, çarpanı fırlatıyorum! (⚡)",
+        "Şimşek çakacak, kasa dolup taşacak! (⚡)"
+      ];
+      document.getElementById('dedeQuote').innerText = quotes[Math.floor(Math.random() * quotes.length)];
+      document.getElementById('dedeMultiplier').innerText = '';
+    } else {
+      dedeBox.style.display = 'none';
+    }
+  }
+
   document.getElementById('modalSlot').classList.add('active');
 }
 
@@ -1776,14 +1872,31 @@ window.spinSlot = () => {
         winMult = 2.5; // İkili eşleşme
       }
 
+      // DEDE ŞİMŞEK ÇARPANI
+      let dedeMul = 1;
+      if (currentActiveSlot === 0) {
+        const dedeOrbs = [2, 5, 10, 25, 50, 100];
+        if (Math.random() < 0.65) {
+          dedeMul = dedeOrbs[Math.floor(Math.random() * dedeOrbs.length)];
+          const dMulEl = document.getElementById('dedeMultiplier');
+          if (dMulEl) dMulEl.innerText = `⚡ DEDE ŞİMŞEK ÇAKTI: ×${dedeMul} ÇARPAN!`;
+        } else {
+          const dMulEl = document.getElementById('dedeMultiplier');
+          if (dMulEl) dMulEl.innerText = `⚡ Dede elini kaldırdı ama çarpan atmadı...`;
+        }
+      }
+
       if (winMult > 0) {
+        winMult *= dedeMul;
         const win = Math.round(selectedSlotBet * winMult);
         clubState.chips += win;
         bumpChips();
         addXp(60, '(Slot Kazancı)');
         saveClubState();
         playWinSound();
-        winMsg.innerText = `🔥 KAZANDINIZ! +${win} dürTL (×${winMult})`;
+        winMsg.innerText = dedeMul > 1 
+          ? `⚡ DEDE ŞİMŞEĞİ İLE KAZANDINIZ! +${win} dürTL (×${winMult} KAZANÇ!)`
+          : `🔥 KAZANDINIZ! +${win} dürTL (×${winMult})`;
       } else {
         winMsg.innerText = "Tekrar deneyin...";
       }
@@ -1949,6 +2062,267 @@ function endBlackjack(res) {
   document.getElementById('bjHitBtn').style.display = 'none';
   document.getElementById('bjStandBtn').style.display = 'none';
 }
+
+// ═══════════════════════════════════════════════════════════
+// ── AVİATOR (CRASH) OYUN MANTIĞI ──
+// ═══════════════════════════════════════════════════════════
+let aviatorBet = 25;
+let aviatorRunning = false;
+let aviatorMultiplier = 1.00;
+let aviatorCrashPoint = 2.5;
+let aviatorAnimId = null;
+
+window.selectAviatorBet = (val) => {
+  aviatorBet = val;
+  document.querySelectorAll('#modalAviator .chip-btn').forEach(b => {
+    b.classList.toggle('active', b.innerText == val);
+  });
+};
+
+function openAviatorModal() {
+  document.exitPointerLock();
+  document.getElementById('modalAviator').classList.add('active');
+  resetAviatorCanvas();
+}
+
+function resetAviatorCanvas() {
+  const cv = document.getElementById('aviatorCanvas');
+  if (!cv) return;
+  const ctx = cv.getContext('2d');
+  ctx.clearRect(0, 0, cv.width, cv.height);
+  ctx.fillStyle = '#060812';
+  ctx.fillRect(0, 0, cv.width, cv.height);
+
+  ctx.strokeStyle = 'rgba(212,175,55,0.15)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  for (let x = 40; x < cv.width; x += 55) { ctx.moveTo(x, 0); ctx.lineTo(x, cv.height); }
+  for (let y = 30; y < cv.height; y += 38) { ctx.moveTo(0, y); ctx.lineTo(cv.width, y); }
+  ctx.stroke();
+
+  document.getElementById('aviatorMultiplier').innerText = '1.00×';
+  document.getElementById('aviatorMultiplier').style.color = '#f6e27a';
+  document.getElementById('aviatorStatus').innerText = 'BAHİS YAPIP UÇAĞI KALDIRIN';
+  document.getElementById('aviatorStartBtn').style.display = 'inline-block';
+  document.getElementById('aviatorCashBtn').style.display = 'none';
+}
+
+window.startAviatorFlight = () => {
+  if (clubState.chips < aviatorBet) {
+    alert("Yetersiz bakiye!");
+    return;
+  }
+  clubState.chips -= aviatorBet;
+  bumpChips();
+  addXp(Math.max(1, Math.round(aviatorBet / 10)), '(Aviator Uçuşu)');
+  saveClubState();
+
+  aviatorRunning = true;
+  aviatorMultiplier = 1.00;
+
+  const r = Math.random();
+  if (r < 0.12) aviatorCrashPoint = 1.05 + Math.random() * 0.25;
+  else if (r < 0.55) aviatorCrashPoint = 1.35 + Math.random() * 1.6;
+  else if (r < 0.88) aviatorCrashPoint = 3.0 + Math.random() * 4.5;
+  else aviatorCrashPoint = 7.5 + Math.random() * 22.0;
+
+  document.getElementById('aviatorStartBtn').style.display = 'none';
+  document.getElementById('aviatorCashBtn').style.display = 'inline-block';
+  document.getElementById('aviatorStatus').innerText = 'UÇAK HAVALANDI! İSTEDİĞİN AN BOZDUR!';
+
+  const cv = document.getElementById('aviatorCanvas');
+  const ctx = cv.getContext('2d');
+  const startTime = performance.now();
+
+  function drawFrame() {
+    if (!aviatorRunning) return;
+    const elapsed = (performance.now() - startTime) / 1000;
+    aviatorMultiplier = Math.max(1.00, +(1.00 * Math.pow(1.16, elapsed * 2.0)).toFixed(2));
+
+    document.getElementById('aviatorMultiplier').innerText = aviatorMultiplier.toFixed(2) + '×';
+    document.getElementById('aviatorCashBtn').innerText = `BOZDUR (+${Math.round(aviatorBet * aviatorMultiplier)} dürTL)`;
+
+    ctx.clearRect(0, 0, cv.width, cv.height);
+    ctx.fillStyle = '#060812';
+    ctx.fillRect(0, 0, cv.width, cv.height);
+
+    const progress = Math.min(1.0, elapsed / 7.5);
+    const px = 30 + progress * (cv.width - 80);
+    const py = cv.height - 25 - Math.pow(progress, 1.8) * (cv.height - 70);
+
+    ctx.beginPath();
+    ctx.moveTo(30, cv.height - 25);
+    ctx.quadraticCurveTo(cv.width * 0.35, cv.height - 25, px, py);
+    ctx.strokeStyle = '#e11d48';
+    ctx.lineWidth = 4;
+    ctx.stroke();
+
+    ctx.lineTo(px, cv.height - 25);
+    ctx.lineTo(30, cv.height - 25);
+    ctx.fillStyle = 'rgba(225, 29, 72, 0.16)';
+    ctx.fill();
+
+    ctx.font = '24px sans-serif';
+    ctx.fillText('✈️', px - 12, py - 6);
+
+    if (aviatorMultiplier >= aviatorCrashPoint) {
+      aviatorRunning = false;
+      document.getElementById('aviatorMultiplier').innerText = 'PATLADI!';
+      document.getElementById('aviatorMultiplier').style.color = '#ef4444';
+      document.getElementById('aviatorStatus').innerText = `UÇAK ${aviatorCrashPoint.toFixed(2)}× SEVİYESİNDE UÇTU! (KAYIP)`;
+      document.getElementById('aviatorStartBtn').style.display = 'inline-block';
+      document.getElementById('aviatorCashBtn').style.display = 'none';
+      return;
+    }
+
+    aviatorAnimId = requestAnimationFrame(drawFrame);
+  }
+
+  drawFrame();
+};
+
+window.cashOutAviator = () => {
+  if (!aviatorRunning) return;
+  aviatorRunning = false;
+  cancelAnimationFrame(aviatorAnimId);
+
+  const win = Math.round(aviatorBet * aviatorMultiplier);
+  clubState.chips += win;
+  bumpChips();
+  addXp(60, '(Aviator Zaferi)');
+  saveClubState();
+  playWinSound();
+
+  document.getElementById('aviatorMultiplier').style.color = '#4ade80';
+  document.getElementById('aviatorStatus').innerText = `🔥 KAZANDINIZ! +${win} dürTL (${aviatorMultiplier.toFixed(2)}×)`;
+  document.getElementById('aviatorStartBtn').style.display = 'inline-block';
+  document.getElementById('aviatorCashBtn').style.display = 'none';
+};
+
+// ═══════════════════════════════════════════════════════════
+// ── MİNES (MAYIN TARLASI) OYUN MANTIĞI ──
+// ═══════════════════════════════════════════════════════════
+let minesBet = 25;
+let minesActive = false;
+let minesCount = 3;
+let minesDiamondsRevealed = 0;
+const minesPositions = new Set();
+const minesMultipliers = [1.18, 1.42, 1.76, 2.22, 2.85, 3.75, 5.10, 7.20, 10.5, 16.0, 26.0, 45.0, 85.0];
+
+window.selectMinesBet = (val) => {
+  minesBet = val;
+  document.querySelectorAll('#modalMines .chip-btn').forEach(b => {
+    b.classList.toggle('active', b.innerText == val);
+  });
+};
+
+function openMinesModal() {
+  document.exitPointerLock();
+  document.getElementById('modalMines').classList.add('active');
+  renderMinesGrid();
+}
+
+function renderMinesGrid() {
+  const grid = document.getElementById('minesGrid');
+  if (!grid) return;
+  grid.innerHTML = '';
+  for (let i = 0; i < 25; i++) {
+    const tile = document.createElement('button');
+    tile.id = `mtile_${i}`;
+    tile.style.cssText = 'height: 48px; background: rgba(30,25,35,0.9); border: 1px solid rgba(212,175,55,0.35); border-radius: 4px; font-size: 20px; cursor: pointer; transition: all 0.15s; display: flex; align-items: center; justify-content: center;';
+    tile.onclick = () => clickMinesTile(i);
+    grid.appendChild(tile);
+  }
+}
+
+window.startMinesGame = () => {
+  if (clubState.chips < minesBet) {
+    alert("Yetersiz bakiye!");
+    return;
+  }
+  clubState.chips -= minesBet;
+  bumpChips();
+  addXp(Math.max(1, Math.round(minesBet / 10)), '(Mines Bahsi)');
+  saveClubState();
+
+  minesActive = true;
+  minesDiamondsRevealed = 0;
+  minesPositions.clear();
+
+  while (minesPositions.size < minesCount) {
+    minesPositions.add(Math.floor(Math.random() * 25));
+  }
+
+  renderMinesGrid();
+  document.getElementById('minesCurrentMul').innerText = 'ÇARPAN: 1.00×';
+  document.getElementById('minesStartBtn').style.display = 'none';
+  document.getElementById('minesCashBtn').style.display = 'inline-block';
+  document.getElementById('minesCashBtn').innerText = 'TAHSİL ET (0 dürTL)';
+};
+
+function clickMinesTile(idx) {
+  if (!minesActive) return;
+  const tile = document.getElementById(`mtile_${idx}`);
+  if (!tile || tile.disabled) return;
+
+  if (minesPositions.has(idx)) {
+    minesActive = false;
+    for (let i = 0; i < 25; i++) {
+      const t = document.getElementById(`mtile_${i}`);
+      if (t) {
+        t.disabled = true;
+        if (minesPositions.has(i)) {
+          t.innerText = '💣';
+          t.style.background = '#8B1E2F';
+        } else {
+          t.innerText = '💎';
+          t.style.background = 'rgba(30,107,55,0.4)';
+        }
+      }
+    }
+    document.getElementById('minesCurrentMul').innerText = '💣 BOOM! KAYBETTİNİZ!';
+    document.getElementById('minesStartBtn').style.display = 'inline-block';
+    document.getElementById('minesCashBtn').style.display = 'none';
+  } else {
+    tile.disabled = true;
+    tile.innerText = '💎';
+    tile.style.background = 'rgba(30,107,55,0.6)';
+    tile.style.borderColor = '#4ade80';
+
+    minesDiamondsRevealed++;
+    const mul = minesMultipliers[Math.min(minesDiamondsRevealed - 1, minesMultipliers.length - 1)];
+    const currentWin = Math.round(minesBet * mul);
+
+    document.getElementById('minesCurrentMul').innerText = `ÇARPAN: ${mul.toFixed(2)}×`;
+    document.getElementById('minesCashBtn').innerText = `TAHSİL ET (+${currentWin} dürTL)`;
+    playWinSound();
+  }
+}
+
+window.cashOutMines = () => {
+  if (!minesActive || minesDiamondsRevealed === 0) return;
+  minesActive = false;
+  const mul = minesMultipliers[Math.min(minesDiamondsRevealed - 1, minesMultipliers.length - 1)];
+  const win = Math.round(minesBet * mul);
+
+  clubState.chips += win;
+  bumpChips();
+  addXp(50, '(Mines Zaferi)');
+  saveClubState();
+  playWinSound();
+
+  for (let i = 0; i < 25; i++) {
+    const t = document.getElementById(`mtile_${i}`);
+    if (t) {
+      t.disabled = true;
+      if (minesPositions.has(i)) t.innerText = '💣';
+    }
+  }
+
+  document.getElementById('minesCurrentMul').innerText = `🎉 TAHSİL EDİLDİ: +${win} dürTL (${mul.toFixed(2)}×)`;
+  document.getElementById('minesStartBtn').style.display = 'inline-block';
+  document.getElementById('minesCashBtn').style.display = 'none';
+};
 
 // ═══════════════════════════════════════════════════════════
 // 10. UI BUTONLARI & NAVİGASYON
