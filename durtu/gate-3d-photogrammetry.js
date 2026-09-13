@@ -245,10 +245,13 @@ export class VIPLoungeTour {
         this.checkHover();
         return;
       }
-      const dx = (e.clientX - this.lastMouse.x) * 0.003;
-      const dy = (e.clientY - this.lastMouse.y) * 0.003;
-      this.velocity.theta -= dx;
-      this.velocity.phi -= dy;
+      const dx = (e.clientX - this.lastMouse.x) * 0.0022;
+      const dy = (e.clientY - this.lastMouse.y) * 0.0022;
+      this.targetSpherical.theta -= dx;
+      this.targetSpherical.phi -= dy;
+      this.targetSpherical.phi = THREE.MathUtils.clamp(this.targetSpherical.phi, 0.92, 2.18);
+      this.velocity.theta = -dx * 0.35;
+      this.velocity.phi = -dy * 0.35;
       this.lastMouse = { x: e.clientX, y: e.clientY };
     });
 
@@ -266,10 +269,13 @@ export class VIPLoungeTour {
 
     window.addEventListener('touchmove', e => {
       if (!this.isDragging || e.touches.length !== 1) return;
-      const dx = (e.touches[0].clientX - this.lastMouse.x) * 0.0038;
-      const dy = (e.touches[0].clientY - this.lastMouse.y) * 0.0038;
-      this.velocity.theta -= dx;
-      this.velocity.phi -= dy;
+      const dx = (e.touches[0].clientX - this.lastMouse.x) * 0.0028;
+      const dy = (e.touches[0].clientY - this.lastMouse.y) * 0.0028;
+      this.targetSpherical.theta -= dx;
+      this.targetSpherical.phi -= dy;
+      this.targetSpherical.phi = THREE.MathUtils.clamp(this.targetSpherical.phi, 0.92, 2.18);
+      this.velocity.theta = -dx * 0.35;
+      this.velocity.phi = -dy * 0.35;
       this.lastMouse = { x: e.touches[0].clientX, y: e.touches[0].clientY };
     }, { passive: true });
 
@@ -476,16 +482,15 @@ export class VIPLoungeTour {
     const dt = Math.min(this.clock.getDelta(), 0.05);
     const elapsed = this.clock.getElapsedTime();
 
-    // Friction & Velocity Damping
+    // Friction & Velocity Damping (only active on flick/release)
     if (!this.isDragging) {
-      this.velocity.theta *= (1 - this.dampingFactor);
-      this.velocity.phi *= (1 - this.dampingFactor);
+      this.targetSpherical.theta += this.velocity.theta;
+      this.targetSpherical.phi += this.velocity.phi;
+      this.velocity.theta *= 0.88;
+      this.velocity.phi *= 0.88;
     }
-
-    this.targetSpherical.theta += this.velocity.theta;
-    this.targetSpherical.phi += this.velocity.phi;
-    // Limit pitch so user cannot do a full flip
-    this.targetSpherical.phi = Math.max(0.12, Math.min(Math.PI - 0.12, this.targetSpherical.phi));
+    // Limit pitch so user cannot get stuck looking straight at ceiling or floor
+    this.targetSpherical.phi = THREE.MathUtils.clamp(this.targetSpherical.phi, 0.92, 2.18);
 
     // Smooth Lerp Transition to Hotspot
     if (this.lerpTarget) {

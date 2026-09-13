@@ -987,9 +987,16 @@ document.addEventListener('pointerlockchange', () => {
 
 document.body.addEventListener('mousemove', (e) => {
   if (document.pointerLockElement === document.body) {
-    camera.rotation.y -= e.movementX / 480;
-    camera.rotation.x -= e.movementY / 480;
-    camera.rotation.x = Math.max(-Math.PI / 2.1, Math.min(Math.PI / 2.1, camera.rotation.x));
+    // Pointer lock ilk açıldığında oluşan ani delta sıçramasını filtrele
+    if (Math.abs(e.movementX) > 120 || Math.abs(e.movementY) > 120) return;
+
+    // İpeksi, kontrollü FPS fare hassasiyeti
+    const sens = 0.0018;
+    camera.rotation.y -= e.movementX * sens;
+    camera.rotation.x -= e.movementY * sens;
+
+    // Tavana veya yere kilitlenmeyi önleyen doğal dikey açı sınırı (~54°)
+    camera.rotation.x = Math.max(-0.95, Math.min(0.95, camera.rotation.x));
   }
 });
 
