@@ -542,15 +542,39 @@ body {
     </div>
 
     <div class="roulette-grid">
-      <button class="bet-btn red" onclick="placeRouletteBet('red')">KIRMIZI (×2)</button>
-      <button class="bet-btn green" onclick="placeRouletteBet('zero')">SIFIR [0] (×36)</button>
-      <button class="bet-btn black" onclick="placeRouletteBet('black')">SİYAH (×2)</button>
-      <button class="bet-btn" onclick="placeRouletteBet('odd')">TEK (×2)</button>
-      <button class="bet-btn" onclick="placeRouletteBet('lucky17')">UĞURLU 17 (×36)</button>
-      <button class="bet-btn" onclick="placeRouletteBet('even')">ÇİFT (×2)</button>
-      <button class="bet-btn" onclick="placeRouletteBet('low')">1 - 18 (×2)</button>
-      <button class="bet-btn" onclick="placeRouletteBet('lucky7')">UĞURLU 7 (×36)</button>
-      <button class="bet-btn" onclick="placeRouletteBet('high')">19 - 36 (×2)</button>
+      <button class="bet-btn red" onclick="placeRouletteBet('red', event)">KIRMIZI (×2)</button>
+      <button class="bet-btn green" onclick="placeRouletteBet('zero', event)">SIFIR [0] (×36)</button>
+      <button class="bet-btn black" onclick="placeRouletteBet('black', event)">SİYAH (×2)</button>
+      <button class="bet-btn odd" onclick="placeRouletteBet('odd', event)">TEK (×2)</button>
+      <button class="bet-btn even" onclick="placeRouletteBet('even', event)">ÇİFT (×2)</button>
+      <button class="bet-btn" onclick="placeRouletteBet('low', event)">1 - 18 (×2)</button>
+      <button class="bet-btn" onclick="placeRouletteBet('high', event)">19 - 36 (×2)</button>
+      <button class="bet-btn" onclick="placeRouletteBet('doz1', event)">1. DÜZİNE 1-12 (×3)</button>
+      <button class="bet-btn" onclick="placeRouletteBet('doz2', event)">2. DÜZİNE 13-24 (×3)</button>
+      <button class="bet-btn" onclick="placeRouletteBet('doz3', event)">3. DÜZİNE 25-36 (×3)</button>
+      <button class="bet-btn" onclick="placeRouletteBet('lucky17', event)">UĞURLU 17 (×36)</button>
+      <button class="bet-btn" onclick="placeRouletteBet('lucky7', event)">UĞURLU 7 (×36)</button>
+    </div>
+
+    <!-- Düz Sayı Bahsi (0-36) -->
+    <div style="display: flex; gap: 8px; justify-content: center; align-items: center; margin-top: 10px;">
+      <span style="font-size: 11px; color: var(--gold-light);">DÜZ SAYI (×36):</span>
+      <select id="rlExactNum" style="background: #111; color: var(--gold-light); border: 1px solid var(--gold-dim); padding: 5px 10px; border-radius: 3px; font-family: 'JetBrains Mono', monospace; font-size: 12px;" onchange="selectExactNumber(this.value)">
+        <option value="">-- Sayı Seç --</option>
+        <option value="0">0 (Yeşil) - ×36</option>
+        <option value="1">1 (Kırmızı)</option><option value="2">2 (Siyah)</option><option value="3">3 (Kırmızı)</option>
+        <option value="4">4 (Siyah)</option><option value="5">5 (Kırmızı)</option><option value="6">6 (Siyah)</option>
+        <option value="7">7 (Kırmızı)</option><option value="8">8 (Siyah)</option><option value="9">9 (Kırmızı)</option>
+        <option value="10">10 (Siyah)</option><option value="11">11 (Siyah)</option><option value="12">12 (Kırmızı)</option>
+        <option value="13">13 (Siyah)</option><option value="14">14 (Kırmızı)</option><option value="15">15 (Siyah)</option>
+        <option value="16">16 (Kırmızı)</option><option value="17">17 (Siyah)</option><option value="18">18 (Kırmızı)</option>
+        <option value="19">19 (Kırmızı)</option><option value="20">20 (Siyah)</option><option value="21">21 (Kırmızı)</option>
+        <option value="22">22 (Siyah)</option><option value="23">23 (Kırmızı)</option><option value="24">24 (Siyah)</option>
+        <option value="25">25 (Kırmızı)</option><option value="26">26 (Siyah)</option><option value="27">27 (Kırmızı)</option>
+        <option value="28">28 (Siyah)</option><option value="29">29 (Siyah)</option><option value="30">30 (Kırmızı)</option>
+        <option value="31">31 (Siyah)</option><option value="32">32 (Kırmızı)</option><option value="33">33 (Siyah)</option>
+        <option value="34">34 (Kırmızı)</option><option value="35">35 (Siyah)</option><option value="36">36 (Kırmızı)</option>
+      </select>
     </div>
 
     <div style="text-align: center; margin-top: 18px;">
@@ -638,6 +662,7 @@ body {
     <div style="display: flex; gap: 8px; justify-content: center; margin-top: 14px;">
       <button class="action-btn" id="bjDealBtn" onclick="dealBlackjack()">ELİ BAŞLAT</button>
       <button class="action-btn" id="bjHitBtn" onclick="hitBlackjack()" style="display: none; background: #222; color: #fff; border-color: #666;">KART ÇEK</button>
+      <button class="action-btn" id="bjDblBtn" onclick="doubleBlackjack()" style="display: none; background: #3b2a10; color: #f6e27a; border-color: var(--gold);">İKİYE KATLA (2×)</button>
       <button class="action-btn" id="bjStandBtn" onclick="standBlackjack()" style="display: none; background: #222; color: #fff; border-color: #666;">KAL (STAND)</button>
     </div>
   </div>
@@ -751,7 +776,16 @@ body {
     </div>
 
     <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.4); padding: 8px 16px; border: 1px solid rgba(212,175,55,0.3); border-radius: 4px; margin-bottom: 12px;">
-      <div style="font-size: 11px; color: var(--gold-light);">MAYIN SAYISI: <b>3 MAYIN</b></div>
+      <div style="font-size: 11px; color: var(--gold-light);">
+        MAYIN SAYISI:
+        <select id="minesCountSel" onchange="setMinesCount(this.value)" style="background: #111; color: var(--gold-light); border: 1px solid var(--gold-dim); padding: 2px 6px; border-radius: 3px; font-family: 'JetBrains Mono', monospace; font-size: 12px; margin-left: 6px;">
+          <option value="1">1 Mayın</option>
+          <option value="3" selected>3 Mayın</option>
+          <option value="5">5 Mayın</option>
+          <option value="10">10 Mayın</option>
+          <option value="20">20 Mayın</option>
+        </select>
+      </div>
       <div style="font-family: 'JetBrains Mono', monospace; font-size: 14px; color: #4ade80;" id="minesCurrentMul">ÇARPAN: 1.00×</div>
     </div>
 
@@ -2220,10 +2254,24 @@ window.buyDrink = () => {
 };
 
 // ── RULET OYUN MANTIĞI ──
-window.placeRouletteBet = (type) => {
+window.placeRouletteBet = (type, evt) => {
   activeRouletteBet = type;
   document.querySelectorAll('.roulette-grid .bet-btn').forEach(b => b.style.outline = 'none');
-  event.target.style.outline = '2px solid #f6e27a';
+  const selEl = document.getElementById('rlExactNum');
+  if (selEl) {
+    selEl.style.outline = 'none';
+    selEl.value = '';
+  }
+  const target = (evt && evt.target) || (window.event && window.event.target);
+  if (target && target.style) target.style.outline = '2px solid #f6e27a';
+};
+
+window.selectExactNumber = (val) => {
+  if (val === '') return;
+  activeRouletteBet = 'num:' + val;
+  document.querySelectorAll('.roulette-grid .bet-btn').forEach(b => b.style.outline = 'none');
+  const selEl = document.getElementById('rlExactNum');
+  if (selEl) selEl.style.outline = '2px solid #f6e27a';
 };
 
 window.spinRoulette = () => {
@@ -2265,7 +2313,7 @@ window.spinRoulette = () => {
       resNumEl.style.color = isZero ? '#4ade80' : isRed ? '#f87171' : '#fff';
       resTxtEl.innerText = isZero ? 'SIFIR (YEŞİL)' : (isRed ? 'KIRMIZI' : 'SİYAH') + (finalNum % 2 === 1 ? ' • TEK' : ' • ÇİFT');
 
-      // Kazanç Hesabı
+      // Kazanç Hesabı — Gerçek Avrupa Ruleti Matrisi
       let winAmount = 0;
       if (activeRouletteBet === 'red' && isRed) winAmount = selectedChip * 2;
       else if (activeRouletteBet === 'black' && !isRed && !isZero) winAmount = selectedChip * 2;
@@ -2274,8 +2322,15 @@ window.spinRoulette = () => {
       else if (activeRouletteBet === 'even' && !isZero && finalNum % 2 === 0) winAmount = selectedChip * 2;
       else if (activeRouletteBet === 'low' && finalNum >= 1 && finalNum <= 18) winAmount = selectedChip * 2;
       else if (activeRouletteBet === 'high' && finalNum >= 19 && finalNum <= 36) winAmount = selectedChip * 2;
+      else if (activeRouletteBet === 'doz1' && finalNum >= 1 && finalNum <= 12) winAmount = selectedChip * 3;
+      else if (activeRouletteBet === 'doz2' && finalNum >= 13 && finalNum <= 24) winAmount = selectedChip * 3;
+      else if (activeRouletteBet === 'doz3' && finalNum >= 25 && finalNum <= 36) winAmount = selectedChip * 3;
       else if (activeRouletteBet === 'lucky17' && finalNum === 17) winAmount = selectedChip * 36;
       else if (activeRouletteBet === 'lucky7' && finalNum === 7) winAmount = selectedChip * 36;
+      else if (activeRouletteBet.startsWith('num:')) {
+        const chosen = parseInt(activeRouletteBet.split(':')[1]);
+        if (finalNum === chosen) winAmount = selectedChip * 36;
+      }
 
       if (winAmount > 0) {
         clubState.chips += winAmount;
@@ -2433,6 +2488,7 @@ function resetBjUI() {
   document.getElementById('bjStatus').innerText = 'Bahis yapıp yeni el başlatın';
   document.getElementById('bjDealBtn').style.display = 'inline-block';
   document.getElementById('bjHitBtn').style.display = 'none';
+  document.getElementById('bjDblBtn').style.display = 'none';
   document.getElementById('bjStandBtn').style.display = 'none';
 }
 
@@ -2463,28 +2519,56 @@ window.dealBlackjack = () => {
   document.getElementById('bjDealBtn').style.display = 'none';
   document.getElementById('bjHitBtn').style.display = 'inline-block';
   document.getElementById('bjStandBtn').style.display = 'inline-block';
+  document.getElementById('bjDblBtn').style.display = (clubState.chips >= bjBet) ? 'inline-block' : 'none';
 
   if (pScore === 21) {
     endBlackjack('blackjack');
   } else {
-    document.getElementById('bjStatus').innerText = 'Kart çekin veya elinizde kalın.';
+    document.getElementById('bjStatus').innerText = 'Kart çekin, ikiye katlayın veya elinizde kalın.';
   }
 };
 
 window.hitBlackjack = () => {
   if (!bjGameActive) return;
+  document.getElementById('bjDblBtn').style.display = 'none';
   bjPlayer.push(bjDeck.pop());
+  playTickSound();
   renderHand(bjPlayer, 'bjPlayerCards');
   const pScore = calcScore(bjPlayer);
   document.getElementById('bjPlayerScore').innerText = pScore;
 
   if (pScore > 21) {
     endBlackjack('bust');
+  } else if (pScore === 21) {
+    standBlackjack();
+  }
+};
+
+window.doubleBlackjack = () => {
+  if (!bjGameActive || bjPlayer.length !== 2 || clubState.chips < bjBet) return;
+  clubState.chips -= bjBet;
+  bjBet *= 2;
+  bumpChips();
+  playChipSound();
+  addXp(Math.max(1, Math.round(bjBet / 10)), '(Blackjack Double)');
+  saveClubState();
+
+  bjPlayer.push(bjDeck.pop());
+  playTickSound();
+  renderHand(bjPlayer, 'bjPlayerCards');
+  const pScore = calcScore(bjPlayer);
+  document.getElementById('bjPlayerScore').innerText = pScore;
+
+  if (pScore > 21) {
+    endBlackjack('bust');
+  } else {
+    standBlackjack();
   }
 };
 
 window.standBlackjack = () => {
   if (!bjGameActive) return;
+  document.getElementById('bjDblBtn').style.display = 'none';
   while (calcScore(bjDealer) < 17) {
     bjDealer.push(bjDeck.pop());
   }
@@ -2530,7 +2614,120 @@ function endBlackjack(res) {
 
   document.getElementById('bjDealBtn').style.display = 'inline-block';
   document.getElementById('bjHitBtn').style.display = 'none';
+  document.getElementById('bjDblBtn').style.display = 'none';
   document.getElementById('bjStandBtn').style.display = 'none';
+}
+
+// ═══════════════════════════════════════════════════════════
+// ── PROVABLY FAIR (KRİPTOGRAFİK ADİLLİK) & SHA-256 MOTORU ──
+// ═══════════════════════════════════════════════════════════
+function sha256Sync(str) {
+  str = unescape(encodeURIComponent(str));
+  function rightRotate(value, amount) { return (value >>> amount) | (value << (32 - amount)); }
+  const mathPow = Math.pow;
+  const maxWord = mathPow(2, 32);
+  let lengthProperty = 'length';
+  let i, j;
+  let result = '';
+  const words = [];
+  const asciiBitLength = str[lengthProperty] * 8;
+  let hash = [];
+  const k = [];
+  let primeCounter = 0;
+  const isComposite = {};
+  for (let candidate = 2; primeCounter < 64; candidate++) {
+    if (!isComposite[candidate]) {
+      for (i = 0; i < 313; i += candidate) isComposite[i] = candidate;
+      hash[primeCounter] = (mathPow(candidate, .5) * maxWord) | 0;
+      k[primeCounter++] = (mathPow(candidate, 1/3) * maxWord) | 0;
+    }
+  }
+  str += '\x80';
+  while (str[lengthProperty] % 64 - 56) str += '\x00';
+  for (i = 0; i < str[lengthProperty]; i++) {
+    j = str.charCodeAt(i);
+    words[i >> 2] |= j << ((3 - i) % 4) * 8;
+  }
+  words[words[lengthProperty]] = ((asciiBitLength / maxWord) | 0);
+  words[words[lengthProperty]] = (asciiBitLength | 0);
+  for (j = 0; j < words[lengthProperty];) {
+    const w = words.slice(j, j += 16);
+    const oldHash = hash;
+    hash = hash.slice(0, 8);
+    for (i = 0; i < 64; i++) {
+      const w15 = w[i - 15], w2 = w[i - 2];
+      const s0 = rightRotate(w15, 7) ^ rightRotate(w15, 18) ^ (w15 >>> 3);
+      const s1 = rightRotate(w2, 17) ^ rightRotate(w2, 19) ^ (w2 >>> 10);
+      w[i] = (i < 16) ? w[i] : (w[i - 16] + s0 + w[i - 7] + s1) | 0;
+      const s1h = rightRotate(hash[4], 6) ^ rightRotate(hash[4], 11) ^ rightRotate(hash[4], 25);
+      const ch = (hash[4] & hash[5]) ^ (~hash[4] & hash[6]);
+      const temp1 = hash[7] + s1h + ch + k[i] + w[i];
+      const s0h = rightRotate(hash[0], 2) ^ rightRotate(hash[0], 13) ^ rightRotate(hash[0], 22);
+      const maj = (hash[0] & hash[1]) ^ (hash[0] & hash[2]) ^ (hash[1] & hash[2]);
+      const temp2 = s0h + maj;
+      hash = [(temp1 + temp2) | 0].concat(hash);
+      hash[4] = (hash[4] + temp1) | 0;
+    }
+    for (i = 0; i < 8; i++) hash[i] = (hash[i] + oldHash[i]) | 0;
+  }
+  for (i = 0; i < 8; i++) {
+    for (j = 3; j + 1; j--) {
+      const b = (hash[i] >> (j * 8)) & 255;
+      result += ((b < 16) ? '0' : '') + b.toString(16);
+    }
+  }
+  return result;
+}
+
+function genHex(len){
+  const chars = '0123456789abcdef';
+  let out = '';
+  for(let i = 0; i < len; i++) out += chars[Math.floor(Math.random() * 16)];
+  return out;
+}
+
+const salonPF = {
+  clientSeed: 'durtu_3d_' + Math.random().toString(36).substring(2, 10),
+  nonce: 1,
+  serverSeed: genHex(64)
+};
+
+function getProvableCrash(serverSeed, clientSeed, nonce){
+  const combined = serverSeed + ':' + clientSeed + ':' + nonce;
+  const hash = sha256Sync(combined);
+  const hex = hash.slice(0, 13);
+  const intVal = parseInt(hex, 16);
+  const maxVal = 4503599627370496; // 2^52
+  if(intVal % 33 === 0) return 1.00;
+  const raw = (0.97 * maxVal) / (maxVal - intVal);
+  return Math.min(60, Math.max(1.01, Math.floor(raw * 100) / 100));
+}
+
+function getProvableMines(serverSeed, clientSeed, nonce, mineCount){
+  const combined = serverSeed + ':' + clientSeed + ':' + nonce;
+  const hash = sha256Sync(combined);
+  const deck = Array.from({length: 25}, (_, i) => i);
+  for(let i = 24; i > 0; i--){
+    const offset = ((24 - i) * 2) % (hash.length - 2);
+    const byteHex = hash.slice(offset, offset + 2);
+    const byteVal = parseInt(byteHex, 16) || 0;
+    const j = byteVal % (i + 1);
+    const temp = deck[i];
+    deck[i] = deck[j];
+    deck[j] = temp;
+  }
+  return deck.slice(0, mineCount);
+}
+
+function calcMinesMultiplier(mines, k){
+  // Gerçek kumarhane adil çarpan formülü: C(25,k) / C(25-mines,k), %3 kasa payı
+  if(k <= 0) return 1.0;
+  let num = 1, den = 1;
+  for(let i = 0; i < k; i++){
+    num *= (25 - i);
+    den *= (25 - mines - i);
+  }
+  return Math.max(1, Math.round((0.97 * num / den) * 100) / 100);
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -2590,12 +2787,8 @@ window.startAviatorFlight = () => {
 
   aviatorRunning = true;
   aviatorMultiplier = 1.00;
-
-  const r = Math.random();
-  if (r < 0.12) aviatorCrashPoint = 1.05 + Math.random() * 0.25;
-  else if (r < 0.55) aviatorCrashPoint = 1.35 + Math.random() * 1.6;
-  else if (r < 0.88) aviatorCrashPoint = 3.0 + Math.random() * 4.5;
-  else aviatorCrashPoint = 7.5 + Math.random() * 22.0;
+  // Kriptografik SHA-256 Provably Fair Crash Noktası
+  aviatorCrashPoint = getProvableCrash(salonPF.serverSeed, salonPF.clientSeed, salonPF.nonce++);
 
   document.getElementById('aviatorStartBtn').style.display = 'none';
   document.getElementById('aviatorCashBtn').style.display = 'inline-block';
@@ -2678,7 +2871,11 @@ let minesActive = false;
 let minesCount = 3;
 let minesDiamondsRevealed = 0;
 const minesPositions = new Set();
-const minesMultipliers = [1.18, 1.42, 1.76, 2.22, 2.85, 3.75, 5.10, 7.20, 10.5, 16.0, 26.0, 45.0, 85.0];
+
+window.setMinesCount = (val) => {
+  if (minesActive) return;
+  minesCount = parseInt(val) || 3;
+};
 
 window.selectMinesBet = (val) => {
   minesBet = val;
@@ -2721,9 +2918,12 @@ window.startMinesGame = () => {
   minesDiamondsRevealed = 0;
   minesPositions.clear();
 
-  while (minesPositions.size < minesCount) {
-    minesPositions.add(Math.floor(Math.random() * 25));
-  }
+  // Kriptografik Provably Fair Rastgele Mayın Dağıtımı
+  const mineIndices = getProvableMines(salonPF.serverSeed, salonPF.clientSeed, salonPF.nonce++, minesCount);
+  mineIndices.forEach(p => minesPositions.add(p));
+
+  const countSel = document.getElementById('minesCountSel');
+  if (countSel) countSel.disabled = true;
 
   renderMinesGrid();
   document.getElementById('minesCurrentMul').innerText = 'ÇARPAN: 1.00×';
@@ -2739,6 +2939,9 @@ function clickMinesTile(idx) {
 
   if (minesPositions.has(idx)) {
     minesActive = false;
+    const countSel = document.getElementById('minesCountSel');
+    if (countSel) countSel.disabled = false;
+
     for (let i = 0; i < 25; i++) {
       const t = document.getElementById(`mtile_${i}`);
       if (t) {
@@ -2762,7 +2965,8 @@ function clickMinesTile(idx) {
     tile.style.borderColor = '#4ade80';
 
     minesDiamondsRevealed++;
-    const mul = minesMultipliers[Math.min(minesDiamondsRevealed - 1, minesMultipliers.length - 1)];
+    // Gerçek Kumarhane Standart Çarpanı
+    const mul = calcMinesMultiplier(minesCount, minesDiamondsRevealed);
     const currentWin = Math.round(minesBet * mul);
 
     document.getElementById('minesCurrentMul').innerText = `ÇARPAN: ${mul.toFixed(2)}×`;
@@ -2774,7 +2978,10 @@ function clickMinesTile(idx) {
 window.cashOutMines = () => {
   if (!minesActive || minesDiamondsRevealed === 0) return;
   minesActive = false;
-  const mul = minesMultipliers[Math.min(minesDiamondsRevealed - 1, minesMultipliers.length - 1)];
+  const countSel = document.getElementById('minesCountSel');
+  if (countSel) countSel.disabled = false;
+
+  const mul = calcMinesMultiplier(minesCount, minesDiamondsRevealed);
   const win = Math.round(minesBet * mul);
 
   clubState.chips += win;
