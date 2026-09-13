@@ -5,14 +5,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DÜRTÜ — 3D VIP Casino & Lounge</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@400;500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
   --gold: #D4AF37;
   --gold-light: #f6e27a;
   --gold-dim: rgba(212, 175, 55, 0.4);
   --bg: #050507;
-  --panel: rgba(10, 10, 15, 0.88);
+  --panel: rgba(12, 10, 15, 0.94);
+  --red: #8B1E2F;
+  --green: #1E6B37;
 }
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body {
@@ -43,93 +45,162 @@ body {
 }
 .cross-ring {
   position: absolute; top: 50%; left: 50%;
-  width: 24px; height: 24px;
+  width: 26px; height: 26px;
   transform: translate(-50%, -50%);
   border: 1px solid rgba(212, 175, 55, 0.35);
   border-radius: 50%;
   transition: all 0.2s ease;
 }
 #crosshair.active .cross-ring {
-  width: 38px; height: 38px;
+  width: 42px; height: 42px;
   border-color: var(--gold-light);
-  box-shadow: 0 0 16px var(--gold);
+  box-shadow: 0 0 20px var(--gold);
 }
 
 /* Interactor Prompt */
 #promptBadge {
   position: absolute; top: 56%; left: 50%;
   transform: translate(-50%, 0);
-  background: rgba(15, 12, 5, 0.92);
+  background: rgba(18, 14, 8, 0.94);
   border: 1px solid var(--gold);
-  padding: 6px 14px;
+  padding: 8px 18px;
   border-radius: 4px;
   color: var(--gold-light);
   font-size: 11px;
   letter-spacing: 0.15em;
   text-transform: uppercase;
-  font-weight: 500;
+  font-weight: 600;
   display: none;
   pointer-events: none;
   z-index: 15;
-  box-shadow: 0 0 20px rgba(212, 175, 55, 0.4);
-  animation: promptPulse 1.5s infinite alternate;
+  box-shadow: 0 0 24px rgba(212, 175, 55, 0.5);
+  animation: promptPulse 1.4s infinite alternate ease-in-out;
 }
 @keyframes promptPulse {
   0% { transform: translate(-50%, 0) scale(1); }
-  100% { transform: translate(-50%, 0) scale(1.05); }
+  100% { transform: translate(-50%, 0) scale(1.06); }
 }
+
+/* Floating XP Indicator */
+#xpFloat {
+  position: absolute; top: 48%; left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 18px; font-weight: 700;
+  color: #ffea75;
+  text-shadow: 0 0 16px rgba(212, 175, 55, 0.8);
+  pointer-events: none; z-index: 40;
+  opacity: 0; transition: all 0.8s ease-out;
+}
+#xpFloat.show {
+  opacity: 1;
+  transform: translate(-50%, -90px);
+}
+
+/* Level Up Banner */
+#levelUpBanner {
+  position: absolute; top: 90px; left: 50%;
+  transform: translateX(-50%) translateY(-30px);
+  background: linear-gradient(180deg, rgba(30, 24, 12, 0.96) 0%, rgba(15, 12, 6, 0.98) 100%);
+  border: 1px solid var(--gold);
+  box-shadow: 0 0 40px rgba(212, 175, 55, 0.7);
+  padding: 12px 32px; border-radius: 4px;
+  text-align: center; z-index: 60;
+  opacity: 0; pointer-events: none;
+  transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+#levelUpBanner.active {
+  opacity: 1; transform: translateX(-50%) translateY(0);
+}
+.lu-sub { font-size: 10px; letter-spacing: 0.3em; color: var(--gold); text-transform: uppercase; }
+.lu-title { font-family: 'Playfair Display', serif; font-size: 20px; color: #fff; font-weight: 700; margin-top: 2px; }
 
 /* HUD Top Bars */
 .hud-top-left {
-  position: absolute; top: 20px; left: 24px; z-index: 20;
-  display: flex; align-items: center; gap: 12px;
+  position: absolute; top: 16px; left: 20px; z-index: 20;
+  display: flex; align-items: center; gap: 14px;
 }
 .brand-mark {
   font-family: 'Playfair Display', serif;
-  font-size: 22px; font-weight: 700;
+  font-size: 20px; font-weight: 700;
   letter-spacing: 0.25em;
   color: var(--gold);
   text-shadow: 0 0 20px rgba(212, 175, 55, 0.6);
 }
 .brand-sub {
-  font-size: 9px; letter-spacing: 0.4em;
+  font-size: 8px; letter-spacing: 0.4em;
   color: rgba(212, 175, 55, 0.6);
   text-transform: uppercase;
 }
 
 .hud-top-right {
-  position: absolute; top: 20px; right: 24px; z-index: 20;
-  display: flex; align-items: center; gap: 10px;
+  position: absolute; top: 16px; right: 20px; z-index: 20;
+  display: flex; align-items: center; gap: 8px;
 }
+.hud-chip-badge {
+  background: rgba(20, 16, 8, 0.85);
+  border: 1px solid var(--gold);
+  padding: 6px 14px; border-radius: 3px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px; font-weight: 700;
+  color: var(--gold-light);
+  box-shadow: 0 0 16px rgba(212, 175, 55, 0.35);
+  display: flex; align-items: center; gap: 6px;
+  transition: transform 0.2s;
+}
+.hud-chip-badge.bump { transform: scale(1.12); }
+
+.hud-xp-badge {
+  background: rgba(14, 12, 18, 0.85);
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  padding: 5px 12px; border-radius: 3px;
+  display: flex; flex-direction: column; gap: 3px;
+}
+.xp-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.xp-rank { font-size: 10px; font-weight: 700; color: var(--gold-light); letter-spacing: 0.08em; }
+.xp-num { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: rgba(255, 255, 255, 0.6); }
+.xp-bar-outer { width: 100px; height: 4px; background: rgba(255, 255, 255, 0.1); border-radius: 2px; overflow: hidden; }
+.xp-bar-inner { height: 100%; width: 20%; background: linear-gradient(90deg, #D4AF37, #f6e27a); transition: width 0.4s ease; }
+
 .hud-btn {
-  background: rgba(10, 10, 15, 0.7);
+  background: rgba(12, 10, 15, 0.8);
   border: 1px solid var(--gold-dim);
   color: var(--gold);
-  font-size: 11px; letter-spacing: 0.15em;
-  padding: 8px 16px; border-radius: 2px;
+  font-size: 10px; letter-spacing: 0.12em;
+  padding: 8px 12px; border-radius: 2px;
   cursor: pointer; transition: all 0.25s;
   text-transform: uppercase;
   backdrop-filter: blur(8px);
+  font-weight: 500;
 }
 .hud-btn:hover {
   background: var(--gold);
   color: #000;
   box-shadow: 0 0 16px rgba(212, 175, 55, 0.5);
 }
+.hud-btn.solid-gold {
+  background: linear-gradient(135deg, #D4AF37, #9a7818);
+  color: #000; font-weight: 700;
+  border-color: #f6e27a;
+}
+.hud-btn.solid-gold:hover {
+  background: #f6e27a;
+  box-shadow: 0 0 20px rgba(212, 175, 55, 0.8);
+}
 
 /* HUD Bottom Stats */
 .hud-bottom-left {
-  position: absolute; bottom: 18px; left: 24px; z-index: 20;
+  position: absolute; bottom: 16px; left: 20px; z-index: 20;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 11px; line-height: 1.5;
-  color: rgba(212, 175, 55, 0.75);
+  font-size: 10px; line-height: 1.5;
+  color: rgba(212, 175, 55, 0.7);
   text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9);
   pointer-events: none;
 }
 .hud-bottom-right {
-  position: absolute; bottom: 18px; right: 24px; z-index: 20;
-  font-size: 10px; letter-spacing: 0.2em;
-  color: rgba(255, 255, 255, 0.4);
+  position: absolute; bottom: 16px; right: 20px; z-index: 20;
+  font-size: 10px; letter-spacing: 0.15em;
+  color: rgba(255, 255, 255, 0.45);
   pointer-events: none;
 }
 
@@ -144,85 +215,161 @@ body {
 }
 .intro-card {
   position: relative;
-  max-width: 540px; width: 90%;
-  padding: 44px 38px;
+  max-width: 520px; width: 90%;
+  padding: 38px 32px;
   background: linear-gradient(180deg, rgba(20, 18, 14, 0.95) 0%, rgba(10, 10, 12, 0.98) 100%);
   border: 1px solid var(--gold);
   box-shadow: 0 0 80px rgba(212, 175, 55, 0.25), inset 0 0 40px rgba(0, 0, 0, 0.8);
   text-align: center;
 }
-.ornament {
-  position: absolute; width: 14px; height: 14px;
-  border-color: var(--gold);
-}
+.ornament { position: absolute; width: 14px; height: 14px; }
 .orn-tl { top: -1px; left: -1px; border-top: 2px solid var(--gold); border-left: 2px solid var(--gold); }
 .orn-tr { top: -1px; right: -1px; border-top: 2px solid var(--gold); border-right: 2px solid var(--gold); }
 .orn-bl { bottom: -1px; left: -1px; border-bottom: 2px solid var(--gold); border-left: 2px solid var(--gold); }
 .orn-br { bottom: -1px; right: -1px; border-bottom: 2px solid var(--gold); border-right: 2px solid var(--gold); }
 
-.intro-pre {
-  font-size: 10px; letter-spacing: 0.5em;
-  color: var(--gold); text-transform: uppercase;
-  margin-bottom: 6px;
-}
-.intro-title {
-  font-family: 'Playfair Display', serif;
-  font-size: 42px; font-weight: 700;
-  letter-spacing: 0.25em; color: var(--gold-light);
-  text-shadow: 0 0 30px rgba(212, 175, 55, 0.8);
-  margin-bottom: 4px;
-}
-.intro-sub {
-  font-size: 11px; letter-spacing: 0.6em;
-  color: rgba(212, 175, 55, 0.7); text-transform: uppercase;
-  margin-bottom: 24px;
-}
-.intro-divider {
-  display: flex; align-items: center; gap: 12px;
-  margin: 0 auto 28px; width: 70%;
-}
-.div-line {
-  flex: 1; height: 1px;
-  background: linear-gradient(90deg, transparent, var(--gold), transparent);
-}
-.div-gem { color: var(--gold); font-size: 12px; }
+.intro-pre { font-size: 10px; letter-spacing: 0.4em; color: var(--gold); text-transform: uppercase; margin-bottom: 6px; }
+.intro-title { font-family: 'Playfair Display', serif; font-size: 38px; font-weight: 700; letter-spacing: 0.25em; color: var(--gold-light); text-shadow: 0 0 30px rgba(212, 175, 55, 0.8); margin-bottom: 4px; }
+.intro-sub { font-size: 10px; letter-spacing: 0.5em; color: rgba(212, 175, 55, 0.7); text-transform: uppercase; margin-bottom: 22px; }
+.intro-divider { display: flex; align-items: center; gap: 12px; margin: 0 auto 24px; width: 65%; }
+.div-line { flex: 1; height: 1px; background: linear-gradient(90deg, transparent, var(--gold), transparent); }
+.div-gem { color: var(--gold); font-size: 11px; }
 
 .enter-cta {
-  display: block; width: 100%;
-  padding: 15px 0;
+  display: block; width: 100%; padding: 14px 0;
   border: 1px solid var(--gold);
   background: linear-gradient(180deg, rgba(212, 175, 55, 0.25) 0%, rgba(212, 175, 55, 0.05) 100%);
   color: var(--gold-light);
   font-size: 12px; letter-spacing: 0.35em; font-weight: 600;
-  text-transform: uppercase;
-  cursor: pointer; transition: all 0.3s ease;
-  margin-bottom: 24px;
+  text-transform: uppercase; cursor: pointer; transition: all 0.3s ease;
+  margin-bottom: 20px;
 }
-.enter-cta:hover {
-  background: var(--gold); color: #000;
-  box-shadow: 0 0 32px rgba(212, 175, 55, 0.7);
-  transform: translateY(-1px);
-}
+.enter-cta:hover { background: var(--gold); color: #000; box-shadow: 0 0 32px rgba(212, 175, 55, 0.7); transform: translateY(-1px); }
 
 .controls-grid {
-  display: grid; grid-template-columns: repeat(2, 1fr);
-  gap: 10px; text-align: left;
-  background: rgba(0, 0, 0, 0.4);
-  padding: 14px 18px; border-radius: 4px;
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; text-align: left;
+  background: rgba(0, 0, 0, 0.4); padding: 12px 16px; border-radius: 4px;
   border: 1px solid rgba(212, 175, 55, 0.15);
 }
-.ctrl-row {
-  display: flex; align-items: center; gap: 8px;
-  font-size: 11px; color: rgba(255, 255, 255, 0.7);
-}
+.ctrl-row { display: flex; align-items: center; gap: 8px; font-size: 10px; color: rgba(255, 255, 255, 0.7); }
 .ctrl-key {
-  background: rgba(212, 175, 55, 0.15);
-  border: 1px solid rgba(212, 175, 55, 0.4);
-  color: var(--gold-light);
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 10px; padding: 2px 7px;
-  border-radius: 2px;
+  background: rgba(212, 175, 55, 0.15); border: 1px solid rgba(212, 175, 55, 0.4);
+  color: var(--gold-light); font-family: 'JetBrains Mono', monospace;
+  font-size: 9px; padding: 2px 6px; border-radius: 2px;
 }
+
+/* ═══════════════════════════════════════════════════════════
+   GAME MODALS (RULET, SLOT, BLACKJACK, BAR)
+   ═══════════════════════════════════════════════════════════ */
+.game-modal {
+  position: absolute; inset: 0; z-index: 80;
+  background: rgba(3, 3, 5, 0.85);
+  backdrop-filter: blur(12px);
+  display: none; align-items: center; justify-content: center;
+}
+.game-modal.active { display: flex; }
+
+.modal-dialog {
+  position: relative;
+  max-width: 620px; width: 94%; max-height: 90vh;
+  overflow-y: auto;
+  background: linear-gradient(180deg, #141016 0%, #0a080c 100%);
+  border: 1px solid var(--gold);
+  border-radius: 6px;
+  box-shadow: 0 0 60px rgba(0,0,0,0.9), 0 0 40px rgba(212, 175, 55, 0.3);
+  padding: 24px;
+}
+.modal-header {
+  display: flex; align-items: center; justify-content: space-between;
+  border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+  padding-bottom: 12px; margin-bottom: 18px;
+}
+.modal-title { font-family: 'Playfair Display', serif; font-size: 22px; color: var(--gold-light); }
+.modal-close {
+  background: transparent; border: 1px solid rgba(212, 175, 55, 0.3);
+  color: var(--gold); width: 28px; height: 28px; border-radius: 2px;
+  cursor: pointer; font-size: 14px; transition: all 0.2s;
+}
+.modal-close:hover { background: var(--gold); color: #000; }
+
+.chip-selector {
+  display: flex; gap: 8px; justify-content: center; margin: 16px 0;
+}
+.chip-btn {
+  background: #181410; border: 2px solid var(--gold);
+  color: var(--gold-light); width: 44px; height: 44px; border-radius: 50%;
+  font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700;
+  cursor: pointer; transition: all 0.2s;
+}
+.chip-btn.active, .chip-btn:hover {
+  background: var(--gold); color: #000; box-shadow: 0 0 16px rgba(212, 175, 55, 0.6);
+  transform: scale(1.08);
+}
+
+/* Roulette Specifics */
+.roulette-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin: 14px 0;
+}
+.bet-btn {
+  background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(212, 175, 55, 0.3);
+  color: #fff; padding: 10px; font-size: 11px; font-weight: 600;
+  cursor: pointer; border-radius: 3px; transition: all 0.2s;
+}
+.bet-btn:hover { border-color: var(--gold); background: rgba(212, 175, 55, 0.15); }
+.bet-btn.red { background: rgba(139, 30, 47, 0.5); border-color: #8B1E2F; }
+.bet-btn.red:hover { background: #8B1E2F; }
+.bet-btn.black { background: rgba(20, 20, 20, 0.8); border-color: #444; }
+.bet-btn.black:hover { background: #333; }
+.bet-btn.green { background: rgba(30, 107, 55, 0.5); border-color: #1E6B37; }
+.bet-btn.green:hover { background: #1E6B37; }
+
+.roulette-wheel-box {
+  background: #080709; border: 1px solid rgba(212, 175, 55, 0.3);
+  padding: 18px; text-align: center; border-radius: 4px; margin-bottom: 14px;
+}
+.wheel-res-num {
+  font-family: 'Playfair Display', serif; font-size: 48px; font-weight: 700;
+  color: var(--gold-light); text-shadow: 0 0 20px rgba(212, 175, 55, 0.8);
+}
+
+/* Slot Machine Modal Specifics */
+.slot-machine-box {
+  background: #08070b; border: 2px solid var(--gold);
+  border-radius: 6px; padding: 20px; text-align: center;
+}
+.slot-reels-row {
+  display: flex; gap: 12px; justify-content: center; margin: 18px 0;
+}
+.reel-frame {
+  width: 90px; height: 110px; background: #121018; border: 1px solid rgba(212, 175, 55, 0.4);
+  border-radius: 4px; display: flex; align-items: center; justify-content: center;
+  font-size: 46px; box-shadow: inset 0 0 20px rgba(0,0,0,0.9);
+}
+
+/* Blackjack Specifics */
+.bj-table {
+  background: #083b1a; border: 2px solid var(--gold);
+  border-radius: 6px; padding: 18px; min-height: 240px;
+  display: flex; flex-direction: column; justify-content: space-between;
+}
+.bj-hand-label { font-size: 11px; letter-spacing: 0.15em; color: var(--gold-light); text-transform: uppercase; margin-bottom: 4px; }
+.bj-cards-row { display: flex; gap: 8px; min-height: 60px; }
+.card-item {
+  width: 44px; height: 62px; background: #fff; color: #000; border-radius: 4px;
+  font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 700;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.6);
+}
+.card-item.red { color: #d01025; }
+
+.action-btn {
+  background: linear-gradient(135deg, #D4AF37, #9a7818);
+  border: 1px solid var(--gold-light); color: #000;
+  padding: 12px 24px; font-weight: 700; font-size: 12px;
+  letter-spacing: 0.15em; text-transform: uppercase; border-radius: 3px;
+  cursor: pointer; transition: all 0.2s;
+}
+.action-btn:hover { background: #f6e27a; box-shadow: 0 0 20px rgba(212, 175, 55, 0.7); }
 </style>
 
 <script type="importmap">
@@ -247,6 +394,13 @@ body {
 <!-- Interactor Prompt -->
 <div id="promptBadge"><span id="promptText">[E] OYNA</span></div>
 
+<!-- Floating XP & Level Up -->
+<div id="xpFloat">+15 XP</div>
+<div id="levelUpBanner">
+  <div class="lu-sub">TEBRİKLER • RÜTBE ATLADINIZ!</div>
+  <div class="lu-title" id="luRankName">USTA OYUNCU</div>
+</div>
+
 <!-- HUD Top -->
 <div class="hud-top-left">
   <div class="brand-mark">DÜRTÜ</div>
@@ -254,9 +408,27 @@ body {
 </div>
 
 <div class="hud-top-right">
+  <!-- Bakiye -->
+  <div class="hud-chip-badge" id="hudChips">
+    ◈ <span id="valChips">1.000</span> dürTL
+  </div>
+
+  <!-- Rütbe & XP Barı -->
+  <div class="hud-xp-badge" id="hudXp">
+    <div class="xp-row">
+      <span class="xp-rank" id="lblRank">★ ÇAYLAK</span>
+      <span class="xp-num" id="valXp">120 / 500 XP</span>
+    </div>
+    <div class="xp-bar-outer">
+      <div class="xp-bar-inner" id="xpBarFill" style="width: 24%;"></div>
+    </div>
+  </div>
+
+  <button class="hud-btn solid-gold" id="btnOpenVault">+ KASA</button>
+  <button class="hud-btn" id="btnQuickLobby">📋 HIZLI LOBİ (2D)</button>
   <button class="hud-btn" id="soundBtn">🔊 SES: AÇIK</button>
   <button class="hud-btn" id="fullScreenBtn">⛶ TAM EKRAN</button>
-  <button class="hud-btn" id="exitClubBtn">🚪 KULÜBE DÖN</button>
+  <button class="hud-btn" id="exitClubBtn">🚪 ÇIKIŞ</button>
 </div>
 
 <!-- HUD Bottom -->
@@ -266,7 +438,7 @@ body {
 </div>
 
 <div class="hud-bottom-right">
-  WASD: Yürü | SHIFT: Koş | FARE: Bakış | SPACE: Zıpla | ESC: Duraklat
+  WASD: Yürü | SHIFT: Koş | FARE: Bakış | SPACE: Zıpla | E / TIK: Masaya Otur
 </div>
 
 <!-- Blocker / Entrance Modal -->
@@ -294,8 +466,157 @@ body {
       <div class="ctrl-row"><span class="ctrl-key">FARE</span><span>360° Çevreye Bak</span></div>
       <div class="ctrl-row"><span class="ctrl-key">SHIFT</span><span>Hızlı Koş</span></div>
       <div class="ctrl-row"><span class="ctrl-key">SPACE</span><span>Zıplama</span></div>
-      <div class="ctrl-row"><span class="ctrl-key">E / TIK</span><span>Oyun / Etkileşim</span></div>
+      <div class="ctrl-row"><span class="ctrl-key">E / TIK</span><span>Masaya Otur / Oyna</span></div>
       <div class="ctrl-row"><span class="ctrl-key">ESC</span><span>Fare Kilidini Aç</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     RULET MODALI
+     ═══════════════════════════════════════════════════════════ -->
+<div class="game-modal" id="modalRoulette">
+  <div class="modal-dialog">
+    <div class="modal-header">
+      <div class="modal-title">🎡 VIP AVRUPA RULETİ</div>
+      <button class="modal-close" onclick="closeGameModal()">✕</button>
+    </div>
+
+    <div class="roulette-wheel-box">
+      <div style="font-size: 11px; letter-spacing: 0.2em; color: var(--gold); margin-bottom: 4px;">KAZANAN SAYI</div>
+      <div class="wheel-res-num" id="rlResultNum">17</div>
+      <div style="font-size: 11px; color: #aaa;" id="rlResultText">KIRMIZI • TEK</div>
+    </div>
+
+    <div class="chip-selector">
+      <button class="chip-btn active" onclick="selectChip(10)">10</button>
+      <button class="chip-btn" onclick="selectChip(50)">50</button>
+      <button class="chip-btn" onclick="selectChip(100)">100</button>
+      <button class="chip-btn" onclick="selectChip(500)">500</button>
+    </div>
+
+    <div class="roulette-grid">
+      <button class="bet-btn red" onclick="placeRouletteBet('red')">KIRMIZI (×2)</button>
+      <button class="bet-btn green" onclick="placeRouletteBet('zero')">SIFIR [0] (×36)</button>
+      <button class="bet-btn black" onclick="placeRouletteBet('black')">SİYAH (×2)</button>
+      <button class="bet-btn" onclick="placeRouletteBet('odd')">TEK (×2)</button>
+      <button class="bet-btn" onclick="placeRouletteBet('lucky17')">UĞURLU 17 (×36)</button>
+      <button class="bet-btn" onclick="placeRouletteBet('even')">ÇİFT (×2)</button>
+      <button class="bet-btn" onclick="placeRouletteBet('low')">1 - 18 (×2)</button>
+      <button class="bet-btn" onclick="placeRouletteBet('lucky7')">UĞURLU 7 (×36)</button>
+      <button class="bet-btn" onclick="placeRouletteBet('high')">19 - 36 (×2)</button>
+    </div>
+
+    <div style="text-align: center; margin-top: 18px;">
+      <button class="action-btn" id="rlSpinBtn" onclick="spinRoulette()">ÇARKI DÖNDÜR</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SLOT MAKİNESİ MODALI
+     ═══════════════════════════════════════════════════════════ -->
+<div class="game-modal" id="modalSlot">
+  <div class="modal-dialog">
+    <div class="modal-header">
+      <div class="modal-title" id="slotModalTitle">🎰 GATES OF OLYMPUS</div>
+      <button class="modal-close" onclick="closeGameModal()">✕</button>
+    </div>
+
+    <div class="slot-machine-box">
+      <div style="font-size: 11px; letter-spacing: 0.25em; color: var(--gold); margin-bottom: 2px;">PROGRESİF JACKPOT</div>
+      <div style="font-family: 'JetBrains Mono', monospace; font-size: 22px; font-weight: 700; color: #ffea75;" id="slotJackpotVal">₺1.840.500</div>
+
+      <div class="slot-reels-row">
+        <div class="reel-frame" id="reel0">⚡</div>
+        <div class="reel-frame" id="reel1">👑</div>
+        <div class="reel-frame" id="reel2">💎</div>
+      </div>
+
+      <div id="slotWinMsg" style="font-size: 13px; font-weight: 700; min-height: 20px; color: var(--gold-light); margin-bottom: 12px;">
+        BAHİS SEÇİN VE ÇEVİRİN
+      </div>
+
+      <div class="chip-selector">
+        <button class="chip-btn" onclick="selectSlotBet(10)">10</button>
+        <button class="chip-btn active" onclick="selectSlotBet(25)">25</button>
+        <button class="chip-btn" onclick="selectSlotBet(50)">50</button>
+        <button class="chip-btn" onclick="selectSlotBet(100)">100</button>
+        <button class="chip-btn" onclick="selectSlotBet(250)">250</button>
+      </div>
+
+      <button class="action-btn" id="slotSpinBtn" onclick="spinSlot()">SPIN (KOLU ÇEK)</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     BLACKJACK (21) MODALI
+     ═══════════════════════════════════════════════════════════ -->
+<div class="game-modal" id="modalBlackjack">
+  <div class="modal-dialog">
+    <div class="modal-header">
+      <div class="modal-title">🂡 VIP BLACKJACK (21)</div>
+      <button class="modal-close" onclick="closeGameModal()">✕</button>
+    </div>
+
+    <div class="bj-table">
+      <div>
+        <div class="bj-hand-label">KRUPİYE ELİ: <span id="bjDealerScore">0</span></div>
+        <div class="bj-cards-row" id="bjDealerCards"></div>
+      </div>
+
+      <div style="text-align: center; margin: 12px 0;">
+        <div id="bjStatus" style="font-size: 14px; font-weight: 700; color: var(--gold-light);">Bahis yapıp yeni el başlatın</div>
+      </div>
+
+      <div>
+        <div class="bj-hand-label">SENİN ELİN: <span id="bjPlayerScore">0</span></div>
+        <div class="bj-cards-row" id="bjPlayerCards"></div>
+      </div>
+    </div>
+
+    <div class="chip-selector" id="bjChipRow">
+      <button class="chip-btn active" onclick="selectBjBet(50)">50</button>
+      <button class="chip-btn" onclick="selectBjBet(100)">100</button>
+      <button class="chip-btn" onclick="selectBjBet(250)">250</button>
+      <button class="chip-btn" onclick="selectBjBet(500)">500</button>
+    </div>
+
+    <div style="display: flex; gap: 8px; justify-content: center; margin-top: 14px;">
+      <button class="action-btn" id="bjDealBtn" onclick="dealBlackjack()">ELİ BAŞLAT</button>
+      <button class="action-btn" id="bjHitBtn" onclick="hitBlackjack()" style="display: none; background: #222; color: #fff; border-color: #666;">KART ÇEK</button>
+      <button class="action-btn" id="bjStandBtn" onclick="standBlackjack()" style="display: none; background: #222; color: #fff; border-color: #666;">KAL (STAND)</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     BAR & KASA MODALI
+     ═══════════════════════════════════════════════════════════ -->
+<div class="game-modal" id="modalBar">
+  <div class="modal-dialog" style="max-width: 480px;">
+    <div class="modal-header">
+      <div class="modal-title">🍸 VIP LOUNGE BAR & KASA</div>
+      <button class="modal-close" onclick="closeGameModal()">✕</button>
+    </div>
+
+    <div style="text-align: center; margin-bottom: 18px;">
+      <div style="font-size: 13px; color: #ccc; line-height: 1.6;">
+        "Hoş geldiniz efendim. Kulüp salonunda her misafirimize layık ikramlarımız ve kasa işlemlerimiz mevcuttur."
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 10px;">
+      <button class="action-btn" onclick="claimDailyBonus()" style="background: rgba(212, 175, 55, 0.2); border-color: var(--gold); color: #f6e27a;">
+        ☀️ GÜNLÜK RİTÜEL İKRAMI (+100 dürTL)
+      </button>
+      <button class="action-btn" onclick="buyDrink()" style="background: rgba(255, 255, 255, 0.05); color: #fff; border-color: #555;">
+        🥃 SMOKED OLD FASHIONED VİSKİ (-20 dürTL • +30 XP)
+      </button>
+      <button class="action-btn" onclick="openVaultDirect()" style="background: linear-gradient(135deg, #D4AF37, #9a7818); color: #000;">
+        ◈ KULÜP KASASI (+1.000 DEMO YÜKLE)
+      </button>
     </div>
   </div>
 </div>
@@ -304,6 +625,115 @@ body {
 import * as THREE from 'three';
 import { Octree } from 'three/addons/math/Octree.js';
 import { Capsule } from 'three/addons/math/Capsule.js';
+
+// ═══════════════════════════════════════════════════════════
+// DÜRTÜ MERKEZİ DEVLET (STATE) & LOCALSTORAGE ENTEGRASYONU
+// ═══════════════════════════════════════════════════════════
+const SAVE_KEY = 'durtu_demo_v1';
+
+function getStoredState() {
+  try {
+    const raw = localStorage.getItem(SAVE_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch (e) {}
+  return {
+    chips: 1000,
+    name: 'Seçkin Misafir',
+    xp: 120,
+    streakDays: 1,
+    claimedPromos: [],
+    claimedVipChests: [],
+    lastDay: new Date().toDateString()
+  };
+}
+
+const clubState = getStoredState();
+if (typeof clubState.xp !== 'number') clubState.xp = 120;
+
+function saveClubState() {
+  try {
+    localStorage.setItem(SAVE_KEY, JSON.stringify(clubState));
+  } catch (e) {}
+  updateHud();
+}
+
+// ═══════════════════════════════════════════════════════════
+// RÜTBE VE TECRÜBE (XP) MOTORU
+// ═══════════════════════════════════════════════════════════
+const RANKS = [
+  { level: 1, name: 'ÇAYLAK', minXp: 0, maxXp: 500 },
+  { level: 2, name: 'MÜDAVİM', minXp: 500, maxXp: 2500 },
+  { level: 3, name: 'USTA OYUNCU', minXp: 2500, maxXp: 10000 },
+  { level: 4, name: 'HİMAYE (ELİT)', minXp: 10000, maxXp: 50000 },
+  { level: 5, name: 'DÜRTÜ KONSEYİ', minXp: 50000, maxXp: 250000 }
+];
+
+function getCurrentRank(xp) {
+  for (let i = RANKS.length - 1; i >= 0; i--) {
+    if (xp >= RANKS[i].minXp) return RANKS[i];
+  }
+  return RANKS[0];
+}
+
+function addXp(amount, reason = '') {
+  const oldRank = getCurrentRank(clubState.xp);
+  clubState.xp += amount;
+  const newRank = getCurrentRank(clubState.xp);
+
+  // Uçan XP Animasyonu
+  const xpFloat = document.getElementById('xpFloat');
+  if (xpFloat) {
+    xpFloat.innerText = `+${amount} XP ${reason}`;
+    xpFloat.classList.add('show');
+    setTimeout(() => xpFloat.classList.remove('show'), 900);
+  }
+
+  // Rütbe Atlama Kontrolü
+  if (newRank.level > oldRank.level) {
+    triggerLevelUp(newRank);
+  }
+
+  saveClubState();
+}
+
+function triggerLevelUp(rank) {
+  const banner = document.getElementById('levelUpBanner');
+  const name = document.getElementById('luRankName');
+  if (banner && name) {
+    name.innerText = rank.name;
+    banner.classList.add('active');
+    playLevelUpChime();
+    setTimeout(() => banner.classList.remove('active'), 3600);
+  }
+}
+
+function updateHud() {
+  const valChips = document.getElementById('valChips');
+  if (valChips) {
+    valChips.innerText = Math.round(clubState.chips).toLocaleString('tr-TR');
+  }
+
+  const rank = getCurrentRank(clubState.xp);
+  const lblRank = document.getElementById('lblRank');
+  const valXp = document.getElementById('valXp');
+  const xpBar = document.getElementById('xpBarFill');
+
+  if (lblRank) lblRank.innerText = `★ ${rank.name}`;
+  if (valXp) valXp.innerText = `${clubState.xp.toLocaleString('tr-TR')} / ${rank.maxXp.toLocaleString('tr-TR')} XP`;
+  if (xpBar) {
+    const range = rank.maxXp - rank.minXp;
+    const prog = Math.min(100, Math.max(0, ((clubState.xp - rank.minXp) / range) * 100));
+    xpBar.style.width = `${prog}%`;
+  }
+}
+
+function bumpChips() {
+  const b = document.getElementById('hudChips');
+  if (b) {
+    b.classList.add('bump');
+    setTimeout(() => b.classList.remove('bump'), 220);
+  }
+}
 
 // ═══════════════════════════════════════════════════════════
 // CASINO BOYUTLARI VE FİZİK SABİTLERİ
@@ -363,7 +793,7 @@ function createLuxuryCarpetTexture() {
   ctx.fillRect(0, 0, 512, 512);
 
   // Mikro Kadife Doku Paraziti
-  for (let i = 0; i < 40000; i++) {
+  for (let i = 0; i < 35000; i++) {
     const nx = Math.random() * 512;
     const ny = Math.random() * 512;
     const lum = Math.random() * 25;
@@ -379,7 +809,6 @@ function createLuxuryCarpetTexture() {
   const step = 64;
   for (let x = 0; x <= 512; x += step) {
     for (let y = 0; y <= 512; y += step) {
-      // Çapraz Baklava Kafesi
       ctx.beginPath();
       ctx.moveTo(x, y - step / 2);
       ctx.lineTo(x + step / 2, y);
@@ -388,13 +817,11 @@ function createLuxuryCarpetTexture() {
       ctx.closePath();
       ctx.stroke();
 
-      // Merkez Yıldız Motifi
       if ((x + y) % (step * 2) === 0) {
         ctx.beginPath();
         ctx.arc(x, y, 4, 0, Math.PI * 2);
         ctx.fill();
 
-        // Küçük Art Deco Çiçek Yaprakları
         ctx.strokeStyle = 'rgba(212, 175, 55, 0.6)';
         ctx.beginPath();
         ctx.moveTo(x - 8, y); ctx.lineTo(x + 8, y);
@@ -448,11 +875,9 @@ function updateSlotScreens(time) {
     s.reelOffset += 0.05 + index * 0.01;
     s.jackpot += Math.floor(Math.random() * 3);
 
-    // Ekran Arka Planı (Karanlık Cam & CRT Tarzı)
     ctx.fillStyle = '#06060c';
     ctx.fillRect(0, 0, 256, 256);
 
-    // Başlık Bandı
     ctx.fillStyle = 'rgba(20, 20, 35, 0.9)';
     ctx.fillRect(8, 8, 240, 42);
     ctx.strokeStyle = theme.color;
@@ -468,7 +893,6 @@ function updateSlotScreens(time) {
     ctx.fillStyle = theme.accent;
     ctx.fillText(`JACKPOT: ₺${s.jackpot.toLocaleString('tr-TR')}`, 128, 42);
 
-    // 3 Çark Alanı (Reels)
     const reelW = 70;
     const reelH = 130;
     const startX = 18;
@@ -481,7 +905,6 @@ function updateSlotScreens(time) {
       ctx.strokeStyle = 'rgba(212, 175, 55, 0.4)';
       ctx.strokeRect(rx, startY, reelW, reelH);
 
-      // Çark Sembolleri Döner
       ctx.save();
       ctx.beginPath();
       ctx.rect(rx, startY, reelW, reelH);
@@ -503,7 +926,6 @@ function updateSlotScreens(time) {
       ctx.restore();
     }
 
-    // Alt Win / Bet Göstergesi
     ctx.fillStyle = 'rgba(10, 10, 15, 0.85)';
     ctx.fillRect(8, 202, 240, 44);
     ctx.strokeStyle = theme.accent;
@@ -516,7 +938,7 @@ function updateSlotScreens(time) {
 
     ctx.font = '9px sans-serif';
     ctx.fillStyle = '#aaa';
-    ctx.fillText('[E] VEYA TIKLA VE DÖNDÜR', 128, 238);
+    ctx.fillText('[E] VEYA TIKLA VE OYNA', 128, 238);
 
     slotTextures[index].needsUpdate = true;
   }
@@ -639,7 +1061,7 @@ function buildCasino() {
   // 1. Zemin (Kırmızı Lüks Halıfleks)
   addBox(scene, 'Floor_Carpet', 0, -0.05, 0, ROOM_W, 0.1, ROOM_D, M.carpet, true);
 
-  // Mermer Giriş Yolu & Çevre Şeritleri
+  // Mermer Çevre Şeritleri
   addBox(scene, 'Marble_Border_N', 0, 0.01, ROOM_D / 2 - 0.4, ROOM_W, 0.02, 0.8, M.marbleNero, false);
   addBox(scene, 'Marble_Border_S', 0, 0.01, -ROOM_D / 2 + 0.4, ROOM_W, 0.02, 0.8, M.marbleNero, false);
   addBox(scene, 'Marble_Border_E', ROOM_W / 2 - 0.4, 0.01, 0, 0.8, 0.02, ROOM_D, M.marbleNero, false);
@@ -670,9 +1092,7 @@ function buildCasino() {
     [ ROOM_W / 2 - 2.8,  0],
   ];
   colPositions.forEach(([cx, cz], i) => {
-    // Sütun Gövdesi
     addCylinder(scene, `Col_Shaft_${i}`, cx, CEIL_H / 2, cz, 0.36, CEIL_H, M.gold, true, 20);
-    // Sütun Kaidesi ve Başlığı
     addBox(scene, `Col_Base_${i}`, cx, 0.15, cz, 0.85, 0.3, 0.85, M.gold, false);
     addBox(scene, `Col_Cap_${i}`, cx, CEIL_H - 0.15, cz, 0.9, 0.3, 0.9, M.gold, false);
   });
@@ -705,14 +1125,12 @@ function buildCasino() {
 }
 
 function buildChandelier(cx, cy, cz) {
-  // Gövde Halkası
   const ringGeo = new THREE.TorusGeometry(1.0, 0.08, 8, 32);
   const ring = new THREE.Mesh(ringGeo, M.crystal);
   ring.rotation.x = Math.PI / 2;
   ring.position.set(cx, cy, cz);
   scene.add(ring);
 
-  // Kristal Sarkıtlar
   const pendantGeo = new THREE.ConeGeometry(0.03, 0.25, 6);
   for (let i = 0; i < 20; i++) {
     const angle = (i / 20) * Math.PI * 2;
@@ -724,7 +1142,6 @@ function buildChandelier(cx, cy, cz) {
     scene.add(p);
   }
 
-  // İç Işık
   const cLight = new THREE.PointLight(0xfffae0, 120, 16, 1.4);
   cLight.position.set(cx, cy - 0.2, cz);
   cLight.castShadow = true;
@@ -732,15 +1149,11 @@ function buildChandelier(cx, cy, cz) {
 }
 
 function buildRouletteTable(tx, tz) {
-  // Ahşap Gövde
   const base = addCylinder(scene, 'Roulette_Base', tx, 0.4, tz, 1.2, 0.8, M.darkWood, true, 32);
-  // Yeşil Çuha
   addCylinder(scene, 'Roulette_Felt', tx, 0.81, tz, 1.15, 0.04, M.greenFelt, false, 32);
-  // Pirinç Çark
   addCylinder(scene, 'Roulette_Wheel', tx, 0.85, tz, 0.45, 0.08, M.brass, false, 24);
   addCylinder(scene, 'Roulette_Center', tx, 0.90, tz, 0.08, 0.08, M.chrome, false, 12);
   
-  // Masanın Üst Işığı
   const spot = new THREE.SpotLight(0xfff6d0, 65, 7, Math.PI / 7, 0.3, 1.5);
   spot.position.set(tx, CEIL_H - 0.3, tz);
   spot.target.position.set(tx, 0.8, tz);
@@ -751,7 +1164,7 @@ function buildRouletteTable(tx, tz) {
   interactiveObjects.push({
     mesh: base,
     name: "VIP RULET MASASI",
-    action: () => alert("🎡 VIP Rulet Masasına Yaklaştınız! Bahis yapılıyor...")
+    action: () => openRouletteModal()
   });
 }
 
@@ -760,7 +1173,6 @@ function buildCardTable(tx, tz, id) {
   addBox(scene, `CardApron_${id}`, tx, 0.42, tz, 2.4, 0.65, 1.4, M.darkWood, true);
   addBox(scene, `CardRim_${id}`, tx, 0.81, tz, 2.56, 0.05, 1.56, M.gold, false);
 
-  // Tabureler
   [-1.0, 0, 1.0].forEach((dx, j) => {
     addCylinder(scene, `CT_Stool_${id}_${j}`, tx + dx, 0.45, tz + 1.1, 0.24, 0.1, M.burgundy, false, 12);
     addCylinder(scene, `CT_Leg_${id}_${j}`, tx + dx, 0.22, tz + 1.1, 0.04, 0.45, M.chrome, false, 8);
@@ -768,8 +1180,8 @@ function buildCardTable(tx, tz, id) {
 
   interactiveObjects.push({
     mesh: table,
-    name: `BLACKJACK MASASI #${id + 1}`,
-    action: () => alert(`🂡 Blackjack Masası #${id + 1}: Kartlar dağıtılıyor...`)
+    name: `VIP BLACKJACK #${id + 1}`,
+    action: () => openBlackjackModal(id + 1)
   });
 }
 
@@ -781,10 +1193,8 @@ function buildSlotRow() {
   for (let i = 0; i < count; i++) {
     const sx = startX + i * 1.6;
 
-    // Kasa
     const body = addBox(scene, `Slot_${i}_Body`, sx, 0.95, zPos, 0.95, 1.9, 0.75, M.darkWood, true);
 
-    // Canlı Dinamik Ekran
     const screenTexture = createSlotScreen(SLOT_THEMES[i], i);
     const screenMat = new THREE.MeshStandardMaterial({
       map: screenTexture,
@@ -795,24 +1205,17 @@ function buildSlotRow() {
     });
     addBox(scene, `Slot_${i}_Screen`, sx, 1.25, zPos - 0.38, 0.72, 0.65, 0.05, screenMat, false);
 
-    // Tepe Işıklı Tabela
     addBox(scene, `Slot_${i}_Marquee`, sx, 1.92, zPos - 0.1, 0.95, 0.25, 0.5, M.gold, false);
-
-    // Buton Paneli
     addBox(scene, `Slot_${i}_Buttons`, sx, 0.65, zPos - 0.42, 0.75, 0.08, 0.2, M.chrome, false);
-
-    // Kol (Lever)
     addCylinder(scene, `Slot_${i}_Lever`, sx + 0.54, 1.1, zPos - 0.1, 0.03, 0.6, M.chrome, false, 8);
     addBox(scene, `Slot_${i}_Handle`, sx + 0.54, 1.42, zPos - 0.1, 0.08, 0.08, 0.08, M.gold, false);
-
-    // Tabure
     addCylinder(scene, `Slot_${i}_Stool`, sx, 0.45, zPos - 0.95, 0.25, 0.1, M.burgundy, false, 12);
     addCylinder(scene, `Slot_${i}_Leg`, sx, 0.22, zPos - 0.95, 0.04, 0.45, M.chrome, false, 8);
 
     interactiveObjects.push({
       mesh: body,
       name: SLOT_THEMES[i].title,
-      action: () => playSlotChime(SLOT_THEMES[i].title)
+      action: () => openSlotModal(i)
     });
   }
 }
@@ -822,16 +1225,13 @@ function buildBar() {
   const bz = 6.0;
   const bLen = 8.5;
 
-  // Tezgâh ve Ayak
   const bar = addBox(scene, 'Bar_Counter', bx, 1.05, bz, 1.35, 0.1, bLen, M.brass, true);
   addBox(scene, 'Bar_Body', bx + 0.05, 0.5, bz, 1.25, 1.0, bLen, M.darkWood, true);
   addBox(scene, 'Bar_Footrail', bx - 0.55, 0.15, bz, 0.06, 0.06, bLen - 0.4, M.brass, false);
 
-  // Arka Raf Duvarı
   addBox(scene, 'Bar_BackWall', bx + 0.8, 1.6, bz, 0.15, 2.4, bLen, M.darkWood, false);
   addBox(scene, 'Bar_BackGlow', bx + 0.85, 1.3, bz, 0.05, 1.8, bLen - 0.6, M.amberLight, false);
 
-  // Şişeler (3 Raf x 8 Şişe = 24 Şişe)
   [0.95, 1.5, 2.05].forEach((sy, r) => {
     addBox(scene, `Bar_Shelf_${r}`, bx + 0.72, sy, bz, 0.45, 0.04, bLen - 0.4, M.darkWood, false);
     for (let b = 0; b < 8; b++) {
@@ -840,14 +1240,12 @@ function buildBar() {
     }
   });
 
-  // Bar Tabureleri
   for (let i = 0; i < 6; i++) {
     const sz = bz - bLen / 2 + 0.9 + i * 1.35;
     addCylinder(scene, `BarStool_${i}`, bx - 0.95, 0.75, sz, 0.24, 0.08, M.burgundy, false, 12);
     addCylinder(scene, `BarStool_Leg_${i}`, bx - 0.95, 0.37, sz, 0.035, 0.75, M.chrome, false, 8);
   }
 
-  // Bar Tavan Sarkıt Lambaları
   for (let i = 0; i < 4; i++) {
     const lz = bz - bLen / 2 + 1.2 + i * 2.1;
     const pl = new THREE.PointLight(0xffb84d, 15, 4.5, 2);
@@ -857,8 +1255,8 @@ function buildBar() {
 
   interactiveObjects.push({
     mesh: bar,
-    name: "VIP LOUNGE BAR",
-    action: () => alert("🍸 Barmen: 'Hoş geldiniz efendim. Viski mi yoksa şampanya mı arzu edersiniz?'")
+    name: "VIP LOUNGE BAR & KASA",
+    action: () => openBarModal()
   });
 }
 
@@ -867,13 +1265,11 @@ function buildLounge() {
   const sofaZ = [-8, -3, 2, 7];
 
   sofaZ.forEach((sz, i) => {
-    // Kanepe
     const sofa = addBox(scene, `Sofa_${i}`, lx, 0.42, sz, 1.9, 0.4, 0.9, M.burgundy, true);
     addBox(scene, `Sofa_Back_${i}`, lx, 0.85, sz + 0.45, 1.9, 0.8, 0.15, M.burgundy, true);
     addBox(scene, `Sofa_ArmL_${i}`, lx - 0.95, 0.6, sz, 0.12, 0.65, 0.9, M.burgundy, false);
     addBox(scene, `Sofa_ArmR_${i}`, lx + 0.95, 0.6, sz, 0.12, 0.65, 0.9, M.burgundy, false);
 
-    // Sehpa ve Abajur
     addCylinder(scene, `CoffeeTable_${i}`, lx + 1.6, 0.35, sz, 0.45, 0.06, M.gold, false, 24);
     addCylinder(scene, `TableLamp_${i}`, lx + 1.6, 0.7, sz, 0.15, 0.3, M.amberLight, false, 12);
 
@@ -884,23 +1280,23 @@ function buildLounge() {
     interactiveObjects.push({
       mesh: sofa,
       name: `VIP LOCA #${i + 1}`,
-      action: () => alert(`🛋 VIP Loca #${i + 1}: Dinlenmektesiniz...`)
+      action: () => {
+        addXp(25, '(Loca Ziyareti)');
+        alert(`🛋 VIP Loca #${i + 1}: Seçkin atmosferde dinleniyorsunuz. (+25 XP Keşif Bonusu)`);
+      }
     });
   });
 }
 
 function buildStage() {
   const sz = -ROOM_D / 2 + 2.8;
-  // Sahne Platformu
   addBox(scene, 'Stage_Platform', 0, 0.3, sz, 8.5, 0.6, 3.8, M.darkWood, true);
   addBox(scene, 'Stage_Carpet', 0, 0.62, sz, 8.2, 0.04, 3.5, M.burgundy, false);
 
-  // Arka Kadife Perde
   addBox(scene, 'Stage_Curtain', 0, CEIL_H / 2, sz - 1.8, 8.0, CEIL_H, 0.12, M.burgundy, true);
   addBox(scene, 'Curtain_GoldL', -4.0, CEIL_H / 2, sz - 1.75, 0.15, CEIL_H, 0.15, M.gold, false);
   addBox(scene, 'Curtain_GoldR',  4.0, CEIL_H / 2, sz - 1.75, 0.15, CEIL_H, 0.15, M.gold, false);
 
-  // Sahne Spotları
   [-2.2, 0, 2.2].forEach((sx) => {
     const sl = new THREE.SpotLight(0xfffae0, 70, 9, Math.PI / 9, 0.3, 1.4);
     sl.position.set(sx, CEIL_H - 0.2, sz + 2.5);
@@ -911,8 +1307,7 @@ function buildStage() {
 }
 
 function buildNeonSign() {
-  // Giriş Üstü DÜRTÜ VIP Tabelası
-  const sign = addBox(scene, 'NeonSign', 0, CEIL_H - 0.7, -ROOM_D / 2 + 0.3, 6.5, 0.7, 0.1, M.signGlow, false);
+  addBox(scene, 'NeonSign', 0, CEIL_H - 0.7, -ROOM_D / 2 + 0.3, 6.5, 0.7, 0.1, M.signGlow, false);
   const signLight = new THREE.PointLight(0xffaa22, 22, 8, 1.6);
   signLight.position.set(0, CEIL_H - 0.7, -ROOM_D / 2 + 0.8);
   scene.add(signLight);
@@ -928,7 +1323,6 @@ function setupLighting() {
   const hemi = new THREE.HemisphereLight(0xD4AF37, 0x08080d, 0.7);
   scene.add(hemi);
 
-  // Köşe Sıcak Işıkları
   [
     [-6, -8], [6, -8], [-6, 8], [6, 8], [-6, 0], [6, 0]
   ].forEach(([x, z]) => {
@@ -975,7 +1369,7 @@ if (new URLSearchParams(window.location.search).has('autostart')) {
   blocker.style.display = 'none';
   if (new URLSearchParams(window.location.search).get('autostart') === 'slots') {
     camera.position.set(0, 1.7, 7.5);
-    camera.rotation.y = Math.PI; // facing +Z towards slots
+    camera.rotation.y = Math.PI;
   }
 }
 
@@ -987,15 +1381,12 @@ document.addEventListener('pointerlockchange', () => {
 
 document.body.addEventListener('mousemove', (e) => {
   if (document.pointerLockElement === document.body) {
-    // Pointer lock ilk açıldığında oluşan ani delta sıçramasını filtrele
     if (Math.abs(e.movementX) > 120 || Math.abs(e.movementY) > 120) return;
 
-    // İpeksi, kontrollü FPS fare hassasiyeti
     const sens = 0.0018;
     camera.rotation.y -= e.movementX * sens;
     camera.rotation.x -= e.movementY * sens;
 
-    // Tavana veya yere kilitlenmeyi önleyen doğal dikey açı sınırı (~54°)
     camera.rotation.x = Math.max(-0.95, Math.min(0.95, camera.rotation.x));
   }
 });
@@ -1012,9 +1403,8 @@ function checkInteraction() {
   const targets = interactiveObjects.map(o => o.mesh);
   const intersects = raycaster.intersectObjects(targets, true);
 
-  if (intersects.length > 0 && intersects[0].distance < 3.5) {
+  if (intersects.length > 0 && intersects[0].distance < 3.8) {
     let hitMesh = intersects[0].object;
-    // Find parent object registered
     let found = interactiveObjects.find(o => o.mesh === hitMesh || o.mesh.children.includes(hitMesh));
     if (found) {
       currentTarget = found;
@@ -1110,7 +1500,7 @@ function teleportIfOob() {
 }
 
 // ═══════════════════════════════════════════════════════════
-// 8. WEB AUDIO SENTEZLEYİCİ (HARİCİ DOSYA GEREKTİRMEZ)
+// 8. WEB AUDIO SENTEZLEYİCİ
 // ═══════════════════════════════════════════════════════════
 let audioCtx = null;
 let soundEnabled = true;
@@ -1127,7 +1517,6 @@ function initAudio() {
 
 function playAmbientChords() {
   if (!audioCtx || !soundEnabled) return;
-  // Speakeasy Caz Akoru (C minor 9)
   const freqs = [130.81, 155.56, 196.00, 233.08, 293.66];
   freqs.forEach((f, i) => {
     const osc = audioCtx.createOscillator();
@@ -1141,13 +1530,10 @@ function playAmbientChords() {
   });
 }
 
-function playSlotChime(title) {
-  if (!audioCtx || !soundEnabled) {
-    alert(`🎰 ${title} Çevrildi! 777 JACKPOT!`);
-    return;
-  }
+function playWinSound() {
+  if (!audioCtx || !soundEnabled) return;
   const now = audioCtx.currentTime;
-  const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+  const notes = [523.25, 659.25, 783.99, 1046.50];
   notes.forEach((freq, idx) => {
     const osc = audioCtx.createOscillator();
     const gain = audioCtx.createGain();
@@ -1162,9 +1548,419 @@ function playSlotChime(title) {
   });
 }
 
+function playLevelUpChime() {
+  if (!audioCtx || !soundEnabled) return;
+  const now = audioCtx.currentTime;
+  const chords = [523.25, 659.25, 783.99, 1046.50, 1318.51];
+  chords.forEach((f, i) => {
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(f, now + i * 0.07);
+    gain.gain.setValueAtTime(0.15, now + i * 0.07);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.07 + 0.6);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start(now + i * 0.07);
+    osc.stop(now + i * 0.07 + 0.65);
+  });
+}
+
 // ═══════════════════════════════════════════════════════════
-// 9. UI BUTONLARI & EVENTLER
+// 9. CANLI OYUN MODALLARI VE MANTIKLARI
 // ═══════════════════════════════════════════════════════════
+let selectedChip = 50;
+let selectedSlotBet = 25;
+let currentActiveSlot = 0;
+let bjBet = 50;
+let activeRouletteBet = 'red';
+
+window.selectChip = (val) => {
+  selectedChip = val;
+  document.querySelectorAll('.chip-btn').forEach(b => {
+    b.classList.toggle('active', b.innerText == val);
+  });
+};
+
+window.selectSlotBet = (val) => {
+  selectedSlotBet = val;
+  document.querySelectorAll('#modalSlot .chip-btn').forEach(b => {
+    b.classList.toggle('active', b.innerText == val);
+  });
+};
+
+window.selectBjBet = (val) => {
+  bjBet = val;
+  document.querySelectorAll('#bjChipRow .chip-btn').forEach(b => {
+    b.classList.toggle('active', b.innerText == val);
+  });
+};
+
+window.closeGameModal = () => {
+  document.querySelectorAll('.game-modal').forEach(m => m.classList.remove('active'));
+};
+
+function openRouletteModal() {
+  document.exitPointerLock();
+  document.getElementById('modalRoulette').classList.add('active');
+}
+
+function openSlotModal(index) {
+  currentActiveSlot = index;
+  document.exitPointerLock();
+  document.getElementById('slotModalTitle').innerText = `🎰 ${SLOT_THEMES[index].title}`;
+  document.getElementById('modalSlot').classList.add('active');
+}
+
+function openBlackjackModal(tableId) {
+  document.exitPointerLock();
+  document.getElementById('modalBlackjack').classList.add('active');
+  resetBjUI();
+}
+
+function openBarModal() {
+  document.exitPointerLock();
+  document.getElementById('modalBar').classList.add('active');
+}
+
+window.openVaultDirect = () => {
+  clubState.chips += 1000;
+  bumpChips();
+  addXp(50, '(Kasa Yükleme)');
+  saveClubState();
+  alert("◈ Kasa: Hesabınıza +1.000 dürTL başarıyla aktarıldı!");
+  window.closeGameModal();
+};
+
+window.claimDailyBonus = () => {
+  const today = new Date().toDateString();
+  if (clubState.lastClaimDay === today) {
+    alert("☀️ Günlük ritüelinizi bugün zaten aldınız! Yarın tekrar bekleriz.");
+    return;
+  }
+  clubState.lastClaimDay = today;
+  clubState.chips += 100;
+  bumpChips();
+  addXp(100, '(Günlük Ritüel)');
+  saveClubState();
+  playWinSound();
+  alert("☀️ Günlük Ritüel İkramı: +100 dürTL ve +100 XP hesabınıza eklendi!");
+  window.closeGameModal();
+};
+
+window.buyDrink = () => {
+  if (clubState.chips < 20) {
+    alert("Bakiye yetersiz! Barmene sipariş vermek için en az 20 dürTL gerekir.");
+    return;
+  }
+  clubState.chips -= 20;
+  bumpChips();
+  addXp(30, '(Viski İkramı)');
+  saveClubState();
+  alert("🥃 Barmen: 'Afiyet olsun efendim. Birinci sınıf İskoç maltı.' (+30 XP Prestij)");
+};
+
+// ── RULET OYUN MANTIĞI ──
+window.placeRouletteBet = (type) => {
+  activeRouletteBet = type;
+  document.querySelectorAll('.roulette-grid .bet-btn').forEach(b => b.style.outline = 'none');
+  event.target.style.outline = '2px solid #f6e27a';
+};
+
+window.spinRoulette = () => {
+  if (clubState.chips < selectedChip) {
+    alert("Yetersiz bakiye! Lütfen kasadan bakiye ekleyin.");
+    return;
+  }
+
+  // Bahsi düş
+  clubState.chips -= selectedChip;
+  bumpChips();
+  addXp(Math.max(1, Math.round(selectedChip / 10)), '(Rulet Bahsi)');
+  saveClubState();
+
+  const spinBtn = document.getElementById('rlSpinBtn');
+  spinBtn.disabled = true;
+  spinBtn.innerText = "DÖNÜYOR...";
+
+  // Çark Dönüşü Simülasyonu
+  const resNumEl = document.getElementById('rlResultNum');
+  const resTxtEl = document.getElementById('rlResultText');
+
+  let ticks = 0;
+  const interval = setInterval(() => {
+    ticks++;
+    const fakeNum = Math.floor(Math.random() * 37);
+    resNumEl.innerText = fakeNum;
+
+    if (ticks > 16) {
+      clearInterval(interval);
+      // Nihai Rulet Sonucu (0 - 36)
+      const finalNum = Math.floor(Math.random() * 37);
+      const isRed = [1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36].includes(finalNum);
+      const isZero = finalNum === 0;
+
+      resNumEl.innerText = finalNum;
+      resNumEl.style.color = isZero ? '#4ade80' : isRed ? '#f87171' : '#fff';
+      resTxtEl.innerText = isZero ? 'SIFIR (YEŞİL)' : (isRed ? 'KIRMIZI' : 'SİYAH') + (finalNum % 2 === 1 ? ' • TEK' : ' • ÇİFT');
+
+      // Kazanç Hesabı
+      let winAmount = 0;
+      if (activeRouletteBet === 'red' && isRed) winAmount = selectedChip * 2;
+      else if (activeRouletteBet === 'black' && !isRed && !isZero) winAmount = selectedChip * 2;
+      else if (activeRouletteBet === 'zero' && isZero) winAmount = selectedChip * 36;
+      else if (activeRouletteBet === 'odd' && !isZero && finalNum % 2 === 1) winAmount = selectedChip * 2;
+      else if (activeRouletteBet === 'even' && !isZero && finalNum % 2 === 0) winAmount = selectedChip * 2;
+      else if (activeRouletteBet === 'low' && finalNum >= 1 && finalNum <= 18) winAmount = selectedChip * 2;
+      else if (activeRouletteBet === 'high' && finalNum >= 19 && finalNum <= 36) winAmount = selectedChip * 2;
+      else if (activeRouletteBet === 'lucky17' && finalNum === 17) winAmount = selectedChip * 36;
+      else if (activeRouletteBet === 'lucky7' && finalNum === 7) winAmount = selectedChip * 36;
+
+      if (winAmount > 0) {
+        clubState.chips += winAmount;
+        bumpChips();
+        addXp(50, '(Rulet Kazancı)');
+        saveClubState();
+        playWinSound();
+        alert(`🎉 TEBRİKLER! Rulet kazancı: +${winAmount} dürTL!`);
+      }
+
+      spinBtn.disabled = false;
+      spinBtn.innerText = "ÇARKI DÖNDÜR";
+    }
+  }, 90);
+};
+
+// ── SLOT OYUN MANTIĞI ──
+window.spinSlot = () => {
+  if (clubState.chips < selectedSlotBet) {
+    alert("Yetersiz bakiye! Lütfen kasadan bakiye ekleyin.");
+    return;
+  }
+
+  clubState.chips -= selectedSlotBet;
+  bumpChips();
+  addXp(Math.max(1, Math.round(selectedSlotBet / 10)), '(Slot Bahsi)');
+  saveClubState();
+
+  const theme = SLOT_THEMES[currentActiveSlot];
+  const spinBtn = document.getElementById('slotSpinBtn');
+  const winMsg = document.getElementById('slotWinMsg');
+  spinBtn.disabled = true;
+
+  const r0 = document.getElementById('reel0');
+  const r1 = document.getElementById('reel1');
+  const r2 = document.getElementById('reel2');
+
+  let spins = 0;
+  const timer = setInterval(() => {
+    spins++;
+    r0.innerText = theme.symbols[Math.floor(Math.random() * theme.symbols.length)];
+    r1.innerText = theme.symbols[Math.floor(Math.random() * theme.symbols.length)];
+    r2.innerText = theme.symbols[Math.floor(Math.random() * theme.symbols.length)];
+
+    if (spins > 14) {
+      clearInterval(timer);
+      const s0 = theme.symbols[Math.floor(Math.random() * theme.symbols.length)];
+      const s1 = theme.symbols[Math.floor(Math.random() * theme.symbols.length)];
+      const s2 = (Math.random() < 0.25) ? s0 : theme.symbols[Math.floor(Math.random() * theme.symbols.length)];
+
+      r0.innerText = s0;
+      r1.innerText = s1;
+      r2.innerText = s2;
+
+      let winMult = 0;
+      if (s0 === s1 && s1 === s2) {
+        winMult = 15; // 3'ü de aynı (JACKPOT)
+      } else if (s0 === s1 || s1 === s2 || s0 === s2) {
+        winMult = 2.5; // İkili eşleşme
+      }
+
+      if (winMult > 0) {
+        const win = Math.round(selectedSlotBet * winMult);
+        clubState.chips += win;
+        bumpChips();
+        addXp(60, '(Slot Kazancı)');
+        saveClubState();
+        playWinSound();
+        winMsg.innerText = `🔥 KAZANDINIZ! +${win} dürTL (×${winMult})`;
+      } else {
+        winMsg.innerText = "Tekrar deneyin...";
+      }
+
+      spinBtn.disabled = false;
+    }
+  }, 80);
+};
+
+// ── BLACKJACK (21) OYUN MANTIĞI ──
+let bjDeck = [];
+let bjDealer = [];
+let bjPlayer = [];
+let bjGameActive = false;
+
+function buildDeck() {
+  const suits = ['♠', '♥', '♦', '♣'];
+  const vals = ['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
+  bjDeck = [];
+  suits.forEach(s => {
+    vals.forEach(v => {
+      let num = parseInt(v);
+      if (['J','Q','K'].includes(v)) num = 10;
+      if (v === 'A') num = 11;
+      bjDeck.push({ v, s, num, red: ['♥','♦'].includes(s) });
+    });
+  });
+  bjDeck.sort(() => Math.random() - 0.5);
+}
+
+function calcScore(hand) {
+  let total = 0, aces = 0;
+  hand.forEach(c => {
+    total += c.num;
+    if (c.v === 'A') aces++;
+  });
+  while (total > 21 && aces > 0) {
+    total -= 10;
+    aces--;
+  }
+  return total;
+}
+
+function renderHand(hand, elId, hideHole = false) {
+  const el = document.getElementById(elId);
+  el.innerHTML = '';
+  hand.forEach((c, i) => {
+    const card = document.createElement('div');
+    card.className = `card-item ${c.red ? 'red' : ''}`;
+    if (hideHole && i === 1) {
+      card.innerText = '🂠';
+      card.style.background = '#333';
+      card.style.color = '#fff';
+    } else {
+      card.innerText = `${c.v}${c.s}`;
+    }
+    el.appendChild(card);
+  });
+}
+
+function resetBjUI() {
+  document.getElementById('bjDealerCards').innerHTML = '';
+  document.getElementById('bjPlayerCards').innerHTML = '';
+  document.getElementById('bjDealerScore').innerText = '0';
+  document.getElementById('bjPlayerScore').innerText = '0';
+  document.getElementById('bjStatus').innerText = 'Bahis yapıp yeni el başlatın';
+  document.getElementById('bjDealBtn').style.display = 'inline-block';
+  document.getElementById('bjHitBtn').style.display = 'none';
+  document.getElementById('bjStandBtn').style.display = 'none';
+}
+
+window.dealBlackjack = () => {
+  if (clubState.chips < bjBet) {
+    alert("Yetersiz bakiye!");
+    return;
+  }
+  clubState.chips -= bjBet;
+  bumpChips();
+  addXp(Math.max(1, Math.round(bjBet / 10)), '(Blackjack Bahsi)');
+  saveClubState();
+
+  buildDeck();
+  bjPlayer = [bjDeck.pop(), bjDeck.pop()];
+  bjDealer = [bjDeck.pop(), bjDeck.pop()];
+  bjGameActive = true;
+
+  renderHand(bjPlayer, 'bjPlayerCards');
+  renderHand(bjDealer, 'bjDealerCards', true);
+
+  const pScore = calcScore(bjPlayer);
+  document.getElementById('bjPlayerScore').innerText = pScore;
+  document.getElementById('bjDealerScore').innerText = '?';
+
+  document.getElementById('bjDealBtn').style.display = 'none';
+  document.getElementById('bjHitBtn').style.display = 'inline-block';
+  document.getElementById('bjStandBtn').style.display = 'inline-block';
+
+  if (pScore === 21) {
+    endBlackjack('blackjack');
+  } else {
+    document.getElementById('bjStatus').innerText = 'Kart çekin veya elinizde kalın.';
+  }
+};
+
+window.hitBlackjack = () => {
+  if (!bjGameActive) return;
+  bjPlayer.push(bjDeck.pop());
+  renderHand(bjPlayer, 'bjPlayerCards');
+  const pScore = calcScore(bjPlayer);
+  document.getElementById('bjPlayerScore').innerText = pScore;
+
+  if (pScore > 21) {
+    endBlackjack('bust');
+  }
+};
+
+window.standBlackjack = () => {
+  if (!bjGameActive) return;
+  while (calcScore(bjDealer) < 17) {
+    bjDealer.push(bjDeck.pop());
+  }
+  renderHand(bjDealer, 'bjDealerCards', false);
+  const dScore = calcScore(bjDealer);
+  const pScore = calcScore(bjPlayer);
+  document.getElementById('bjDealerScore').innerText = dScore;
+
+  if (dScore > 21) endBlackjack('dealer_bust');
+  else if (pScore > dScore) endBlackjack('win');
+  else if (pScore < dScore) endBlackjack('lose');
+  else endBlackjack('push');
+};
+
+function endBlackjack(res) {
+  bjGameActive = false;
+  renderHand(bjDealer, 'bjDealerCards', false);
+  document.getElementById('bjDealerScore').innerText = calcScore(bjDealer);
+
+  const status = document.getElementById('bjStatus');
+  let winAmount = 0;
+
+  if (res === 'blackjack') {
+    winAmount = Math.round(bjBet * 2.5); // 3:2 blackjack payout
+    status.innerText = `👑 BLACKJACK (21)! +${winAmount} dürTL!`;
+  } else if (res === 'win' || res === 'dealer_bust') {
+    winAmount = bjBet * 2;
+    status.innerText = `🎉 KAZANDINIZ! +${winAmount} dürTL!`;
+  } else if (res === 'push') {
+    winAmount = bjBet;
+    status.innerText = `🤝 BERABERE (PUSH) — ${winAmount} dürTL iade edildi.`;
+  } else {
+    status.innerText = `❌ KAYBETTİNİZ (${res === 'bust' ? '21 aşıldı' : 'Krupiye kazandı'}).`;
+  }
+
+  if (winAmount > 0) {
+    clubState.chips += winAmount;
+    bumpChips();
+    addXp(40, '(Blackjack Zaferi)');
+    saveClubState();
+    playWinSound();
+  }
+
+  document.getElementById('bjDealBtn').style.display = 'inline-block';
+  document.getElementById('bjHitBtn').style.display = 'none';
+  document.getElementById('bjStandBtn').style.display = 'none';
+}
+
+// ═══════════════════════════════════════════════════════════
+// 10. UI BUTONLARI & NAVİGASYON
+// ═══════════════════════════════════════════════════════════
+document.getElementById('btnOpenVault').onclick = () => {
+  openBarModal();
+};
+
+document.getElementById('btnQuickLobby').onclick = () => {
+  window.location.href = 'index.html#salon';
+};
+
 document.getElementById('soundBtn').onclick = () => {
   soundEnabled = !soundEnabled;
   document.getElementById('soundBtn').innerText = soundEnabled ? "🔊 SES: AÇIK" : "🔇 SES: KAPALI";
@@ -1189,10 +1985,11 @@ window.addEventListener('resize', () => {
 });
 
 // ═══════════════════════════════════════════════════════════
-// 10. ANA RENDER VE ANİMASYON DÖNGÜSÜ
+// 11. BAŞLATMA VE ANA RENDER DÖNGÜSÜ
 // ═══════════════════════════════════════════════════════════
 buildCasino();
 setupLighting();
+updateHud();
 
 const clock = new THREE.Clock();
 let frameCount = 0;
@@ -1206,20 +2003,15 @@ function animate() {
   const time = performance.now() * 0.001;
   const deltaTime = Math.min(0.05, clock.getDelta()) / STEPS_PER_FRAME;
 
-  // 5 Adımlı Fizik Hesaplaması (Duvardan Geçmeyi %100 Önler)
   for (let i = 0; i < STEPS_PER_FRAME; i++) {
     applyControls(deltaTime);
     updatePlayer(deltaTime);
     teleportIfOob();
   }
 
-  // Slot Ekranlarını Canlı Güncelle
   updateSlotScreens(time);
-
-  // Etkileşim Kontrolü
   checkInteraction();
 
-  // HUD Güncelle
   frameCount++;
   if (time - lastFpsUpdate > 0.5) {
     const fps = Math.round(frameCount / (time - lastFpsUpdate));
