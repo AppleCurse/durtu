@@ -692,56 +692,53 @@ body.tick footer{padding-bottom:34px}
       </span>
     </div>
 
-    <!-- Center: Logo + Door -->
-    <div id="gateCenter" style="position:absolute;inset:0;z-index:4;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(.8rem,2vh,1.4rem);padding:clamp(1rem,3vw,2rem);transition:transform 1.2s cubic-bezier(.22,1,.36,1)">
-      <div class="gate-logo" style="font-size:clamp(2.4rem,6vw,4.2rem);margin:0">DÜRTÜ</div>
-      <div class="gate-rule" style="margin:.2rem auto"></div>
-      <p class="gate-sub" style="margin:0">“Dürtü seni çağırıyor.”</p>
-
-      <!-- 3D Door -->
-      <div id="doorFrame" style="position:relative;width:min(360px,84vw);height:min(520px,62vh);margin-top:clamp(.6rem,1.5vh,1.2rem);perspective:1200px;cursor:pointer">
-        <!-- Door shadow -->
-        <div style="position:absolute;left:4%;right:4%;bottom:-18px;height:26px;border-radius:50%;background:radial-gradient(ellipse,rgba(0,0,0,.8),transparent 70%);filter:blur(6px)"></div>
-        <!-- Door itself -->
-        <div id="door" style="position:absolute;inset:0;border-radius:14px;transform-style:preserve-3d;transform:rotateY(0deg);transition:transform 1.6s cubic-bezier(.22,1,.36,1),box-shadow .6s;transform-origin:left center;overflow:hidden;background:linear-gradient(105deg,#2b2213 0%,#1a1510 32%,#130f09 72%,#0e0b06 100%);border:1px solid rgba(212,175,55,.38);box-shadow:0 24px 60px rgba(0,0,0,.85),inset 0 1px 0 rgba(246,226,122,.18)">
-          <!-- Wood grain overlay -->
-          <div style="position:absolute;inset:0;opacity:.18;background:repeating-linear-gradient(90deg,transparent 0 12px,rgba(212,175,55,.06) 12px 13px)"></div>
-          <!-- Brass plates -->
-          <div style="position:absolute;top:14px;left:14px;right:14px;height:38px;border-radius:8px;background:linear-gradient(180deg,#f8e583,#d3af3c 55%,#8a6a20);display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-weight:700;font-size:.72rem;letter-spacing:.32em;color:#241a05;box-shadow:inset 0 1px 0 rgba(255,255,255,.6),0 4px 12px rgba(0,0,0,.5)">✦ KAPALI KULÜP ✦</div>
-          <!-- Peephole / speakeasy -->
-          <div id="peephole" style="position:absolute;left:50%;top:42%;transform:translate(-50%,-50%);width:92px;height:92px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#1a150a,#0a0804);border:2px solid rgba(212,175,55,.55);box-shadow:inset 0 0 18px rgba(0,0,0,.9),0 0 18px rgba(212,175,55,.15);display:flex;align-items:center;justify-content:center;transition:all .5s;overflow:hidden">
-            <div id="peepholeInner" style="width:68px;height:68px;border-radius:50%;background:#000;position:relative;overflow:hidden;transition:all .5s">
-              <div id="peepholeLight" style="position:absolute;inset:0;background:radial-gradient(circle at 50% 50%,rgba(246,226,122,.95),rgba(212,175,55,.4) 35%,transparent 70%);opacity:0;transition:opacity .6s"></div>
-              <div id="peepholeEye" style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:1.2rem;opacity:.3">◉</div>
-            </div>
-          </div>
-          <!-- Knocker -->
-          <div id="knocker" style="position:absolute;left:50%;top:62%;transform:translate(-50%,-50%);width:64px;height:84px;display:flex;flex-direction:column;align-items:center;gap:0;transition:transform .18s;transform-origin:top center">
-            <div style="width:18px;height:18px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff6cf,#d8b143 58%,#6e5316);box-shadow:0 0 12px rgba(212,175,55,.7),0 3px 6px rgba(0,0,0,.6)"></div>
-            <div style="width:4px;height:46px;background:linear-gradient(90deg,#6e5316,#f6e27a,#6e5316);border-radius:2px;margin-top:-2px;box-shadow:1px 2px 4px rgba(0,0,0,.7)"></div>
-            <div id="knockerRing" style="width:38px;height:38px;border-radius:50%;border:3px solid #c9a86a;background:radial-gradient(circle at 30% 30%,#f6e27a,#8a6a20);box-shadow:inset 0 2px 4px rgba(255,255,255,.4),0 4px 12px rgba(0,0,0,.6);margin-top:-6px;display:flex;align-items:center;justify-content:center;font-size:.7rem;color:#241a05">✦</div>
-          </div>
-          <!-- Light slit bottom -->
-          <div id="doorSlit" style="position:absolute;left:12%;right:12%;bottom:8px;height:2px;background:linear-gradient(90deg,transparent,rgba(246,226,122,.0),rgba(246,226,122,.85),rgba(246,226,122,.0),transparent);opacity:0;transition:opacity .8s;box-shadow:0 0 12px rgba(246,226,122,.8)"></div>
-        </div>
-        <!-- Door edge when open -->
-        <div id="doorEdge" style="position:absolute;left:0;top:0;bottom:0;width:18px;border-radius:14px 0 0 14px;background:linear-gradient(90deg,#0a0804,#1a1510);transform:rotateY(90deg);transform-origin:left center;opacity:0;transition:opacity .3s"></div>
+    <!-- Center: Cinematic 360 HUD Overlay -->
+    <div id="gateCenter" style="position:absolute;inset:0;z-index:4;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:clamp(1rem,3vw,2rem) 1rem 4.5rem;transition:transform 1.2s cubic-bezier(.22,1,.36,1);pointer-events:none">
+      <!-- Brand title -->
+      <div style="text-align:center;margin-top:clamp(1.5rem,4vh,3rem);pointer-events:none">
+        <div class="tag" style="letter-spacing:.42em;color:var(--gold);margin-bottom:.3rem">FOTOGRAMETRİK 360° VIRTUAL TOUR</div>
+        <div class="gate-logo" style="font-size:clamp(2.4rem,6vw,4.2rem);margin:0">DÜRTÜ</div>
+        <div class="gate-rule" style="margin:.25rem auto"></div>
+        <p class="gate-sub" style="margin:0">“Mekanın içindesin — Fareyle veya dokunarak 360° etrafına bak.”</p>
       </div>
 
-      <p id="gateHintCine" style="font-size:.72rem;color:var(--muted);letter-spacing:.08em;margin-top:.2rem;min-height:1.2em;transition:all .4s">Tokmağa dokun — içeriden ses geliyor.</p>
-      <p id="gateWhisper" style="font-family:var(--serif);font-style:italic;font-size:.86rem;color:#e8d9a0;letter-spacing:.04em;min-height:1.4em;opacity:0;transform:translateY(8px);transition:all .6s cubic-bezier(.22,1,.36,1);text-shadow:0 0 18px rgba(246,226,122,.35),0 2px 12px rgba(0,0,0,.9);text-align:center;max-width:360px"></p>
+      <!-- Hidden 2D Door (preserved for DOM refs) -->
+      <div id="doorFrame" style="display:none">
+        <div id="door">
+          <div id="knocker"><div id="knockerRing">✦</div></div>
+          <div id="peephole"><div id="peepholeInner"><div id="peepholeLight"></div><div id="peepholeEye">◉</div></div></div>
+          <div id="doorSlit"></div>
+          <div id="doorEdge"></div>
+        </div>
+      </div>
 
-      <!-- Name / Parola input (appears after peephole opens) -->
-      <div id="gateFormCine" style="width:min(380px,92vw);display:flex;flex-direction:column;gap:.6rem;align-items:center;opacity:0;transform:translateY(12px);pointer-events:none;transition:all .6s">
-        <div style="display:flex;gap:.5rem;width:100%">
-          <input class="inp" id="gateNameCine" placeholder="Adınız veya parola" autocomplete="off" style="flex:1;text-align:center;letter-spacing:.12em">
-          <button class="btn solid" id="gateSubmitCine" style="white-space:nowrap">İçeri Süzül</button>
+      <!-- Center status & whisper -->
+      <div style="text-align:center;max-width:480px;pointer-events:auto">
+        <p id="gateHintCine" style="font-size:.78rem;color:var(--cream);letter-spacing:.08em;margin-top:.2rem;min-height:1.4em;transition:all .4s;background:rgba(10,8,5,.65);padding:.4rem 1rem;border-radius:4px;border:1px solid rgba(212,175,55,.2);backdrop-filter:blur(6px)">
+          🖱 <b>Sürükle:</b> Salonda 360° gezin &middot; ✦ <b>Hotspotlara</b> dokunarak odaklan
+        </p>
+        <p id="gateWhisper" style="font-family:var(--serif);font-style:italic;font-size:.86rem;color:#e8d9a0;letter-spacing:.04em;min-height:1.4em;opacity:0;transform:translateY(8px);transition:all .6s cubic-bezier(.22,1,.36,1);text-shadow:0 0 18px rgba(246,226,122,.35),0 2px 12px rgba(0,0,0,.9);text-align:center"></p>
+
+        <!-- Name / Parola input (VIP Entrance) -->
+        <div id="gateFormCine" style="width:min(380px,92vw);display:flex;flex-direction:column;gap:.6rem;align-items:center;margin:0.8rem auto 0;pointer-events:auto;transition:all .6s">
+          <div style="display:flex;gap:.5rem;width:100%">
+            <input class="inp" id="gateNameCine" placeholder="Adınız veya parola (DURTU-VIP)" autocomplete="off" style="flex:1;text-align:center;letter-spacing:.12em;background:rgba(15,14,10,.85);backdrop-filter:blur(8px)">
+            <button class="btn solid" id="gateSubmitCine" style="white-space:nowrap">İçeri Süzül</button>
+          </div>
+          <div style="display:flex;gap:.5rem">
+            <button class="btn ghost" id="btnApplyCine" style="font-size:.62rem;padding:.5rem 1rem;backdrop-filter:blur(6px);background:rgba(10,8,5,.65)">Başvuru Yap</button>
+            <button class="btn ghost" id="btnGyroCine" style="font-size:.62rem;padding:.5rem 1rem;backdrop-filter:blur(6px);background:rgba(10,8,5,.65)">🎧 3D Ses + Jiroskop</button>
+          </div>
+          <p class="gate-hint" style="margin:0">Geçerli mühürler: <b style="color:var(--gold)">DURTU-VIP · SELIN-2026 · SPEAKEASY-77 · KARA-KUZGUN · GECE-00</b></p>
         </div>
-        <div style="display:flex;gap:.5rem">
-          <button class="btn ghost" id="btnApplyCine" style="font-size:.62rem;padding:.5rem 1rem">Başvuru Yap</button>
-          <button class="btn ghost" id="btnGyroCine" style="font-size:.62rem;padding:.5rem 1rem">🎧 3D Ses + Jiroskop</button>
-        </div>
-        <p class="gate-hint" style="margin:0">Geçerli mühürler: <b style="color:var(--gold)">DURTU-VIP · SELIN-2026 · SPEAKEASY-77 · KARA-KUZGUN · GECE-00</b></p>
+      </div>
+
+      <!-- Hotspot Navigation Bar (Quick travel) -->
+      <div id="gateHsBar" style="display:flex;gap:.5rem;justify-content:center;flex-wrap:wrap;pointer-events:auto">
+        <button class="btn ghost" onclick="if(window._tourInstance) window._tourInstance.onHotspotActivated(window.HOTSPOTS[0])" style="font-size:.62rem;padding:.45rem .85rem;backdrop-filter:blur(8px);background:rgba(10,8,5,.75);border-color:rgba(212,175,55,.45)">🚪 VIP GİRİŞ</button>
+        <button class="btn ghost" onclick="if(window._tourInstance) window._tourInstance.onHotspotActivated(window.HOTSPOTS[1])" style="font-size:.62rem;padding:.45rem .85rem;backdrop-filter:blur(8px);background:rgba(10,8,5,.75);border-color:rgba(212,175,55,.45)">🥂 ÖZEL BAR</button>
+        <button class="btn ghost" onclick="if(window._tourInstance) window._tourInstance.onHotspotActivated(window.HOTSPOTS[2])" style="font-size:.62rem;padding:.45rem .85rem;backdrop-filter:blur(8px);background:rgba(10,8,5,.75);border-color:rgba(212,175,55,.45)">🎰 RULET MASASI</button>
+        <button class="btn ghost" onclick="if(window._tourInstance) window._tourInstance.onHotspotActivated(window.HOTSPOTS[3])" style="font-size:.62rem;padding:.45rem .85rem;backdrop-filter:blur(8px);background:rgba(10,8,5,.75);border-color:rgba(212,175,55,.45)">🛋 VIP SALON</button>
       </div>
     </div>
 
