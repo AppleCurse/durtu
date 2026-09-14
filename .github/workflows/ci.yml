@@ -1,0 +1,56 @@
+name: CI
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Lint · Test · Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      # npm ci lockfile'ı zorunlu kılar. Eskiden "next": "latest" ve lockfile
+      # yokluğu yüzünden iki build asla aynı bağımlılık ağacını üretmiyordu.
+      - name: Bağımlılıkları kur
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      # Matematik invariantları (RTP, olasılık toplamları, Infinity guard'ları),
+      # ekonomi (NaN bahis) ve yarış koşulu regresyonları.
+      # Bu adım kasanın para kaybetmesini engelleyen kapıdır.
+      - name: Testler
+        run: npm test
+
+      - name: Production build
+        run: npm run build
+        env:
+          NEXT_TELEMETRY_DISABLED: '1'
+
+  audit:
+    name: Güvenlik denetimi
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - name: Bilinen zafiyetler
+        run: npm audit --audit-level=high
+        continue-on-error: true

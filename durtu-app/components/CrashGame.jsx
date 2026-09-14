@@ -3,12 +3,13 @@
 import { useEffect, useRef, useState } from 'react';
 import { say, fmt, buzz } from '../lib/toast';
 import { logRound } from '../lib/store';
+import { crashPoint, evaluateFrame } from '../lib/engines/crash';
+import { acquireAudio, releaseAudio, getAudio, tone as sharedTone, noiseBurst } from '../lib/audio';
+import { log } from '../lib/logger';
 
 const CRW = 660, CRH = 330;
 const NAMES = ['M*** K***','A*** Y***','S*** D***','E*** T***','B*** Ö***','H*** Ç***','Z*** A***','K*** Ş***','N*** V***','T*** G***'];
-let AC2 = null;
-function ac2(){ if(!AC2) AC2 = new (window.AudioContext || window.webkitAudioContext)(); if(AC2.state==='suspended') AC2.resume(); return AC2; }
-function crashPoint(){ const p = 0.97 / (1 - Math.random()); return Math.min(60, Math.max(1, Math.floor(p*100)/100)); }
+const ac2 = () => getAudio();
 
 export default function CrashGame({ spend, win, onClose }){
   const cvRef = useRef(null);
@@ -30,15 +31,9 @@ export default function CrashGame({ spend, win, onClose }){
 
   function tone(f, t0, dur, type, g){
     if(!sfx.current) return;
-    try{
-      const a = ac2(), o = a.createOscillator(), gn = a.createGain();
-      o.type = type || 'sine'; o.frequency.value = f;
-      const t = a.currentTime + t0;
-      gn.gain.setValueAtTime(g || .12, t);
-      gn.gain.exponentialRampToValueAtTime(.0001, t + dur);
-      o.connect(gn); gn.connect(a.destination); o.start(t); o.stop(t + dur + .03);
-    }catch(e){}
+    sharedTone(f, { delay: t0, dur, type: type || 'sine', gain: g || .12 });
   }
+
   function hum(on){
     try{
       if(on && sfx.current){
@@ -50,20 +45,15 @@ export default function CrashGame({ spend, win, onClose }){
       } else if(E.current.hum){
         const h = E.current.hum, a = ac2();
         h.g.gain.linearRampToValueAtTime(0, a.currentValueOf ? 0 : a.currentTime + .18);
-        setTimeout(() => { try{ h.o.stop(); }catch(e){} }, 350);
+        setTimeout(() => { try { h.o.stop(); } catch (err) { log.ignorable('crash.stopHum', err); } }, 350);
         E.current.hum = null;
       }
-    }catch(e){}
+    } catch (err) { log.ignorable('crash.audio', err); }
   }
   function boomSnd(){
     if(!sfx.current) return;
-    try{
-      const a = ac2(), len = a.sampleRate * .35, buf = a.createBuffer(1, len, a.sampleRate), d = buf.getChannelData(0);
-      for(let i = 0; i < len; i++) d[i] = (Math.random()*2 - 1) * Math.pow(1 - i/len, 2.2);
-      const src = a.createBufferSource(), g = a.createGain(); g.gain.value = .28;
-      src.buffer = buf; src.connect(g); g.connect(a.destination); src.start();
-      tone(66, 0, .42, 'sine', .24); buzz([70, 55, 130]);
-    }catch(e){}
+    noiseBurst({ dur: .35, gain: .28, decay: 2.2 });
+    tone(66, 0, .42, 'sine', .24); buzz([70, 55, 130]);
   }
 
   function newRoundPlayers(){
@@ -125,10 +115,22 @@ export default function CrashGame({ spend, win, onClose }){
   function loop(now){
     const e = E.current;
     if(!e.running) return;
+
+    const gap = now - (e.lastFrame || now);
+    e.lastFrame = now;
     const t = (now - e.t0) / 1000;
-    e.m = Math.exp(.14 * t);
-    const m = e.m;
-    if(e.hum) try{ e.hum.o.frequency.setTargetAtTime(50 + Math.min(420, (m-1)*38), ac2().currentTime, .06); }catch(_){}
+
+    const { action, m } = evaluateFrame({
+      elapsedSec: t,
+      frameGapMs: gap,
+      crashAt: e.crash,
+      autoCashAt: e.oto,
+      alreadyCashed: e.cashed,
+    });
+
+    e.m = m;
+
+    // Sofa oyuncuları (görsel) — çarpan clamp'lenmiş değerle ilerler
     let changed = false;
     playersRef.current.forEach(p => {
       if(!p.done && m >= p.out){
@@ -138,8 +140,18 @@ export default function CrashGame({ spend, win, onClose }){
     });
     if(changed) setPlayers(playersRef.current.map(p => ({ ...p })));
     if(cashRef.current) cashRef.current.textContent = '◈ ' + fmt(Math.round(e.bet * m));
-    if(e.oto > 1 && !e.cashed && m >= e.oto) doCash(true);
-    if(m >= e.crash){ endRound(); return; }
+    if (e.hum) { try { e.hum.o.frequency.setTargetAtTime(50 + Math.min(420, (m - 1) * 38), getAudio().currentTime, 0.06); } catch (err) { log.ignorable('crash.hum', err); } }
+
+    // PATLAMA her zaman önce değerlendirilir — arka plan sekmesinden dönen
+    // dev çarpan sıçramasıyla geriye dönük ödeme alınamaz.
+    if(action === 'crash'){ endRound(); return; }
+    if(action === 'suspend'){
+      say('⏸ Sekme askıya alındı — bu tur güvenlik gereği kapatıldı.');
+      endRound({ suspended: true });
+      return;
+    }
+    if(action === 'autocash') doCash(true);
+
     e.pts.push([t, m]); draw(t, false);
     e.raf = requestAnimationFrame(loop);
   }
@@ -156,6 +168,7 @@ export default function CrashGame({ spend, win, onClose }){
     newRoundPlayers(); hum(true);
     if(cashRef.current) cashRef.current.textContent = '';
     e.t0 = performance.now();
+    e.lastFrame = e.t0;
     cancelAnimationFrame(e.raf);
     e.raf = requestAnimationFrame(loop);
     tone(520, 0, .1, 'sawtooth', .05);
@@ -168,7 +181,8 @@ export default function CrashGame({ spend, win, onClose }){
       return;
     }
     e.cashed = true;
-    const m = e.m, w = Math.round(e.bet * m);
+    const m = Math.min(e.m, e.crash);        // ödeme asla patlama noktasını aşamaz
+    const w = Math.round(e.bet * m);
     win(w);
     logRound('Aviator', e.bet, w, Math.round(m * 100) / 100);
     tone(523, 0, .15, 'triangle', .12); tone(784, .1, .25, 'triangle', .12); buzz([30, 45, 75]);
@@ -177,8 +191,9 @@ export default function CrashGame({ spend, win, onClose }){
     setMyMsg((auto ? 'Oto çıkış — ' : '') + m.toFixed(2) + '× noktasında indin: +' + fmt(w) + ' ◈. Temiz karar.');
     if(m >= 5) say('✈️ <b>Usta işi çıkış:</b> ' + m.toFixed(2) + '×');
   }
-  function endRound(){
+  function endRound({ suspended = false } = {}){
     const e = E.current;
+    if(!e.running) return;
     e.running = false;
     hum(false); boomSnd();
     playersRef.current.forEach(p => { if(!p.done){ p.done = true; p.win = 0; } });
@@ -189,7 +204,9 @@ export default function CrashGame({ spend, win, onClose }){
     if(!e.cashed) logRound('Aviator', e.bet, 0, Math.round(e.crash * 100) / 100);
     setMyMsg(e.cashed
       ? 'Uçak ' + e.crash.toFixed(2) + '× noktasında düştü — sen çoktan inmiştin. Dürtü bunu not etti.'
-      : 'Uçak ' + e.crash.toFixed(2) + '× noktasında düştü. Bahis sofaya kaldı — nefes al, yeni tur geliyor.');
+      : suspended
+        ? 'Sekme askıya alındığı için tur kapatıldı — bahis sofaya kaldı.'
+        : 'Uçak ' + e.crash.toFixed(2) + '× noktasında düştü. Bahis sofaya kaldı — nefes al, yeni tur geliyor.');
     setRunning(false); setCanCash(false);
     setTimeout(() => setBoom(''), 1700);
   }
@@ -200,13 +217,19 @@ export default function CrashGame({ spend, win, onClose }){
     cx.current = cv.getContext('2d'); cx.current.setTransform(dpr, 0, 0, dpr, 0, 0);
     E.current.pts = [[0, 1]]; E.current.m = 1;
     draw(0, false);
+    acquireAudio();
     const keyH = e => { if(e.code === 'Space'){ e.preventDefault(); start(); } };
+    // Sekme gizlenirse turu anında kapat — geri dönüşte sıçrama ödemesi olmasın.
+    const visH = () => { if(document.hidden && E.current.running) endRound({ suspended: true }); };
     window.addEventListener('keydown', keyH);
+    document.addEventListener('visibilitychange', visH);
     return () => {
       cancelAnimationFrame(E.current.raf);
       E.current.running = false;
       hum(false);
       window.removeEventListener('keydown', keyH);
+      document.removeEventListener('visibilitychange', visH);
+      releaseAudio();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -251,7 +274,7 @@ export default function CrashGame({ spend, win, onClose }){
         </div>
         <div className="slot-hud">
           <div className="hud-box"><small>BAHİS</small>
-            <select className="hud-sel" defaultValue="25" onChange={e => betRef.current = +e.target.value}>
+            <select className="hud-sel" defaultValue="25" onChange={e => betRef.current = Number(e.target.value)}>
               {[10, 25, 50, 100].map(v => <option key={v} value={v}>{v}</option>)}
             </select>
           </div>

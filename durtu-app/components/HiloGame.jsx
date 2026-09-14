@@ -1,39 +1,9 @@
 'use client';
-import { useState, useRef } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { fmt, say } from '../lib/toast';
 import { logRound } from '../lib/store';
-
-const SUITS = ['♠', '♥', '♦', '♣'];
-const RANKS = [
-  { r: 'A', v: 1 },
-  { r: '2', v: 2 },
-  { r: '3', v: 3 },
-  { r: '4', v: 4 },
-  { r: '5', v: 5 },
-  { r: '6', v: 6 },
-  { r: '7', v: 7 },
-  { r: '8', v: 8 },
-  { r: '9', v: 9 },
-  { r: '10', v: 10 },
-  { r: 'J', v: 11 },
-  { r: 'Q', v: 12 },
-  { r: 'K', v: 13 },
-];
-
-function randomCard() {
-  const rank = RANKS[Math.floor(Math.random() * RANKS.length)];
-  const suit = SUITS[Math.floor(Math.random() * SUITS.length)];
-  return { ...rank, suit };
-}
-
-let AC = null;
-function getAC() {
-  if (!AC && typeof window !== 'undefined') {
-    AC = new (window.AudioContext || window.webkitAudioContext)();
-  }
-  if (AC && AC.state === 'suspended') AC.resume();
-  return AC;
-}
+import { randomCard, hiloOdds, evaluateGuess } from '../lib/engines/hilo';
+import { acquireAudio, releaseAudio, tone } from '../lib/audio';
 
 export default function HiloGame({ chips, spend, win, onClose }) {
   const [bet, setBet] = useState(25);
@@ -47,34 +17,16 @@ export default function HiloGame({ chips, spend, win, onClose }) {
 
   function playTone(freq, dur = 0.08, type = 'sine', gain = 0.1) {
     if (!sfxRef.current) return;
-    try {
-      const a = getAC();
-      if (!a) return;
-      const osc = a.createOscillator();
-      const g = a.createGain();
-      osc.type = type;
-      osc.frequency.setValueAtTime(freq, a.currentTime);
-      g.gain.setValueAtTime(gain, a.currentTime);
-      g.gain.exponentialRampToValueAtTime(0.0001, a.currentTime + dur);
-      osc.connect(g);
-      g.connect(a.destination);
-      osc.start();
-      osc.stop(a.currentTime + dur + 0.02);
-    } catch (e) {}
+    tone(freq, { dur, type, gain });
   }
 
-  // Odds calculation
-  // Card value: 1 (A) to 13 (K)
-  const val = activeCard.v;
-  // Count of cards >= val: (13 - val + 1)
-  const higherOrEqualCount = 13 - val + 1;
-  const higherProb = Math.max(0.05, higherOrEqualCount / 13);
-  const higherMult = Math.max(1.05, +(0.98 / higherProb).toFixed(2));
+  useEffect(() => {
+    acquireAudio();
+    return () => releaseAudio();
+  }, []);
 
-  // Count of cards <= val: val
-  const lowerOrEqualCount = val;
-  const lowerProb = Math.max(0.05, lowerOrEqualCount / 13);
-  const lowerMult = Math.max(1.05, +(0.98 / lowerProb).toFixed(2));
+  // Adil oranlar — eşitlik KAYBEDER (house edge kaynağı).
+  const { pHigher, pLower, higherMult, lowerMult } = hiloOdds(activeCard.v);
 
   function startRound() {
     if (!spend(bet)) {
@@ -99,19 +51,22 @@ export default function HiloGame({ chips, spend, win, onClose }) {
     playTone(500, 0.05, 'sine', 0.08);
   }
 
-  function guess(direction) { // 'hi' or 'lo'
+  function guess(direction) {
     if (!playing) return;
 
-    const nextCard = randomCard();
-    const isCorrect =
-      direction === 'hi'
-        ? nextCard.v >= activeCard.v
-        : nextCard.v <= activeCard.v;
-
     const stepMult = direction === 'hi' ? higherMult : lowerMult;
+    if (stepMult == null) {
+      // A'da 'düşük', K'da 'yüksek' imkânsızdır — çarpan uydurulmaz, bahis alınmaz.
+      say('Bu kartta o yön imkânsız — diğer yönü seç.');
+      return;
+    }
+
+    const nextCard = randomCard();
+    const isCorrect = evaluateGuess(direction, activeCard, nextCard);
+    const isTie = nextCard.v === activeCard.v;
 
     if (isCorrect) {
-      const newMult = +(multiplier * stepMult).toFixed(2);
+      const newMult = Number((multiplier * stepMult).toFixed(2));
       const newStreak = streak + 1;
       setMultiplier(newMult);
       setStreak(newStreak);
@@ -123,13 +78,14 @@ export default function HiloGame({ chips, spend, win, onClose }) {
         cls: 'win',
       });
     } else {
-      // Busted
       setPlaying(false);
       setActiveCard(nextCard);
       setCardHistory(h => [nextCard, ...h]);
       playTone(160, 0.2, 'sawtooth', 0.15);
       setMsg({
-        t: `Bilemedin! ${nextCard.r}${nextCard.suit} geldi — bahis elden çıktı.`,
+        t: isTie
+          ? `Eşitlik! ${nextCard.r}${nextCard.suit} geldi — eşitlik kasaya yazılır, bahis elden çıktı.`
+          : `Bilemedin! ${nextCard.r}${nextCard.suit} geldi — bahis elden çıktı.`,
         cls: 'lose',
       });
       logRound('Hi-Lo', bet, 0);
@@ -260,6 +216,7 @@ export default function HiloGame({ chips, spend, win, onClose }) {
             <button
               className="btn solid"
               onClick={() => guess('hi')}
+              disabled={higherMult == null}
               style={{
                 padding: '1rem .5rem',
                 fontSize: '.9rem',
@@ -272,13 +229,16 @@ export default function HiloGame({ chips, spend, win, onClose }) {
                 border: '1px solid #4caf50',
               }}
             >
-              <span style={{ fontSize: '1.2rem', fontWeight: 800 }}>▲ YÜKSEK VEYA EŞİT</span>
-              <span style={{ fontSize: '.72rem', opacity: .9 }}>{higherMult}× · %{Math.round(higherProb * 100)} Şans</span>
+              <span style={{ fontSize: '1.2rem', fontWeight: 800 }}>▲ YÜKSEK</span>
+              <span style={{ fontSize: '.72rem', opacity: .9 }}>
+                {higherMult == null ? 'imkânsız' : `${higherMult}× · %${Math.round(pHigher * 100)} Şans`}
+              </span>
             </button>
 
             <button
               className="btn solid"
               onClick={() => guess('lo')}
+              disabled={lowerMult == null}
               style={{
                 padding: '1rem .5rem',
                 fontSize: '.9rem',
@@ -291,8 +251,10 @@ export default function HiloGame({ chips, spend, win, onClose }) {
                 border: '1px solid #ef5350',
               }}
             >
-              <span style={{ fontSize: '1.2rem', fontWeight: 800 }}>▼ DÜŞÜK VEYA EŞİT</span>
-              <span style={{ fontSize: '.72rem', opacity: .9 }}>{lowerMult}× · %{Math.round(lowerProb * 100)} Şans</span>
+              <span style={{ fontSize: '1.2rem', fontWeight: 800 }}>▼ DÜŞÜK</span>
+              <span style={{ fontSize: '.72rem', opacity: .9 }}>
+                {lowerMult == null ? 'imkânsız' : `${lowerMult}× · %${Math.round(pLower * 100)} Şans`}
+              </span>
             </button>
           </div>
         ) : null}
@@ -306,7 +268,7 @@ export default function HiloGame({ chips, spend, win, onClose }) {
                   type="number"
                   min={1}
                   value={bet}
-                  onChange={e => setBet(Math.max(1, +e.target.value))}
+                  onChange={e => setBet(Math.max(1, Number(e.target.value)))}
                   className="inp"
                   style={{ padding: '.5rem', fontSize: '.84rem', width: '100%' }}
                 />

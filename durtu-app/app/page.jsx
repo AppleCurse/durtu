@@ -21,13 +21,27 @@ import Chat from '../components/Chat';
 import AmbienceBtn from '../components/AmbienceBtn';
 import Toasts from '../components/Toasts';
 import { GAMES } from '../lib/games';
-import { fmt, say } from '../lib/toast';
+import { fmt, say, html } from '../lib/toast';
+import { toChips, isValidBet, isValidPayout } from '../lib/money';
+import { log } from '../lib/logger';
 import {
   checkDailyLogin,
   getProfile,
   saveChips,
   getCheckInStatus,
 } from '../lib/store';
+
+const GAME_MODALS = {
+  aviator: 'crash',
+  bj: 'bj',
+  rl: 'rl',
+  mines: 'mines',
+  sport: 'sport',
+  plinko: 'plinko',
+  limbo: 'limbo',
+  hilo: 'hilo',
+  wheel: 'wheel',
+};
 
 export default function Page() {
   const [entered, setEntered] = useState(false);
@@ -39,27 +53,38 @@ export default function Page() {
   const [checkInInfo, setCheckInInfo] = useState(null);
   const chipsRef = useRef(1000);
 
+  // Bakiye her yazımda normalize edilir: NaN/Infinity/negatif/ondalıklı asla girmez.
   const setC = v => {
-    chipsRef.current = v;
-    setChips(v);
-    saveChips(v);
+    const safe = toChips(v, chipsRef.current);
+    chipsRef.current = safe;
+    setChips(safe);
+    saveChips(safe);
   };
+
+  /** Bahsi düşer. Geçersiz tutar veya yetersiz bakiyede false döner — çağıran MUTLAKA kontrol etmeli. */
   const spend = b => {
-    if (chipsRef.current < b) return false;
+    if (!isValidBet(b, chipsRef.current)) return false;
     setC(chipsRef.current - b);
     return true;
   };
-  const win = n => setC(chipsRef.current + n);
+
+  /** Kazancı ekler. Geçersiz ödeme sisteme girmeden reddedilir ve raporlanır. */
+  const win = n => {
+    if (!isValidPayout(n)) {
+      log.critical('page.win', new Error('INVALID_PAYOUT'), { amount: String(n) });
+      return;
+    }
+    setC(chipsRef.current + n);
+  };
 
   useEffect(() => {
     if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});
     // Profil ve bakiye yükle
     const p = getProfile();
     if (p.name && p.name !== 'Misafir') setName(p.name);
-    if (typeof p.chips === 'number') {
-      chipsRef.current = p.chips;
-      setChips(p.chips);
-    }
+    const startChips = toChips(p.chips, 1000);
+    chipsRef.current = startChips;
+    setChips(startChips);
     setCheckInInfo(getCheckInStatus());
   }, []);
 
@@ -84,13 +109,13 @@ export default function Page() {
       setOpen('checkin');
       setTimeout(() => {
         say(
-          `☀️ <b>Günlük Giriş Bonusu:</b> +${fmt(res.bonus)} dürTL hesabına aktarıldı (${res.streak}. gün serisi). Dürtü düzenli misafirini sever.`
+          html`☀️ <b>Günlük Giriş Bonusu:</b> +${fmt(res.bonus)} dürTL hesabına aktarıldı (${res.streak}. gün serisi). Dürtü düzenli misafirini sever.`
         );
       }, 700);
     } else {
       setTimeout(() => {
         say(
-          `<b>Hoş geldin, ${n}.</b> Günlük serin: ${res.streak} gün. Bugün senin için 3 seçki hazırlandı.`
+          html`<b>Hoş geldin, ${n}.</b> Günlük serin: ${res.streak} gün. Bugün senin için 3 seçki hazırlandı.`
         );
       }, 900);
     }
@@ -102,22 +127,21 @@ export default function Page() {
     setCheckInResult(res);
     setCheckInInfo(getCheckInStatus());
     if (res.isNewCheckIn) {
-      say(`☀️ <b>Günlük Bonus Alındı:</b> +${fmt(res.bonus)} dürTL kasana eklendi!`);
+      say(html`☀️ <b>Günlük Bonus Alındı:</b> +${fmt(res.bonus)} dürTL kasana eklendi!`);
     }
     setOpen('checkin');
   }
 
+  // Oyun kimliği → modal anahtarı. Yeni oyun eklemek if/else zincirini büyütmez (OCP).
   function handlePlay(id) {
-    if (id === 'aviator') setOpen('crash');
-    else if (id === 'bj') setOpen('bj');
-    else if (id === 'rl') setOpen('rl');
-    else if (id === 'mines') setOpen('mines');
-    else if (id === 'sport') setOpen('sport');
-    else if (id === 'plinko') setOpen('plinko');
-    else if (id === 'limbo') setOpen('limbo');
-    else if (id === 'hilo') setOpen('hilo');
-    else if (id === 'wheel') setOpen('wheel');
-    else setSlotId(id);
+    const modalKey = GAME_MODALS[id];
+    if (modalKey) {
+      setSlotId(null);        // iki oyun modalı aynı anda açılamaz
+      setOpen(modalKey);
+    } else {
+      setOpen(null);
+      setSlotId(id);
+    }
   }
 
   const game = slotId ? GAMES.find(g => g.id === slotId) : null;

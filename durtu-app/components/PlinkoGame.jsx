@@ -2,34 +2,12 @@
 import { useEffect, useRef, useState } from 'react';
 import { fmt, say } from '../lib/toast';
 import { logRound } from '../lib/store';
+import { getMultipliers } from '../lib/engines/plinko';
+import { acquireAudio, releaseAudio, tone } from '../lib/audio';
 
-const MULTIPLIERS = {
-  8: {
-    low: [5.6, 2.1, 1.1, 1, 0.5, 1, 1.1, 2.1, 5.6],
-    med: [13, 3, 1.3, 0.7, 0.4, 0.7, 1.3, 3, 13],
-    high: [29, 4, 1.5, 0.3, 0.2, 0.3, 1.5, 4, 29],
-  },
-  10: {
-    low: [8.9, 3, 1.4, 1.1, 1, 0.5, 1, 1.1, 1.4, 3, 8.9],
-    med: [22, 5, 2, 1.4, 0.6, 0.4, 0.6, 1.4, 2, 5, 22],
-    high: [76, 10, 3, 0.9, 0.3, 0.2, 0.3, 0.9, 3, 10, 76],
-  },
-  12: {
-    low: [10, 3, 1.6, 1.4, 1.1, 1, 0.5, 1, 1.1, 1.4, 1.6, 3, 10],
-    med: [33, 11, 4, 2, 1.1, 0.6, 0.3, 0.6, 1.1, 2, 4, 11, 33],
-    high: [170, 24, 8.1, 2, 0.7, 0.2, 0.2, 0.2, 0.7, 2, 8.1, 24, 170],
-  },
-  14: {
-    low: [12, 4.2, 2, 1.5, 1.3, 1.1, 1, 0.5, 1, 1.1, 1.3, 1.5, 2, 4.2, 12],
-    med: [58, 15, 7, 4, 1.9, 1, 0.5, 0.2, 0.5, 1, 1.9, 4, 7, 15, 58],
-    high: [420, 56, 18, 5, 1.9, 0.3, 0.2, 0.2, 0.2, 0.3, 1.9, 5, 18, 56, 420],
-  },
-  16: {
-    low: [16, 9, 2, 1.4, 1.2, 1.1, 1, 0.5, 1, 1.1, 1.2, 1.4, 2, 9, 16],
-    med: [110, 41, 10, 5, 3, 1.5, 1, 0.5, 0.3, 0.5, 1, 1.5, 3, 5, 10, 41, 110],
-    high: [1000, 130, 26, 9, 4, 2, 0.2, 0.2, 0.2, 2, 4, 9, 26, 130, 1000],
-  },
-};
+const MAX_BALLS = 30;
+
+
 
 function getBinColor(val) {
   if (val >= 100) return 'linear-gradient(180deg, #ff1a40, #990017)';
@@ -38,15 +16,6 @@ function getBinColor(val) {
   if (val >= 2) return 'linear-gradient(180deg, #ffd54f, #c69500)';
   if (val >= 1) return 'linear-gradient(180deg, #4caf50, #256d29)';
   return 'linear-gradient(180deg, #37474f, #1f292e)';
-}
-
-let AC = null;
-function getAC() {
-  if (!AC && typeof window !== 'undefined') {
-    AC = new (window.AudioContext || window.webkitAudioContext)();
-  }
-  if (AC && AC.state === 'suspended') AC.resume();
-  return AC;
 }
 
 export default function PlinkoGame({ chips, spend, win, onClose }) {
@@ -69,31 +38,19 @@ export default function PlinkoGame({ chips, spend, win, onClose }) {
   riskRef.current = risk;
   betRef.current = bet;
 
-  const currentMults = MULTIPLIERS[rows][risk];
+  const currentMults = getMultipliers(rows, risk);
 
   function playTone(f, dur = 0.05, type = 'sine', gain = 0.08) {
     if (!sfxRef.current) return;
-    try {
-      const a = getAC();
-      if (!a) return;
-      const osc = a.createOscillator();
-      const g = a.createGain();
-      osc.type = type;
-      osc.frequency.setValueAtTime(f, a.currentTime);
-      g.gain.setValueAtTime(gain, a.currentTime);
-      g.gain.exponentialRampToValueAtTime(0.0001, a.currentTime + dur);
-      osc.connect(g);
-      g.connect(a.destination);
-      osc.start();
-      osc.stop(a.currentTime + dur + 0.02);
-    } catch (e) {}
+    tone(f, { dur, type, gain });
   }
 
   function dropBall() {
+    if (ballsRef.current.length >= MAX_BALLS) return;   // sınırsız nesne birikimini engelle
     if (!spend(betRef.current)) {
       say('Yetersiz bakiye — fişi küçült.');
       setAutoDrop(false);
-      return;
+      return false;
     }
 
     playTone(700, 0.04, 'triangle', 0.1);
@@ -128,7 +85,7 @@ export default function PlinkoGame({ chips, spend, win, onClose }) {
     let timer = null;
     if (autoDrop) {
       timer = setInterval(() => {
-        dropBall();
+        if (dropBall() === false) setAutoDrop(false);   // bakiye bitince otomatik dur
       }, 350);
     }
     return () => clearInterval(timer);
@@ -190,33 +147,43 @@ export default function PlinkoGame({ chips, spend, win, onClose }) {
         b.x += b.vx;
         b.y += b.vy;
 
-        // Check peg collisions
-        for (let r = 0; r < b.rows; r++) {
-          const pegsInRow = r + 3;
-          const rowY = startY + r * rowSpacing;
-          const rowWidth = (pegsInRow - 1) * rowSpacing * 0.95;
-          const startX = (w - rowWidth) / 2;
+        // Çarpışma — yalnızca topun yakınındaki satır/çiviler taranır.
+        // Eskiden her top için tüm piramit (171 çivi) her frame taranıyordu.
+        const ballRowSpacing = (endY - startY) / b.rows;
+        const pegGap = ballRowSpacing * 0.95;
+        const hitR = b.radius + 3.2;
+        const hitR2 = hitR * hitR;
 
-          for (let p = 0; p < pegsInRow; p++) {
-            const pegX = startX + p * (rowSpacing * 0.95);
+        const nearRow = Math.floor((b.y - startY) / ballRowSpacing);
+        const rFrom = Math.max(0, nearRow - 1);
+        const rTo = Math.min(b.rows - 1, nearRow + 1);
+
+        for (let r = rFrom; r <= rTo; r++) {
+          const rowY = startY + r * ballRowSpacing;
+          if (Math.abs(b.y - rowY) > hitR) continue;
+
+          const pegsInRow = r + 3;
+          const rowStartX = (w - (pegsInRow - 1) * pegGap) / 2;
+          const pNear = Math.round((b.x - rowStartX) / pegGap);
+
+          for (let p = Math.max(0, pNear - 1); p <= Math.min(pegsInRow - 1, pNear + 1); p++) {
+            const pegX = rowStartX + p * pegGap;
             const dx = b.x - pegX;
             const dy = b.y - rowY;
-            const dist = Math.sqrt(dx * dx + dy * dy);
+            const d2 = dx * dx + dy * dy;
 
-            if (dist < b.radius + 3.2) {
-              // Collision occurred!
+            if (d2 < hitR2) {
+              const dist = Math.sqrt(d2) || 0.0001;
               const angle = Math.atan2(dy, dx);
-              const push = (b.radius + 3.2) - dist;
+              const push = hitR - dist;
               b.x += Math.cos(angle) * push;
               b.y += Math.sin(angle) * push;
 
-              // Bias toward falling downward left or right
               const speed = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
               const dir = Math.random() < 0.5 ? -1 : 1;
-              b.vx = (Math.cos(angle) * speed * bounceFriction) + dir * 0.45;
+              b.vx = Math.cos(angle) * speed * bounceFriction + dir * 0.45;
               b.vy = Math.max(1.2, Math.sin(angle) * speed * bounceFriction);
 
-              // Sound on peg hit
               playTone(1200 + Math.random() * 400, 0.02, 'sine', 0.03);
             }
           }
@@ -237,7 +204,7 @@ export default function PlinkoGame({ chips, spend, win, onClose }) {
         // Check bottom landing
         if (b.y >= endY + 12) {
           // Determine which bucket it fell into
-          const mults = MULTIPLIERS[b.rows][b.risk];
+          const mults = getMultipliers(b.rows, b.risk);
           const totalBins = mults.length;
           const bucketWidth = (w - 24) / totalBins;
           let binIndex = Math.floor((b.x - 12) / bucketWidth);
@@ -275,11 +242,13 @@ export default function PlinkoGame({ chips, spend, win, onClose }) {
       animRef.current = requestAnimationFrame(render);
     }
 
+    acquireAudio();
     animRef.current = requestAnimationFrame(render);
 
     return () => {
       running = false;
       cancelAnimationFrame(animRef.current);
+      releaseAudio();
     };
   }, []);
 
@@ -369,7 +338,7 @@ export default function PlinkoGame({ chips, spend, win, onClose }) {
                 type="number"
                 min={1}
                 value={bet}
-                onChange={e => setBet(Math.max(1, +e.target.value))}
+                onChange={e => setBet(Math.max(1, Number(e.target.value)))}
                 className="inp"
                 style={{ padding: '.4rem .6rem', fontSize: '.82rem', width: '100%' }}
               />

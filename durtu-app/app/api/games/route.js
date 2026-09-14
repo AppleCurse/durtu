@@ -1,10 +1,15 @@
 import { NextResponse } from 'next/server';
 import { GAMES } from '../../../lib/games';
 
-export const dynamic = 'force-dynamic';
+// Statik seçki — CDN/ISR ile önbelleklenebilir.
+// Eskiden 'force-dynamic' + her istekte Math.random() sıralaması vardı:
+// hem cache tamamen devre dışı kalıyordu hem de sort(() => Math.random() - 0.5)
+// istatistiksel olarak hatalı (düzgün olmayan) bir karıştırmaydı.
+export const revalidate = 3600;
 
-// GET /api/games — küratör seçkisi (sıralama her çağrıda tazelenir)
 export async function GET() {
-  const data = GAMES.map(g => ({ ...g })).sort(() => Math.random() - 0.5);
-  return NextResponse.json({ ok: true, data, ts: Date.now() });
+  return NextResponse.json(
+    { ok: true, data: GAMES, version: 1 },
+    { headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400' } }
+  );
 }

@@ -2,6 +2,8 @@
 import { useRef, useState, useEffect } from 'react';
 import { fmt, say } from '../lib/toast';
 import { logRound } from '../lib/store';
+import { useRoundLock } from '../lib/useRoundLock';
+import { acquireAudio, releaseAudio, tone, fanfare } from '../lib/audio';
 
 const WHEEL_NUMS = [
   0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10, 5,
@@ -15,85 +17,36 @@ const ROW_1 = [3, 6, 9, 12, 15, 18, 21, 24, 27, 30, 33, 36];
 const ROW_2 = [2, 5, 8, 11, 14, 17, 20, 23, 26, 29, 32, 35];
 const ROW_3 = [1, 4, 7, 10, 13, 16, 19, 22, 25, 28, 31, 34];
 
-let AC = null;
-function getAC() {
-  if (!AC && typeof window !== 'undefined') {
-    AC = new (window.AudioContext || window.webkitAudioContext)();
-  }
-  if (AC && AC.state === 'suspended') AC.resume();
-  return AC;
-}
-
 export default function RouletteGame({ chips, spend, win, onClose }) {
   const [selectedChip, setSelectedChip] = useState(25);
   const [bets, setBets] = useState({}); // { [betKey]: amount }
   const [lastBets, setLastBets] = useState(null);
-  const [spinning, setSpinning] = useState(false);
+  const { busy: spinning, acquire, release } = useRoundLock();
   const [winningNum, setWinningNum] = useState(null);
-  const [history, setHistory] = useState([17, 24, 0, 32, 7]);
+  const [history, setHistory] = useState([]);   // sahte tur geçmişi gösterilmez
   const [msg, setMsg] = useState({ t: 'Fişini seç, masaya yerleştir ve çarkı çevir.', cls: '' });
   const [ballAngle, setBallAngle] = useState(0);
   const [wheelAngle, setWheelAngle] = useState(0);
   const animRef = useRef(0);
   const sfxRef = useRef(true);
+  const roundBetsRef = useRef(null);
+  const roundTotalRef = useRef(0);
 
   const totalBet = Object.values(bets).reduce((a, b) => a + b, 0);
 
   function playBallWhirr() {
     if (!sfxRef.current) return;
-    try {
-      const a = getAC();
-      if (!a) return;
-      const osc = a.createOscillator();
-      const g = a.createGain();
-      osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(450, a.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(180, a.currentTime + 3.8);
-      g.gain.setValueAtTime(0.04, a.currentTime);
-      g.gain.exponentialRampToValueAtTime(0.0001, a.currentTime + 3.8);
-      osc.connect(g);
-      g.connect(a.destination);
-      osc.start();
-      osc.stop(a.currentTime + 3.8);
-    } catch (e) {}
+    tone(450, { dur: 3.8, type: 'sawtooth', gain: 0.04 });
   }
 
   function playChipSound() {
     if (!sfxRef.current) return;
-    try {
-      const a = getAC();
-      if (!a) return;
-      const osc = a.createOscillator();
-      const g = a.createGain();
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(1400, a.currentTime);
-      g.gain.setValueAtTime(0.08, a.currentTime);
-      g.gain.exponentialRampToValueAtTime(0.0001, a.currentTime + 0.04);
-      osc.connect(g);
-      g.connect(a.destination);
-      osc.start();
-      osc.stop(a.currentTime + 0.04);
-    } catch (e) {}
+    tone(1400, { dur: 0.04, type: 'triangle', gain: 0.08 });
   }
 
   function playWinSound() {
     if (!sfxRef.current) return;
-    try {
-      const a = getAC();
-      if (!a) return;
-      [523, 659, 784, 1046].forEach((f, i) => {
-        const osc = a.createOscillator();
-        const g = a.createGain();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(f, a.currentTime + i * 0.09);
-        g.gain.setValueAtTime(0.12, a.currentTime + i * 0.09);
-        g.gain.exponentialRampToValueAtTime(0.0001, a.currentTime + i * 0.09 + 0.25);
-        osc.connect(g);
-        g.connect(a.destination);
-        osc.start(a.currentTime + i * 0.09);
-        osc.stop(a.currentTime + i * 0.09 + 0.28);
-      });
-    } catch (e) {}
+    fanfare([523, 659, 784, 1046], { gain: 0.12, step: 0.09 });
   }
 
   function placeBet(key) {
@@ -125,18 +78,21 @@ export default function RouletteGame({ chips, spend, win, onClose }) {
   }
 
   function spin() {
-    if (spinning) return;
     if (totalBet === 0) {
       say('Önce masaya en az bir fiş koy.');
       return;
     }
+    if (!acquire()) return;                      // senkron kilit
     if (!spend(totalBet)) {
+      release();
       say('Yetersiz bakiye — fişlerini düzenle.');
       return;
     }
 
+    // Tur sözleşmesi: settle bu dondurulmuş bahislere göre yapılır.
+    roundBetsRef.current = { ...bets };
+    roundTotalRef.current = totalBet;
     setLastBets({ ...bets });
-    setSpinning(true);
     setWinningNum(null);
     setMsg({ t: 'Krupiye: “Rien ne va plus — bahisler kapandı.”', cls: '' });
     playBallWhirr();
@@ -174,7 +130,9 @@ export default function RouletteGame({ chips, spend, win, onClose }) {
   }
 
   function settleResult(num) {
-    setSpinning(false);
+    release();
+    const roundBets = roundBetsRef.current || {};
+    const roundTotal = roundTotalRef.current || 0;
     setWinningNum(num);
     setHistory(h => [num, ...h].slice(0, 10));
 
@@ -184,7 +142,7 @@ export default function RouletteGame({ chips, spend, win, onClose }) {
     // Calculate payouts
     let totalWin = 0;
 
-    for (const [key, amount] of Object.entries(bets)) {
+    for (const [key, amount] of Object.entries(roundBets)) {
       let multiplier = 0;
       if (key.startsWith('num_')) {
         const betNum = parseInt(key.replace('num_', ''), 10);
@@ -221,23 +179,27 @@ export default function RouletteGame({ chips, spend, win, onClose }) {
     if (totalWin > 0) {
       win(totalWin);
       playWinSound();
-      const profit = totalWin - totalBet;
+      const profit = totalWin - roundTotal;
       setMsg({
         t: `🎯 ${num} ${colName} kazandırdı! ◈ +${fmt(profit)} dürTL kazanç kasana eklendi.`,
         cls: 'win',
       });
-      logRound('Rulet Masası', totalBet, totalWin, (totalWin / totalBet).toFixed(2));
+      logRound('Rulet Masası', roundTotal, totalWin, roundTotal > 0 ? Number((totalWin / roundTotal).toFixed(2)) : null);
     } else {
       setMsg({
         t: `${num} ${colName} — bu tur masa kazandı.`,
         cls: 'lose',
       });
-      logRound('Rulet Masası', totalBet, 0);
+      logRound('Rulet Masası', roundTotal, 0);
     }
   }
 
   useEffect(() => {
-    return () => cancelAnimationFrame(animRef.current);
+    acquireAudio();
+    return () => {
+      cancelAnimationFrame(animRef.current);
+      releaseAudio();
+    };
   }, []);
 
   // Helper to render bet chip on table
@@ -488,7 +450,7 @@ export default function RouletteGame({ chips, spend, win, onClose }) {
 
               {/* 2 to 1 Column Bets */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: 2, width: 44 }}>
-                {['col1', 'col2', 'col3'].map((cKey, idx) => (
+                {['col1', 'col2', 'col3'].map(cKey => (
                   <button
                     key={cKey}
                     onClick={() => placeBet(cKey)}

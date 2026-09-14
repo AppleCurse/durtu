@@ -1,31 +1,11 @@
 'use client';
-import { useState, useRef } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { fmt, say } from '../lib/toast';
 import { logRound } from '../lib/store';
+import { calcMultiplier, placeMines, GRID_SIZE } from '../lib/engines/mines';
+import { acquireAudio, releaseAudio, tone, fanfare } from '../lib/audio';
 
-const FICHES = [10, 25, 50, 100, 250, 500];
 const QUICK_MINES = [1, 2, 3, 5, 10, 15, 20, 24];
-
-function calcMultiplier(mines, gems) {
-  if (gems <= 0) return 1.0;
-  let num = 1;
-  let den = 1;
-  for (let i = 0; i < gems; i++) {
-    num *= (25 - i);
-    den *= (25 - mines - i);
-  }
-  // Standard 97% RTP curve
-  return Math.max(1.0, Math.round((0.97 * (num / den)) * 100) / 100);
-}
-
-let AC = null;
-function getAC() {
-  if (!AC && typeof window !== 'undefined') {
-    AC = new (window.AudioContext || window.webkitAudioContext)();
-  }
-  if (AC && AC.state === 'suspended') AC.resume();
-  return AC;
-}
 
 export default function MinesGame({ chips, spend, win, onClose }) {
   const [bet, setBet] = useState(25);
@@ -37,6 +17,10 @@ export default function MinesGame({ chips, spend, win, onClose }) {
   const [shaking, setShaking] = useState(false);
   const [msg, setMsg] = useState({ t: 'Mayın sayısını ve bahsini seç, tarlayı başlat.', cls: '' });
   const sfxRef = useRef(true);
+  const betRef = useRef(25);
+  const minesRef = useRef(3);
+  const bustedRef = useRef(false);
+  const cashedRef = useRef(false);
 
   const playing = !!grid && !busted && !cashed;
   const gemCount = revealed.length;
@@ -46,94 +30,50 @@ export default function MinesGame({ chips, spend, win, onClose }) {
 
   function playGemSound(gemIndex) {
     if (!sfxRef.current) return;
-    try {
-      const a = getAC();
-      if (!a) return;
-      // Ascending pentatonic scale based on gem count
-      const scale = [523.25, 587.33, 659.25, 783.99, 880.00, 1046.50, 1174.66, 1318.51, 1567.98, 1760.00];
-      const freq = scale[gemIndex % scale.length];
-
-      const osc = a.createOscillator();
-      const g = a.createGain();
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(freq, a.currentTime);
-      g.gain.setValueAtTime(0.12, a.currentTime);
-      g.gain.exponentialRampToValueAtTime(0.0001, a.currentTime + 0.22);
-      osc.connect(g);
-      g.connect(a.destination);
-      osc.start();
-      osc.stop(a.currentTime + 0.24);
-    } catch (e) {}
+    const scale = [523.25, 587.33, 659.25, 783.99, 880.0, 1046.5, 1174.66, 1318.51, 1567.98, 1760.0];
+    tone(scale[gemIndex % scale.length], { dur: 0.22, type: 'triangle', gain: 0.12 });
   }
 
   function playBombSound() {
     if (!sfxRef.current) return;
-    try {
-      const a = getAC();
-      if (!a) return;
-      // Low rumble boom
-      const osc = a.createOscillator();
-      const g = a.createGain();
-      osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(140, a.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(30, a.currentTime + 0.4);
-      g.gain.setValueAtTime(0.3, a.currentTime);
-      g.gain.exponentialRampToValueAtTime(0.0001, a.currentTime + 0.45);
-      osc.connect(g);
-      g.connect(a.destination);
-      osc.start();
-      osc.stop(a.currentTime + 0.45);
-    } catch (e) {}
+    tone(140, { dur: 0.45, type: 'sawtooth', gain: 0.3 });
   }
 
   function playCashoutSound() {
     if (!sfxRef.current) return;
-    try {
-      const a = getAC();
-      if (!a) return;
-      [659, 784, 1046, 1318].forEach((f, i) => {
-        const osc = a.createOscillator();
-        const g = a.createGain();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(f, a.currentTime + i * 0.08);
-        g.gain.setValueAtTime(0.12, a.currentTime + i * 0.08);
-        g.gain.exponentialRampToValueAtTime(0.0001, a.currentTime + i * 0.08 + 0.2);
-        osc.connect(g);
-        g.connect(a.destination);
-        osc.start(a.currentTime + i * 0.08);
-        osc.stop(a.currentTime + i * 0.08 + 0.22);
-      });
-    } catch (e) {}
+    fanfare([659, 784, 1046, 1318], { gain: 0.12 });
   }
 
+  useEffect(() => {
+    acquireAudio();
+    return () => releaseAudio();
+  }, []);
+
   function start() {
+    if (playing) return;
     if (!spend(bet)) {
       say('Yetersiz bakiye — fişi küçült.');
       return;
     }
+    betRef.current = bet;              // tur boyunca sabit bahis
+    minesRef.current = mineCount;
+    bustedRef.current = false;
+    cashedRef.current = false;
 
-    const newGrid = Array(25).fill(false);
-    let placed = 0;
-    while (placed < mineCount) {
-      const idx = Math.floor(Math.random() * 25);
-      if (!newGrid[idx]) {
-        newGrid[idx] = true;
-        placed++;
-      }
-    }
-
-    setGrid(newGrid);
+    setGrid(placeMines(mineCount));
     setRevealed([]);
     setBusted(false);
     setCashed(false);
+    setRevealed([]);
     setMsg({ t: 'Tarla hazır! Karoları seç — elmaslar çarpanı katlar.', cls: '' });
   }
 
   function pickTile(index) {
-    if (!playing || revealed.includes(index)) return;
+    if (!playing || bustedRef.current || cashedRef.current || revealed.includes(index)) return;
 
     if (grid[index]) {
       // Mine hit!
+      bustedRef.current = true;
       setBusted(true);
       setShaking(true);
       setTimeout(() => setShaking(false), 450);
@@ -147,7 +87,7 @@ export default function MinesGame({ chips, spend, win, onClose }) {
     setRevealed(nextRevealed);
     playGemSound(nextRevealed.length - 1);
 
-    const safeTilesTotal = 25 - mineCount;
+    const safeTilesTotal = GRID_SIZE - mineCount;
     if (nextRevealed.length === safeTilesTotal) {
       // Cleared entire field!
       cashout(nextRevealed);
@@ -174,8 +114,12 @@ export default function MinesGame({ chips, spend, win, onClose }) {
 
   function cashout(forceArr) {
     const list = forceArr || revealed;
+    // Aynı render frame'inde mayına basıp cashout tetiklenirse `playing` hâlâ
+    // true görünüyordu → patlamış turdan ödeme. Ref'ler senkron olduğu için kapatır.
+    if (bustedRef.current || cashedRef.current) return;
     if (!playing && !forceArr) return;
     if (list.length === 0) return;
+    cashedRef.current = true;
 
     const mult = calcMultiplier(mineCount, list.length);
     const totalPrize = Math.round(bet * mult);
@@ -228,13 +172,13 @@ export default function MinesGame({ chips, spend, win, onClose }) {
           <div>
             <div style={{ fontSize: '.64rem', color: 'var(--muted)' }}>SONRAKİ ELMAS</div>
             <div style={{ fontSize: '1.2rem', fontWeight: 800, color: '#81c784' }}>
-              {playing && gemCount < 25 - mineCount ? `${nextMult.toFixed(2)}×` : '—'}
+              {playing && gemCount < GRID_SIZE - mineCount ? `${nextMult.toFixed(2)}×` : '—'}
             </div>
           </div>
           <div>
             <div style={{ fontSize: '.64rem', color: 'var(--muted)' }}>KALAN GÜVENLİ</div>
             <div style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--cream)' }}>
-              {grid ? 25 - mineCount - gemCount : 25 - mineCount}
+              {grid ? GRID_SIZE - mineCount - gemCount : GRID_SIZE - mineCount}
             </div>
           </div>
           <div>
@@ -332,7 +276,7 @@ export default function MinesGame({ chips, spend, win, onClose }) {
                   type="number"
                   min={1}
                   value={bet}
-                  onChange={e => setBet(Math.max(1, +e.target.value))}
+                  onChange={e => setBet(Math.max(1, Number(e.target.value)))}
                   className="inp"
                   style={{ padding: '.45rem', fontSize: '.84rem', width: '100%' }}
                 />

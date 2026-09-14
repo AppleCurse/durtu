@@ -1,7 +1,8 @@
 'use client';
-import { DAILY_REWARDS, fmt } from '../lib/toast';
+import { fmt } from '../lib/toast';
+import { DAILY_REWARDS } from '../lib/store';
 
-export default function DailyCheckInModal({ checkInResult, onClose, onClaimAgain }) {
+export default function DailyCheckInModal({ checkInResult, onClose }) {
   if (!checkInResult) return null;
 
   const { bonus = 100, streak = 1, nextBonus = 125 } = checkInResult;
@@ -58,7 +59,7 @@ export default function DailyCheckInModal({ checkInResult, onClose, onClaimAgain
             lineHeight: 1.15,
             margin: '.2rem 0'
           }}>
-            +{fmt ? fmt(bonus) : bonus} <span style={{ fontSize: '1.4rem' }}>dürTL</span>
+            +{fmt(bonus)} <span style={{ fontSize: '1.4rem' }}>dürTL</span>
           </div>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '.4rem', background: 'rgba(212,175,55,.12)', border: '1px solid rgba(212,175,55,.3)', borderRadius: 20, padding: '.25rem .8rem', fontSize: '.72rem', color: 'var(--gold)' }}>
             <span>🔥</span>
@@ -78,15 +79,7 @@ export default function DailyCheckInModal({ checkInResult, onClose, onClaimAgain
             gridTemplateColumns: 'repeat(7, 1fr)',
             gap: 6
           }}>
-            {[
-              { day: 1, bonus: 100, icon: '☀️' },
-              { day: 2, bonus: 125, icon: '✨' },
-              { day: 3, bonus: 150, icon: '🔥' },
-              { day: 4, bonus: 175, icon: '⚡' },
-              { day: 5, bonus: 200, icon: '💎' },
-              { day: 6, bonus: 225, icon: '🌟' },
-              { day: 7, bonus: 250, icon: '👑' },
-            ].map((d) => {
+            {DAILY_REWARDS.map((d) => {
               const isPast = streak > d.day;
               const isCurrent = streak === d.day;
               return (

@@ -1,7 +1,9 @@
 'use client';
 // Prosedürel caz ambiyansı — ii–V–I–VI walking bass + Rhodes + fırça (prototip paritesi)
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { say } from '../lib/toast';
+import { acquireAudio, releaseAudio } from '../lib/audio';
+import { log } from '../lib/logger';
 
 const PROG = [
   { root: 38, chord: [62, 65, 69, 72] },  // Dm7
@@ -14,6 +16,14 @@ const mf = m => 440 * Math.pow(2, (m - 69) / 12);
 export default function AmbienceBtn(){
   const [on, setOn] = useState(false);
   const z = useRef({ A: null, master: null, iv: 0, nextT: 0, beat: 0, noiseSrc: null, bpm: 76 });
+
+  // Unmount'ta zamanlayıcı ve ses kaynaklarını bırak
+  useEffect(() => () => {
+    const c = z.current;
+    clearInterval(c.iv);
+    if (c.noiseSrc) { try { c.noiseSrc.stop(); } catch (err) { log.ignorable('ambience.stopNoise', err); } c.noiseSrc = null; }
+    if (c.A) releaseAudio();
+  }, []);
 
   function note(f, t, dur, type, g){
     const { A, master } = z.current;
@@ -59,7 +69,7 @@ export default function AmbienceBtn(){
   function crackle(onOff){
     const c = z.current;
     if(!onOff){
-      if(c.noiseSrc){ try{ c.noiseSrc.stop(); }catch(e){} c.noiseSrc = null; }
+      if (c.noiseSrc) { try { c.noiseSrc.stop(); } catch (err) { log.ignorable('ambience.stopNoise', err); } c.noiseSrc = null; }
       return;
     }
     try{
@@ -70,7 +80,7 @@ export default function AmbienceBtn(){
       const g = a.createGain(); g.gain.value = .012;
       src.connect(lp); lp.connect(g); g.connect(a.destination);
       src.start(); c.noiseSrc = src;
-    }catch(e){}
+    } catch (err) { log.ignorable('ambience.node', err); }
   }
   function toggle(){
     const c = z.current;
@@ -82,8 +92,8 @@ export default function AmbienceBtn(){
       return;
     }
     try{
-      if(!c.A) c.A = new (window.AudioContext || window.webkitAudioContext)();
-      if(c.A.state === 'suspended') c.A.resume();
+      if(!c.A) c.A = acquireAudio();
+      if(!c.A){ say('Ses bu tarayıcıda desteklenmiyor.'); return; }
       if(!c.master){
         c.master = c.A.createGain(); c.master.gain.value = 0;
         const lp = c.A.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 2400;
@@ -96,7 +106,7 @@ export default function AmbienceBtn(){
       clearInterval(c.iv); c.iv = setInterval(sched, 180);
       setOn(true);
       say('♪ <b>Salon ambiyansı</b> açık — bu gece ' + c.bpm + ' BPM caz çalıyor.');
-    }catch(e){ say('Ses bu tarayıcıda desteklenmiyor.'); }
+    }catch(err){ log.warn('ambience.toggle','ambiyans başlatılamadı',{ err: err?.message }); say('Ses bu tarayıcıda desteklenmiyor.'); }
   }
 
   return (

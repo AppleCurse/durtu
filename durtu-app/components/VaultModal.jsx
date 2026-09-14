@@ -1,7 +1,7 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { fmt, say } from '../lib/toast';
-import { ledger, addLedger, stats } from '../lib/store';
+import { ledger, addLedger, updateLedgerStatus, stats } from '../lib/store';
 
 const AMTS = [100, 250, 500, 1000];
 
@@ -10,8 +10,19 @@ export default function VaultModal({ chips, spend, win, onClose }) {
   const [l, setL] = useState([]);
   const [wagered, setWagered] = useState(0);
   const [busy, setBusy] = useState(false);
+  const timersRef = useRef([]);
+  const aliveRef = useRef(true);
 
-  useEffect(() => { setL(ledger()); setWagered(stats().wagered); }, []);
+  useEffect(() => {
+    setL(ledger());
+    setWagered(stats().wagered);
+    return () => {
+      aliveRef.current = false;
+      timersRef.current.forEach(clearTimeout);   // modal kapanınca setState sızmasın
+    };
+  }, []);
+
+  const later = (fn, ms) => { timersRef.current.push(setTimeout(() => { if (aliveRef.current) fn(); }, ms)); };
 
   function fresh() { setL(ledger()); setWagered(stats().wagered); }
 
@@ -19,7 +30,7 @@ export default function VaultModal({ chips, spend, win, onClose }) {
     if (busy) return;
     setBusy(true);
     say('🏦 <b>Havale gönderildi:</b> ◈ ' + fmt(amt) + ' dürTL incelemede…');
-    setTimeout(() => {
+    later(() => {
       win(amt);
       addLedger('deposit', 'Kulüp Kasası — Yatırım', amt, 'ok');
       fresh(); setBusy(false);
@@ -28,14 +39,20 @@ export default function VaultModal({ chips, spend, win, onClose }) {
   }
   function withdraw(amt) {
     if (busy) return;
-    if (chips < amt) { say('Yetersiz bakiye — çekilebilir: ◈ ' + fmt(chips) + ' dürTL'); return; }
-    if (chips - amt < 0) return;
-    if (!spend(amt)) return;
+    // Tek doğruluk kaynağı spend(); stale `chips` prop'una göre karar verilmez.
+    if (!spend(amt)) {
+      say('Yetersiz bakiye — çekilebilir: ◈ ' + fmt(chips) + ' dürTL');
+      return;
+    }
     setBusy(true);
-    addLedger('withdraw', 'Kulüp Kasası — Çekim talebi', amt, 'pending');
+    const entryId = addLedger('withdraw', 'Kulüp Kasası — Çekim talebi', amt, 'pending');
     fresh();
     say('📤 <b>Çekim talebin alındı:</b> ◈ ' + fmt(amt) + ' dürTL inceleme kuyruğunda.');
-    setTimeout(() => { fresh(); setBusy(false); say('✅ Çekim onaylandı — IBAN\'a teslim edildi.'); }, 2600);
+    later(() => {
+      updateLedgerStatus(entryId, 'ok');      // defterde sonsuz "bekliyor" kalmaz
+      fresh(); setBusy(false);
+      say('✅ Çekim onaylandı — IBAN\'a teslim edildi.');
+    }, 2600);
   }
   const goal = 2500, prog = Math.min(1, (wagered % goal) / goal);
 
