@@ -1,5 +1,5 @@
 // DÜRTÜ — modal erişilebilirlik sözleşmesi.
-// 13 oyun modalının tamamı components/ui/Modal.jsx üzerinden render ediliyor;
+// Tüm oyun ve deneyim modalları components/ui/Modal.jsx üzerinden render ediliyor;
 // bu dosya o tek kaynağın ARIA sözleşmesini ve bileşenlerin ona bağlı
 // kaldığını doğrular.
 
@@ -16,6 +16,7 @@ const MODAL_COMPONENTS = [
   'WheelGame', 'LimboGame', 'HiloGame', 'MinesGame', 'PlinkoGame',
   'BlackjackGame', 'RouletteGame', 'SportBet', 'SlotGame',
   'VaultModal', 'StatsModal', 'DailyCheckInModal', 'CrashGame', 'Gate',
+  'Lounge360',
 ];
 
 /* ───────────── Modal kabuğunun sözleşmesi ───────────── */
@@ -58,7 +59,7 @@ test('MODAL: keydown dinleyicisi temizleniyor (sızıntı yok)', () => {
 
 /* ───────────── Bileşenlerin kabuğa bağlılığı ───────────── */
 
-test('MODAL: 13 modal bileşeninin tamamı paylaşılan kabuğu kullanır', () => {
+test('MODAL: tüm modal bileşenleri paylaşılan kabuğu kullanır', () => {
   for (const name of MODAL_COMPONENTS) {
     const src = fs.readFileSync(path.join(COMPONENTS, `${name}.jsx`), 'utf8');
     assert.match(src, /import Modal from '\.\/ui\/Modal'/, `${name} Modal import etmiyor`);

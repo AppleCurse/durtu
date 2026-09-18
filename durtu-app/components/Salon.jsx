@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { say, fmt } from '../lib/toast';
 import { getCheckInStatus, DAILY_REWARDS } from '../lib/store';
 
-export default function Salon({ name, chips, onPlay, onOpenCheckIn, checkInInfo, onClaimCheckIn }) {
+export default function Salon({ name, chips, onPlay, onOpenLounge, onOpenCheckIn, checkInInfo, onClaimCheckIn }) {
   const [greet, setGreet] = useState('Hoş geldin');
   const [date, setDate] = useState('');
   const [status, setStatus] = useState(() => checkInInfo || getCheckInStatus());
@@ -33,23 +33,32 @@ export default function Salon({ name, chips, onPlay, onOpenCheckIn, checkInInfo,
         </h1>
         <p className="muted" suppressHydrationWarning>{date}</p>
 
-        {/* 3D katman — monolitten taşınan statik sahneler (public/) */}
-        <div style={{ display: 'flex', gap: '.6rem', flexWrap: 'wrap', margin: '.8rem 0 0' }}>
-          <a
-            href="/salon3d.html"
-            className="btn solid"
-            style={{ fontSize: '.65rem', padding: '.38rem .85rem', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '.3rem' }}
-          >
-            🚶‍️ 3D SALONDA YÜRÜ (WASD)
-          </a>
-          <a
-            href="/gate-3d.html"
-            className="btn ghost"
-            style={{ fontSize: '.65rem', padding: '.38rem .85rem', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '.3rem' }}
-          >
-            🎬 SİNEMATİK 3D KAPI
-          </a>
-        </div>
+        {/* React uygulamasına bağlı gerçek equirectangular 360° lounge. */}
+        <article className="lounge-teaser">
+          <div className="lounge-teaser-copy">
+            <span className="tag">Yeni Mekânsal Deneyim · 360°</span>
+            <h2>Boğaz&apos;ın üstünde,<br />geceye ayrılmış bir loca.</h2>
+            <p>
+              Sürükleyerek etrafına bak; barı, özel masayı ve dinleme köşesini keşfet.
+              Mekândaki canlı noktalar doğrudan salon deneyimine bağlanır.
+            </p>
+            <div className="lounge-teaser-meta" aria-label="Lounge özellikleri">
+              <span><i /> Kesintisiz 360°</span>
+              <span><i /> WebGL küre</span>
+              <span><i /> Mobil + klavye</span>
+            </div>
+            <div className="lounge-teaser-actions">
+              <button type="button" className="btn solid" onClick={onOpenLounge}>
+                ◉ 360° Lounge&apos;a Gir
+              </button>
+              <a href="/salon3d.html" className="btn ghost">3D Serbest Yürüyüş ↗</a>
+              <a href="/gate-3d.html" className="btn ghost">Kapı Filmi ↗</a>
+            </div>
+          </div>
+          <div className="lounge-teaser-visual" aria-hidden="true">
+            <span className="lounge-teaser-compass"><b>N</b> İstanbul · 00:24</span>
+          </div>
+        </article>
 
         {/* ☀️ Günlük Giriş Ritüeli */}
         <div
