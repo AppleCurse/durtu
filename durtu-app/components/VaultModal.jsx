@@ -1,48 +1,66 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { fmt, say } from '../lib/toast';
-import { ledger, addLedger, stats } from '../lib/store';
+import { ledger, addLedger, updateLedgerStatus, stats } from '../lib/store';
+import Modal from './ui/Modal';
+import { useEventCallback } from '../lib/useEventCallback';
 
 const AMTS = [100, 250, 500, 1000];
 
 export default function VaultModal({ chips, spend, win, onClose }) {
   const [tab, setTab] = useState('dep');   // dep | cek | defter
-  const [l, setL] = useState([]);
-  const [wagered, setWagered] = useState(0);
+  // localStorage senkron okunur; effect'te setState yapmak yerine lazy
+  // initializer kullanmak cascading render'ı önler.
+  const [l, setL] = useState(() => ledger());
+  const [wagered, setWagered] = useState(() => stats().wagered);
   const [busy, setBusy] = useState(false);
+  const timersRef = useRef([]);
+  const aliveRef = useRef(true);
 
-  useEffect(() => { setL(ledger()); setWagered(stats().wagered); }, []);
+  useEffect(() => {
+    const timers = timersRef.current;
+    return () => {
+      aliveRef.current = false;
+      timers.forEach(clearTimeout);   // modal kapanınca setState sızmasın
+    };
+  }, []);
+
+  const later = (fn, ms) => { timersRef.current.push(setTimeout(() => { if (aliveRef.current) fn(); }, ms)); };
 
   function fresh() { setL(ledger()); setWagered(stats().wagered); }
 
-  function deposit(amt) {
+  const deposit = useEventCallback((amt) => {
     if (busy) return;
     setBusy(true);
     say('🏦 <b>Havale gönderildi:</b> ◈ ' + fmt(amt) + ' dürTL incelemede…');
-    setTimeout(() => {
+    later(() => {
       win(amt);
       addLedger('deposit', 'Kulüp Kasası — Yatırım', amt, 'ok');
       fresh(); setBusy(false);
       say('✅ <b>Onaylandı:</b> ◈ ' + fmt(amt) + ' dürTL kasana işlendi.');
     }, 2200 + Math.random() * 1000);
-  }
+  });
   function withdraw(amt) {
     if (busy) return;
-    if (chips < amt) { say('Yetersiz bakiye — çekilebilir: ◈ ' + fmt(chips) + ' dürTL'); return; }
-    if (chips - amt < 0) return;
-    if (!spend(amt)) return;
+    // Tek doğruluk kaynağı spend(); stale `chips` prop'una göre karar verilmez.
+    if (!spend(amt)) {
+      say('Yetersiz bakiye — çekilebilir: ◈ ' + fmt(chips) + ' dürTL');
+      return;
+    }
     setBusy(true);
-    addLedger('withdraw', 'Kulüp Kasası — Çekim talebi', amt, 'pending');
+    const entryId = addLedger('withdraw', 'Kulüp Kasası — Çekim talebi', amt, 'pending');
     fresh();
     say('📤 <b>Çekim talebin alındı:</b> ◈ ' + fmt(amt) + ' dürTL inceleme kuyruğunda.');
-    setTimeout(() => { fresh(); setBusy(false); say('✅ Çekim onaylandı — IBAN\'a teslim edildi.'); }, 2600);
+    later(() => {
+      updateLedgerStatus(entryId, 'ok');      // defterde sonsuz "bekliyor" kalmaz
+      fresh(); setBusy(false);
+      say('✅ Çekim onaylandı — IBAN\'a teslim edildi.');
+    }, 2600);
   }
   const goal = 2500, prog = Math.min(1, (wagered % goal) / goal);
 
   return (
-    <div className="ovl" onClick={e => e.target === e.currentTarget && onClose()}>
-      <div className="pnl" style={{ width: 'min(520px,100%)' }}>
-        <button className="close" onClick={onClose}>✕</button>
+    <Modal onClose={onClose} title="Kasa" className="pnl" style={{ width: 'min(520px,100%)' }}>
         <span className="tag">✦ Kulüp Kasası</span>
         <h3>DÜRTÜ Finans Kasası</h3>
         <p className="noteline">Yatırım ve çekim talebin <b>demo</b> olarak işlenir — gerçek para kullanılmaz.</p>
@@ -96,7 +114,6 @@ export default function VaultModal({ chips, spend, win, onClose }) {
             })}
           </div>
         )}
-      </div>
-    </div>
+      </Modal>
   );
 }

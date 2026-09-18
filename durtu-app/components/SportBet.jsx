@@ -1,7 +1,9 @@
 'use client';
-import { useState } from 'react';
-import { say, fmt } from '../lib/toast';
+import { useEffect, useRef, useState } from 'react';
+import { say, fmt, html } from '../lib/toast';
 import { logRound } from '../lib/store';
+import { useRoundLock } from '../lib/useRoundLock';
+import Modal from './ui/Modal';
 
 const MATCHES = [
   {id:'ucl1', league:'Şampiyonlar Ligi', time:'Bu akşam 22:00', home:'Real Madrid', away:'Bayern München', odds:{'1':2.10,'X':3.40,'2':3.10}},
@@ -12,9 +14,14 @@ const MATCHES = [
 export default function SportBet({ spend, win, onClose }){
   const [sel,setSel]=useState(null); // {mid, market, odds, match}
   const [stake,setStake]=useState(25);
-  const [settling,setSettling]=useState(false);
+  const { busy: settling, acquire, release } = useRoundLock();
   const [result,setResult]=useState(null);
   const [progress,setProgress]=useState(0);
+  const ivRef=useRef(null);
+  const timerRef=useRef(null);
+
+  // Modal kapatılırsa bekleyen settlement unmount sonrası setState çağırmasın
+  useEffect(()=>()=>{ clearInterval(ivRef.current); clearTimeout(timerRef.current); },[]);
 
   function pick(mid, market){
     const m=MATCHES.find(x=>x.id===mid);
@@ -25,36 +32,36 @@ export default function SportBet({ spend, win, onClose }){
   function potential(){ return sel ? Math.round(stake*sel.odds) : 0; }
 
   function confirm(){
-    if(settling) return;
     if(!sel){ say('Önce bir oran seç.'); return; }
-    if(!spend(stake)){ say('Yetersiz bakiye.'); return; }
-    setSettling(true); setResult(null); setProgress(0);
-    logRound('Spor · '+sel.match.home+' — '+sel.match.away+' · Bahis', stake, 0, sel.odds);
+    if(!acquire()) return;
+    if(!spend(stake)){ release(); say('Yetersiz bakiye.'); return; }
+    // Tur sözleşmesi — settlement bu dondurulmuş kupona göre yapılır.
+    const round = Object.freeze({ stake, market: sel.market, odds: sel.odds, match: sel.match });
+    setResult(null); setProgress(0);
     let p=0;
     const iv=setInterval(()=>{ p=Math.min(92,p+Math.random()*20); setProgress(p); },120);
-    setTimeout(()=>{
+    ivRef.current=iv;
+    timerRef.current=setTimeout(()=>{
       clearInterval(iv); setProgress(100);
-      const m=sel.match;
+      const m=round.match;
       const inv={ '1':1/m.odds['1'], 'X':1/m.odds['X'], '2':1/m.odds['2'] };
       const sum=inv['1']+inv['X']+inv['2'];
       const prob={ '1':inv['1']/sum, 'X':inv['X']/sum, '2':inv['2']/sum };
       const r=Math.random(); let outcome;
       if(r<prob['1']) outcome='1'; else if(r<prob['1']+prob['X']) outcome='X'; else outcome='2';
-      const won = outcome===sel.market;
-      const payout = won ? Math.round(stake*sel.odds) : 0;
+      const won = outcome===round.market;
+      const payout = won ? Math.round(round.stake*round.odds) : 0;
       if(won) win(payout);
-      logRound('Spor · '+m.home+' — '+m.away, stake, payout, sel.odds);
-      setResult({outcome, won, payout, profit:payout-stake});
-      setSettling(false);
-      if(won) say('🏆 <b>Kupon kazandı!</b> '+m.home+' — '+m.away+' · +'+fmt(payout)+' dürTL');
-      else say('⚽ Kupon yattı — '+(outcome==='1'?m.home:outcome==='2'?m.away:'Beraberlik')+' geldi.');
+      logRound('Spor · '+m.home+' — '+m.away, round.stake, payout, round.odds);
+      setResult({outcome, won, payout, profit:payout-round.stake});
+      release();
+      if(won) say(html`🏆 <b>Kupon kazandı!</b> ${m.home} — ${m.away} · +${fmt(payout)} dürTL`);
+      else say(html`⚽ Kupon yattı — ${outcome==='1'?m.home:outcome==='2'?m.away:'Beraberlik'} geldi.`);
     }, 1800);
   }
 
   return (
-    <div className="ovl" onClick={e=>e.target===e.currentTarget&&onClose()}>
-      <div className="pnl" style={{width:'min(560px,100%)'}}>
-        <button className="close" onClick={onClose}>✕</button>
+    <Modal onClose={onClose} title="Spor Bahisleri" className="pnl" style={{width:'min(560px,100%)'}}>
         <span className="demo-badge">Demo · Gerçek oran · dürTL settlement</span>
         <h3>🏆 Spor Bahsi — Gerçek Kupon</h3>
         <p className="noteline">3 maç · 1X2 · oranlar küratörlü · sonuç ağırlıklı simüle, bakiye entegre.</p>
@@ -78,7 +85,7 @@ export default function SportBet({ spend, win, onClose }){
         </div>
         <div style={{display:'flex',gap:'.6rem',alignItems:'center',margin:'.6rem 0'}}>
           <div className="hud-box" style={{flex:1}}><small>BAHİS</small>
-            <select className="hud-sel" value={stake} onChange={e=>setStake(+e.target.value)}>
+            <select className="hud-sel" value={stake} onChange={e=>setStake(Number(e.target.value))}>
               {[10,25,50,100,250].map(v=><option key={v} value={v}>{v}</option>)}
             </select>
           </div>
@@ -97,7 +104,6 @@ export default function SportBet({ spend, win, onClose }){
           </div>
         )}
         <p className="muted" style={{fontSize:'.66rem',marginTop:'.7rem',lineHeight:1.4}}>Oranlar demo küratörlü; sonuç, oranların ima ettiği olasılığa göre ağırlıklı rastgele simüle edilir. Kazanç anında dürTL bakiyene işlenir.</p>
-      </div>
-    </div>
+      </Modal>
   );
 }

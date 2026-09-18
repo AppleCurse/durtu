@@ -2,6 +2,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { say, fmt, buzz } from '../lib/toast';
 import { logRound } from '../lib/store';
+import { acquireAudio, releaseAudio, getAudio, tone as sharedTone } from '../lib/audio';
+import { log } from '../lib/logger';
+import Modal from './ui/Modal';
 
 const SLOT_DEFS = {
   gates: {
@@ -78,8 +81,7 @@ const PAYC=[[2,5,12],[1.2,3,8],[0.8,2,5],[0.5,1.2,3],[0.3,0.8,2],[0.2,0.5,1.5]];
 const LINES=[[1,1,1,1,1],[0,0,0,0,0],[2,2,2,2,2],[0,1,2,1,0],[2,1,0,1,2],[1,0,1,0,1],[1,2,1,2,1],[0,1,1,1,0],[2,1,1,1,2],[1,1,0,1,1]];
 const FEATS={ gates:{icon:'⚡',label:'Yıldırım'}, sb:{icon:'🍬',label:'Şeker'}, mt4:{icon:'💰',label:'Vagon'}, wdw:{icon:'🔫',label:'Düello'}, sp:{icon:'💫',label:'Prenses'}, bs:{icon:'🩸',label:'Kan'} };
 const LW=660, LH=380;
-let AC=null;
-function ac(){ if(!AC) AC=new (window.AudioContext||window.webkitAudioContext)(); if(AC.state==='suspended') AC.resume(); return AC; }
+const ac = () => getAudio();
 
 export default function SlotGame({ game, spend, win, onClose }){
   const canvasRef=useRef(null);
@@ -95,20 +97,13 @@ export default function SlotGame({ game, spend, win, onClose }){
 
   function tone(f,t0,dur,type,g){
     if(!sfxRef.current) return;
-    try{
-      const a=ac(), o=a.createOscillator(), gn=a.createGain();
-      o.type=type||'sine'; o.frequency.value=f;
-      const t=a.currentTime+t0;
-      gn.gain.setValueAtTime(g||.12,t);
-      gn.gain.exponentialRampToValueAtTime(0.0001,t+dur);
-      o.connect(gn); gn.connect(a.destination);
-      o.start(t); o.stop(t+dur+0.03);
-    }catch(e){}
+    sharedTone(f, { delay: t0, dur, type: type || 'sine', gain: g || .12 });
   }
+
   const sfxScatter=()=>{ tone(1318,0,.18,'sine',.12); tone(1760,.14,.3,'sine',.12); };
   const sfxWinSnd=m=>{ const sc=[523,587,659,784,880,1047,1175,1319]; const n=Math.min(sc.length,2+Math.ceil(m)); for(let i=0;i<n;i++) tone(sc[i],i*.085,.22,'triangle',.1); if(m>=10) for(let i=0;i<12;i++) tone(sc[i%sc.length]*2,.8+i*.06,.12,'square',.045); };
-  const sfxZap=()=>{ try{ const a=ac(),o=a.createOscillator(),g=a.createGain(); o.type='sawtooth'; o.frequency.setValueAtTime(1900,a.currentTime); o.frequency.exponentialRampToValueAtTime(140,a.currentTime+.22); g.gain.setValueAtTime(.1,a.currentTime); g.gain.exponentialRampToValueAtTime(.0001,a.currentTime+.26); o.connect(g); g.connect(a.destination); o.start(); o.stop(a.currentTime+.3); tone(2500,.02,.05,'square',.05);}catch(e){} };
-  const sfxSpinStart=()=>{ try{ const a=ac(),o=a.createOscillator(),g=a.createGain(); o.type='sawtooth'; o.frequency.setValueAtTime(140,a.currentTime); o.frequency.exponentialRampToValueAtTime(640,a.currentTime+.28); g.gain.setValueAtTime(.07,a.currentTime); g.gain.exponentialRampToValueAtTime(.0001,a.currentTime+.3); o.connect(g); g.connect(a.destination); o.start(); o.stop(a.currentTime+.32);}catch(e){} };
+  const sfxZap=()=>{ try{ const a=ac(),o=a.createOscillator(),g=a.createGain(); o.type='sawtooth'; o.frequency.setValueAtTime(1900,a.currentTime); o.frequency.exponentialRampToValueAtTime(140,a.currentTime+.22); g.gain.setValueAtTime(.1,a.currentTime); g.gain.exponentialRampToValueAtTime(.0001,a.currentTime+.26); o.connect(g); g.connect(a.destination); o.start(); o.stop(a.currentTime+.3); tone(2500,.02,.05,'square',.05); } catch (err) { log.ignorable('slot.sfxZap', err); } };
+  const sfxSpinStart=()=>{ try{ const a=ac(),o=a.createOscillator(),g=a.createGain(); o.type='sawtooth'; o.frequency.setValueAtTime(140,a.currentTime); o.frequency.exponentialRampToValueAtTime(640,a.currentTime+.28); g.gain.setValueAtTime(.07,a.currentTime); g.gain.exponentialRampToValueAtTime(.0001,a.currentTime+.3); o.connect(g); g.connect(a.destination); o.start(); o.stop(a.currentTime+.32); } catch (err) { log.ignorable('slot.sfxSpinStart', err); } };
   const sfxReelStop=()=>{ tone(82,0,.09,'triangle',.22); tone(48,0,.13,'sine',.18); buzz(8); };
   const sfxTumble=()=> tone(600,0,.06,'triangle',.08);
   const sfxBomb=()=>{ tone(440,0,.12,'sawtooth',.15); tone(880,.08,.18,'sine',.12); };
@@ -138,7 +133,7 @@ export default function SlotGame({ game, spend, win, onClose }){
     function evalScatterGrid(grid, bet){
       const counts={}; grid.flat().forEach(cell=>{ if(cell.type==='pay') counts[cell.idx]=(counts[cell.idx]||0)+1; });
       let win=0, winCells=[], winMap=new Set();
-      Object.keys(counts).forEach(k=>{ const cnt=counts[k], idx=+k, pay=def.syms[idx].pay; let mult=0; if(cnt>=12) mult=pay[12]||0; else if(cnt>=11) mult=pay[11]||0; else if(cnt>=10) mult=pay[10]||0; else if(cnt>=9) mult=pay[9]||0; else if(cnt>=8) mult=pay[8]||0; if(mult>0){ win+=bet*mult; grid.forEach((col,c)=>col.forEach((cell,r)=>{ if(cell.type==='pay'&&cell.idx===idx) winMap.add(c+'-'+r); })); } });
+      Object.keys(counts).forEach(k=>{ const cnt=counts[k], idx=Number(k), pay=def.syms[idx].pay; let mult=0; if(cnt>=12) mult=pay[12]||0; else if(cnt>=11) mult=pay[11]||0; else if(cnt>=10) mult=pay[10]||0; else if(cnt>=9) mult=pay[9]||0; else if(cnt>=8) mult=pay[8]||0; if(mult>0){ win+=bet*mult; grid.forEach((col,c)=>col.forEach((cell,r)=>{ if(cell.type==='pay'&&cell.idx===idx) winMap.add(c+'-'+r); })); } });
       winCells=Array.from(winMap).map(s=>{ const [c,r]=s.split('-').map(Number); return {c,r}; });
       let scat=0, multSum=0, multCells=[]; grid.forEach((col,c)=>col.forEach((cell,r)=>{ if(cell.type==='scatter') scat++; if(cell.type==='mult'){ multSum+=cell.mult; multCells.push({c,r,mult:cell.mult}); } }));
       return {win, winCells, scat, multSum, multCells};
@@ -400,18 +395,22 @@ export default function SlotGame({ game, spend, win, onClose }){
     else if(E.mode==='vs'){ E.vsGrid=[]; drawVS(); }
     else drawLinesGeneric();
 
+    acquireAudio();
     const keyH=e=>{ if(e.code==='Space'){ e.preventDefault(); doSpin(); } };
     window.addEventListener('keydown', keyH);
     return ()=>{
-      E.open=false; cancelAnimationFrame(E.raf); clearInterval(E.tickIv); window.removeEventListener('keydown',keyH); eng.current=null;
+      E.open=false; cancelAnimationFrame(E.raf); clearInterval(E.tickIv); window.removeEventListener('keydown',keyH); releaseAudio(); eng.current=null;
     };
+    // Motor tek sefer kurulur ve oyun değişene kadar yaşar; ses/çizim
+    // yardımcıları ile spend/win her render'da yeniden oluşur ama döngü
+    // onları ref üzerinden taze okur. deps'e eklemek motoru her render'da
+    // yeniden kurar (dönen makarayı sıfırlar).
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- motor yaşam döngüsü game.id'ye bağlı
   }, [game.id]);
 
   const tiers=['Premium','Yüksek','Orta','Orta','Düşük','Düşük'];
   return (
-    <div className="ovl" onClick={e=>e.target===e.currentTarget&&onClose()}>
-      <div className="pnl slot-pnl">
-        <button className="close" onClick={onClose}>✕</button>
+    <Modal onClose={onClose} title="Slot" className="pnl slot-pnl">
         <div className="slot-head">
           <div>
             <span className="demo-badge">Demo · Gerçek para yok</span>
@@ -456,7 +455,7 @@ export default function SlotGame({ game, spend, win, onClose }){
         </div>
         <div className="slot-hud">
           <div className="hud-box"><small>BAHİS</small>
-            <select className="hud-sel" defaultValue="25" onChange={e=>{ betRef.current=+e.target.value; setBetUI(+e.target.value); }}>
+            <select className="hud-sel" defaultValue="25" onChange={e=>{ betRef.current=Number(e.target.value); setBetUI(Number(e.target.value)); }}>
               {[10,25,50,100].map(v=><option key={v} value={v}>{v}</option>)}
             </select>
           </div>
@@ -468,7 +467,6 @@ export default function SlotGame({ game, spend, win, onClose }){
           <span className="muted" ref={el=>{ hud.current.slotMsg=el; }}>{def.type==='scatter' ? `${def.cols}×${def.rows} her yerde öder · ${def.scatter} ${def.scatterMin}+ → ${def.fs} FS · çarpan birikir` : def.type==='holdwin' ? '3+ 💰 → Hold&Win 3 can · para değerleri yapışır' : def.type==='vs' ? 'VS wild genişler · düello çarpanı' : '5×3 · 3+ 🩸 → tabut bonusu'}</span>
           <button className="taglink" onClick={()=>setPtOpen(o=>!o)}>📜 Ödeme Tablosu</button>
         </div>
-      </div>
-    </div>
+      </Modal>
   );
 }

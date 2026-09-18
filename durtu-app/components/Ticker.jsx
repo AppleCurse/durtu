@@ -7,7 +7,7 @@ const BASE = [120, 250, 400, 750, 1200, 2400, 4800, 8400];
 
 function gen() {
   const game = GAMES[Math.random() * GAMES.length | 0];
-  const mul = game === 'Aviator' ? +(1.2 + Math.random() * 8).toFixed(2) : null;
+  const mul = game === 'Aviator' ? Number((1.2 + Math.random() * 8).toFixed(2)) : null;
   let amt = BASE[Math.random() * BASE.length | 0];
   if (mul) amt = Math.round(((50 + Math.random() * 450) * mul) / 10) * 10;
   return { who: NAMES[Math.random() * NAMES.length | 0], game, amt, mul, id: Date.now() + Math.random() };

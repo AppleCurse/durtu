@@ -1,6 +1,7 @@
 'use client';
 // Selin — kişisel concierge (TTS'li)
 import { useEffect, useRef, useState } from 'react';
+import { log } from '../lib/logger';
 
 export default function Chat({ name }){
   const [open, setOpen] = useState(false);
@@ -29,7 +30,7 @@ export default function Chat({ name }){
       const tr = vs.find(v => /^tr/i.test(v.lang));
       if(tr) u.voice = tr;
       speechSynthesis.cancel(); speechSynthesis.speak(u);
-    }catch(e){}
+    } catch (err) { log.ignorable('chat.persist', err); }
   }
 
   function toggle(){

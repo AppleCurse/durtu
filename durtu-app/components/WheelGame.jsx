@@ -2,37 +2,28 @@
 import { useEffect, useRef, useState } from 'react';
 import { fmt, say } from '../lib/toast';
 import { logRound } from '../lib/store';
+import { WHEEL_PRESETS, spinWheelIndex, settleWheel } from '../lib/engines/wheel';
+import { useRoundLock } from '../lib/useRoundLock';
+import { acquireAudio, releaseAudio, tone, fanfare } from '../lib/audio';
+import Modal from './ui/Modal';
+import { useEventCallback } from '../lib/useEventCallback';
 
-const WHEEL_PRESETS = {
-  low: [1.2, 1.5, 0, 1.2, 2.0, 0, 1.5, 3.0, 0, 1.2, 1.5, 0, 2.0, 1.2, 5.0, 0],
-  med: [1.5, 0, 2.0, 0, 3.0, 1.5, 0, 5.0, 0, 2.0, 0, 1.5, 10.0, 0, 2.0, 0],
-  high: [0, 2.0, 0, 0, 5.0, 0, 0, 10.0, 0, 0, 2.0, 0, 20.0, 0, 0, 50.0],
-};
-
-const COLORS = [
+const _COLORS = [
   '#2a2318', '#b26a00', '#1c221e', '#2e7d32',
   '#1b1c26', '#1565c0', '#2d1822', '#c2185b',
   '#2a1515', '#c62828', '#261c28', '#6a1b9a',
   '#23281c', '#33691e', '#2a2216', '#ff8f00',
 ];
 
-let AC = null;
-function getAC() {
-  if (!AC && typeof window !== 'undefined') {
-    AC = new (window.AudioContext || window.webkitAudioContext)();
-  }
-  if (AC && AC.state === 'suspended') AC.resume();
-  return AC;
-}
-
 export default function WheelGame({ chips, spend, win, onClose }) {
   const canvasRef = useRef(null);
   const [bet, setBet] = useState(25);
   const [risk, setRisk] = useState('med');
-  const [spinning, setSpinning] = useState(false);
+  const { busy: spinning, acquire, release } = useRoundLock();
   const [history, setHistory] = useState([]);
   const [msg, setMsg] = useState({ t: 'Risk seviyeni seç ve çarkı çevir.', cls: '' });
   const rotRef = useRef(0);
+  const animRef = useRef(0);
   const sfxRef = useRef(true);
 
   const segments = WHEEL_PRESETS[risk];
@@ -40,43 +31,15 @@ export default function WheelGame({ chips, spend, win, onClose }) {
 
   function playTick() {
     if (!sfxRef.current) return;
-    try {
-      const a = getAC();
-      if (!a) return;
-      const osc = a.createOscillator();
-      const g = a.createGain();
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(800, a.currentTime);
-      g.gain.setValueAtTime(0.04, a.currentTime);
-      g.gain.exponentialRampToValueAtTime(0.0001, a.currentTime + 0.03);
-      osc.connect(g);
-      g.connect(a.destination);
-      osc.start();
-      osc.stop(a.currentTime + 0.03);
-    } catch (e) {}
+    tone(800, { dur: 0.03, type: 'triangle', gain: 0.04 });
   }
 
   function playWin() {
     if (!sfxRef.current) return;
-    try {
-      const a = getAC();
-      if (!a) return;
-      [523, 659, 784, 1046].forEach((f, i) => {
-        const osc = a.createOscillator();
-        const g = a.createGain();
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(f, a.currentTime + i * 0.08);
-        g.gain.setValueAtTime(0.12, a.currentTime + i * 0.08);
-        g.gain.exponentialRampToValueAtTime(0.0001, a.currentTime + i * 0.08 + 0.2);
-        osc.connect(g);
-        g.connect(a.destination);
-        osc.start(a.currentTime + i * 0.08);
-        osc.stop(a.currentTime + i * 0.08 + 0.22);
-      });
-    } catch (e) {}
+    fanfare([523, 659, 784, 1046], { gain: 0.12 });
   }
 
-  function drawWheel(angle) {
+  const drawWheel = useEventCallback((angle) => {
     const cv = canvasRef.current;
     if (!cv) return;
     const ctx = cv.getContext('2d');
@@ -154,33 +117,45 @@ export default function WheelGame({ chips, spend, win, onClose }) {
     ctx.strokeStyle = '#fff';
     ctx.lineWidth = 1.5;
     ctx.stroke();
-  }
+  });
 
+  // drawWheel kimliği useEventCallback sayesinde sabit; risk değişince
+  // çarkı yeniden boyamak yeterli.
   useEffect(() => {
     drawWheel(rotRef.current);
-  }, [risk]);
+  }, [risk, drawWheel]);
+
+  useEffect(() => {
+    acquireAudio();
+    return () => {
+      cancelAnimationFrame(animRef.current);
+      releaseAudio();
+    };
+  }, []);
 
   function spinWheel() {
-    if (spinning) return;
+    if (!acquire()) return;                       // senkron kilit — çift tıklama tek tur
     if (!spend(bet)) {
+      release();
       say('Yetersiz bakiye — fişi küçült.');
       return;
     }
 
-    setSpinning(true);
+    // Tur sözleşmesi: ödeme animasyon bitince bu snapshot'a göre yapılır,
+    // kullanıcı arada risk/bahis değiştirse bile.
+    const round = Object.freeze({ bet, risk, segments });
+
     setMsg({ t: 'Çark dönüyor…', cls: '' });
 
-    // Pick winning index
-    const winIdx = Math.floor(Math.random() * segments.length);
-    const winVal = segments[winIdx];
+    const winIdx = spinWheelIndex(round.segments);
+    const { mult: winVal, payout } = settleWheel(round.bet, round.segments, winIdx);
 
-    // Calculate target angle so pointer at top (-PI/2) points to winIdx
-    // Pointer is at angle -PI/2
     const currentRot = rotRef.current % (Math.PI * 2);
     const targetSegCenter = winIdx * segAngle + segAngle / 2;
-    const neededAngle = (Math.PI * 3 / 2) - targetSegCenter;
+    const neededAngle = (Math.PI * 3) / 2 - targetSegCenter;
     const fullSpins = (5 + Math.floor(Math.random() * 3)) * Math.PI * 2;
-    const targetRot = rotRef.current + fullSpins + ((neededAngle - currentRot + Math.PI * 2) % (Math.PI * 2));
+    const targetRot =
+      rotRef.current + fullSpins + ((neededAngle - currentRot + Math.PI * 2) % (Math.PI * 2));
 
     const startRot = rotRef.current;
     const totalDist = targetRot - startRot;
@@ -191,43 +166,39 @@ export default function WheelGame({ chips, spend, win, onClose }) {
     function step() {
       const now = Date.now();
       const progress = Math.min(1, (now - startTime) / duration);
-      // Ease out cubic
       const ease = 1 - Math.pow(1 - progress, 3);
       const curRot = startRot + totalDist * ease;
       rotRef.current = curRot;
       drawWheel(curRot);
 
-      // Play tick on passing segments
       if (Math.abs(curRot - lastTickAngle) >= segAngle) {
         playTick();
         lastTickAngle = curRot;
       }
 
       if (progress < 1) {
-        requestAnimationFrame(step);
-      } else {
-        setSpinning(false);
-        const payout = Math.round(bet * winVal);
-        if (winVal > 0) {
-          win(payout);
-          playWin();
-          setMsg({ t: `Kazandın! ${winVal}× çarpan → ◈ +${fmt(payout - bet)} dürTL kâr.`, cls: 'win' });
-          logRound('Şans Çarkı', bet, payout, winVal);
-        } else {
-          setMsg({ t: `0× geldi — bu tur boş geçti.`, cls: 'lose' });
-          logRound('Şans Çarkı', bet, 0);
-        }
-        setHistory(h => [{ val: winVal, won: payout, ts: Date.now() }, ...h].slice(0, 10));
+        animRef.current = requestAnimationFrame(step);
+        return;
       }
+
+      release();
+      if (winVal > 0) {
+        win(payout);
+        playWin();
+        setMsg({ t: `Kazandın! ${winVal}× çarpan → ◈ +${fmt(payout - round.bet)} dürTL kâr.`, cls: 'win' });
+        logRound('Şans Çarkı', round.bet, payout, winVal);
+      } else {
+        setMsg({ t: '0× geldi — bu tur boş geçti.', cls: 'lose' });
+        logRound('Şans Çarkı', round.bet, 0);
+      }
+      setHistory(h => [{ val: winVal, won: payout, ts: Date.now() }, ...h].slice(0, 10));
     }
 
-    requestAnimationFrame(step);
+    animRef.current = requestAnimationFrame(step);
   }
 
   return (
-    <div className="ovl" onClick={e => e.target === e.currentTarget && onClose()} style={{ zIndex: 75 }}>
-      <div className="pnl" style={{ width: 'min(580px, 98vw)', padding: '1.4rem 1.6rem', textAlign: 'center' }}>
-        <button className="close" onClick={onClose}>✕</button>
+    <Modal onClose={onClose} title="Şans Çarkı" className="pnl" zIndex={75} style={{ width: 'min(580px, 98vw)', padding: '1.4rem 1.6rem', textAlign: 'center' }}>
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '.6rem' }}>
           <div style={{ textAlign: 'left' }}>
@@ -290,7 +261,7 @@ export default function WheelGame({ chips, spend, win, onClose }) {
               min={1}
               disabled={spinning}
               value={bet}
-              onChange={e => setBet(Math.max(1, +e.target.value))}
+              onChange={e => setBet(Math.max(1, Number(e.target.value)))}
               className="inp"
               style={{ padding: '.5rem', fontSize: '.84rem', width: '100%' }}
             />
@@ -320,7 +291,6 @@ export default function WheelGame({ chips, spend, win, onClose }) {
           <span>Seçili Risk: <b style={{ color: 'var(--gold)' }}>{risk.toUpperCase()}</b></span>
           <span>Bakiye: ◈ {fmt(chips)} dürTL</span>
         </div>
-      </div>
-    </div>
+      </Modal>
   );
 }

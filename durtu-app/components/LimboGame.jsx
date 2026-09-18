@@ -1,26 +1,31 @@
 'use client';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { fmt, say } from '../lib/toast';
 import { logRound } from '../lib/store';
-
-let AC = null;
-function getAC() {
-  if (!AC && typeof window !== 'undefined') {
-    AC = new (window.AudioContext || window.webkitAudioContext)();
-  }
-  if (AC && AC.state === 'suspended') AC.resume();
-  return AC;
-}
+import { useRoundLock } from '../lib/useRoundLock';
+import { acquireAudio, releaseAudio, tone } from '../lib/audio';
+import Modal from './ui/Modal';
+import BetControl from './ui/BetControl';
+import { useEventCallback } from '../lib/useEventCallback';
 
 export default function LimboGame({ chips, spend, win, onClose }) {
   const [bet, setBet] = useState(25);
   const [target, setTarget] = useState(2.0);
-  const [rolling, setRolling] = useState(false);
+  const { busy: rolling, acquire, release } = useRoundLock();
   const [currDisplay, setCurrDisplay] = useState(1.0);
   const [lastResult, setLastResult] = useState(null); // { won: bool, mult: number }
   const [history, setHistory] = useState([]);
   const [turbo, setTurbo] = useState(false);
   const sfxRef = useRef(true);
+  const rafRef = useRef(0);
+
+  useEffect(() => {
+    acquireAudio();
+    return () => {
+      cancelAnimationFrame(rafRef.current);
+      releaseAudio();
+    };
+  }, []);
 
   // Win chance: (99 / target)% with 1% house edge
   const winChance = Math.min(98, Math.max(0.01, 98 / target)).toFixed(2);
@@ -28,20 +33,7 @@ export default function LimboGame({ chips, spend, win, onClose }) {
 
   function playTone(freq, dur = 0.08, type = 'sine', gain = 0.1) {
     if (!sfxRef.current) return;
-    try {
-      const a = getAC();
-      if (!a) return;
-      const osc = a.createOscillator();
-      const g = a.createGain();
-      osc.type = type;
-      osc.frequency.setValueAtTime(freq, a.currentTime);
-      g.gain.setValueAtTime(gain, a.currentTime);
-      g.gain.exponentialRampToValueAtTime(0.0001, a.currentTime + dur);
-      osc.connect(g);
-      g.connect(a.destination);
-      osc.start();
-      osc.stop(a.currentTime + dur + 0.02);
-    } catch (e) {}
+    tone(freq, { dur, type, gain });
   }
 
   function handleTargetChange(val) {
@@ -55,69 +47,70 @@ export default function LimboGame({ chips, spend, win, onClose }) {
     setTarget(parseFloat(derivedTarget));
   }
 
-  function playRound() {
-    if (rolling) return;
+  function finalizeRound(round, outcome, isWon) {
+    setCurrDisplay(outcome);
+    release();
+    setLastResult({ won: isWon, mult: outcome });
+    setHistory(h => [{ won: isWon, mult: outcome, ts: Date.now() }, ...h].slice(0, 12));
+
+    if (isWon) {
+      const totalWin = Math.round(round.bet * round.target);   // snapshot'tan
+      win(totalWin);
+      logRound('Limbo', round.bet, totalWin, round.target);
+      playTone(880, 0.15, 'triangle', 0.2);
+      setTimeout(() => playTone(1320, 0.2, 'sine', 0.2), 100);
+    } else {
+      logRound('Limbo', round.bet, 0);
+      playTone(180, 0.12, 'sawtooth', 0.15);
+    }
+  }
+
+  const playRound = useEventCallback(() => {
+    if (!acquire()) return;                    // senkron kilit
     if (!spend(bet)) {
+      release();
       say('Yetersiz bakiye — fişi küçült.');
       return;
     }
 
-    setRolling(true);
+    // TUR SÖZLEŞMESİ — ödeme bu dondurulmuş değerlere göre yapılır.
+    // Eskiden kazanma kararı tur başındaki target'a, ödeme ise animasyon
+    // bitişindeki target'a göre hesaplanıyordu: kullanıcı 1.01 ile başlayıp
+    // sayaç dönerken hedefi 10000 yaparak her turu 10.000× ödetebiliyordu.
+    const round = Object.freeze({ bet, target });
 
-    // Generate outcome: provably standard 98% RTP curve
-    // Outcome: 0.98 / (1 - rand)
     const rawOutcome = 0.98 / (1 - Math.random());
     const outcome = Math.min(10000, Math.max(1.0, Math.floor(rawOutcome * 100) / 100));
-    const isWon = outcome >= target;
+    const isWon = outcome >= round.target;
 
     playTone(400, 0.05, 'triangle', 0.08);
 
     if (turbo) {
-      finalizeRound(outcome, isWon);
+      finalizeRound(round, outcome, isWon);
       return;
     }
 
-    // Rolling animation counter
-    let startTime = Date.now();
+    const startTime = Date.now();
     const duration = 500;
 
     function step() {
       const elapsed = Date.now() - startTime;
       const progress = Math.min(1, elapsed / duration);
-      const intermediate = 1.0 + (outcome - 1.0) * Math.pow(progress, 2);
-      setCurrDisplay(intermediate);
+      setCurrDisplay(1.0 + (outcome - 1.0) * Math.pow(progress, 2));
 
       if (progress < 1) {
-        requestAnimationFrame(step);
+        rafRef.current = requestAnimationFrame(step);
       } else {
-        finalizeRound(outcome, isWon);
+        finalizeRound(round, outcome, isWon);
       }
     }
-    requestAnimationFrame(step);
-  }
+    rafRef.current = requestAnimationFrame(step);
+  });
 
-  function finalizeRound(outcome, isWon) {
-    setCurrDisplay(outcome);
-    setRolling(false);
-    setLastResult({ won: isWon, mult: outcome });
-    setHistory(h => [{ won: isWon, mult: outcome, ts: Date.now() }, ...h].slice(0, 12));
 
-    if (isWon) {
-      const totalWin = Math.round(bet * target);
-      win(totalWin);
-      logRound('Limbo', bet, totalWin, target);
-      playTone(880, 0.15, 'triangle', 0.2);
-      setTimeout(() => playTone(1320, 0.2, 'sine', 0.2), 100);
-    } else {
-      logRound('Limbo', bet, 0);
-      playTone(180, 0.12, 'sawtooth', 0.15);
-    }
-  }
 
   return (
-    <div className="ovl" onClick={e => e.target === e.currentTarget && onClose()} style={{ zIndex: 75 }}>
-      <div className="pnl" style={{ width: 'min(560px, 98vw)', padding: '1.4rem 1.6rem' }}>
-        <button className="close" onClick={onClose}>✕</button>
+    <Modal onClose={onClose} title="Limbo" className="pnl" zIndex={75} style={{ width: 'min(560px, 98vw)', padding: '1.4rem 1.6rem' }}>
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '.6rem' }}>
           <div>
@@ -213,21 +206,12 @@ export default function LimboGame({ chips, spend, win, onClose }) {
         {/* Input Controls */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '.8rem' }}>
           {/* Bet Input */}
-          <div>
-            <label style={{ fontSize: '.68rem', color: 'var(--muted)', display: 'block', marginBottom: 4 }}>BAHİS (dürTL)</label>
-            <div style={{ display: 'flex', gap: 4 }}>
-              <input
-                type="number"
-                min={1}
-                value={bet}
-                onChange={e => setBet(Math.max(1, +e.target.value))}
-                className="inp"
-                style={{ padding: '.45rem .6rem', fontSize: '.84rem', width: '100%' }}
-              />
-              <button className="btn" style={{ padding: '.2rem .5rem', fontSize: '.65rem' }} onClick={() => setBet(b => Math.max(1, Math.floor(b / 2)))}>½</button>
-              <button className="btn" style={{ padding: '.2rem .5rem', fontSize: '.65rem' }} onClick={() => setBet(b => b * 2)}>2×</button>
-            </div>
-          </div>
+          <BetControl
+            value={bet}
+            onChange={setBet}
+            max={chips}
+            disabled={rolling}
+          />
 
           {/* Target Multiplier Input */}
           <div>
@@ -239,6 +223,7 @@ export default function LimboGame({ chips, spend, win, onClose }) {
               max={10000}
               value={target}
               onChange={e => handleTargetChange(e.target.value)}
+              disabled={rolling}
               className="inp"
               style={{ padding: '.45rem .6rem', fontSize: '.84rem', width: '100%' }}
             />
@@ -254,6 +239,7 @@ export default function LimboGame({ chips, spend, win, onClose }) {
               max={98}
               value={winChance}
               onChange={e => handleWinChanceChange(e.target.value)}
+              disabled={rolling}
               className="inp"
               style={{ padding: '.45rem .6rem', fontSize: '.84rem', width: '100%' }}
             />
@@ -292,7 +278,6 @@ export default function LimboGame({ chips, spend, win, onClose }) {
           <span>Hedefte Net Kazanç: <b style={{ color: 'var(--green)' }}>+{fmt(winProfit)} dürTL</b></span>
           <span>Bakiye: ◈ {fmt(chips)} dürTL</span>
         </div>
-      </div>
-    </div>
+      </Modal>
   );
 }

@@ -1,7 +1,9 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
-import { fmt, say } from '../lib/toast';
+import { fmt, say, html } from '../lib/toast';
 import { logRound } from '../lib/store';
+import { acquireAudio, releaseAudio, tone, fanfare } from '../lib/audio';
+import Modal from './ui/Modal';
 
 const SUITS = ['♠', '♥', '♦', '♣'];
 const RANKS = [
@@ -39,15 +41,6 @@ function handTotal(hand) {
     aces--;
   }
   return total;
-}
-
-let AC = null;
-function getAC() {
-  if (!AC && typeof window !== 'undefined') {
-    AC = new (window.AudioContext || window.webkitAudioContext)();
-  }
-  if (AC && AC.state === 'suspended') AC.resume();
-  return AC;
 }
 
 function CardView({ card, hidden, win }) {
@@ -109,7 +102,7 @@ export default function BlackjackGame({ chips, spend, win, onClose }) {
   const [playerHand, setPlayerHand] = useState([]);
   const [dealerHand, setDealerHand] = useState([]);
   const [phase, setPhase] = useState('bet'); // 'bet' | 'insurance' | 'play' | 'over'
-  const [insuranceBet, setInsuranceBet] = useState(0);
+  const [_insuranceBet, setInsuranceBet] = useState(0);
   const [msg, setMsg] = useState({ t: 'Bahsini belirle ve “Kart Dağıt”a bas.', cls: '' });
   const [resultOutcome, setResultOutcome] = useState(''); // 'win' | 'lose' | 'bj' | 'push'
   const activeBetRef = useRef(0);
@@ -117,60 +110,23 @@ export default function BlackjackGame({ chips, spend, win, onClose }) {
 
   function playCardSlide() {
     if (!sfxRef.current) return;
-    try {
-      const a = getAC();
-      if (!a) return;
-      const osc = a.createOscillator();
-      const g = a.createGain();
-      osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(300, a.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(120, a.currentTime + 0.08);
-      g.gain.setValueAtTime(0.04, a.currentTime);
-      g.gain.exponentialRampToValueAtTime(0.0001, a.currentTime + 0.08);
-      osc.connect(g);
-      g.connect(a.destination);
-      osc.start();
-      osc.stop(a.currentTime + 0.09);
-    } catch (e) {}
+    tone(300, { dur: 0.08, type: 'sawtooth', gain: 0.04 });
   }
 
   function playChipSound() {
     if (!sfxRef.current) return;
-    try {
-      const a = getAC();
-      if (!a) return;
-      const osc = a.createOscillator();
-      const g = a.createGain();
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(1600, a.currentTime);
-      g.gain.setValueAtTime(0.06, a.currentTime);
-      g.gain.exponentialRampToValueAtTime(0.0001, a.currentTime + 0.04);
-      osc.connect(g);
-      g.connect(a.destination);
-      osc.start();
-      osc.stop(a.currentTime + 0.04);
-    } catch (e) {}
+    tone(1600, { dur: 0.04, type: 'triangle', gain: 0.06 });
   }
 
   function playWinFanfare() {
     if (!sfxRef.current) return;
-    try {
-      const a = getAC();
-      if (!a) return;
-      [523, 659, 784, 1046].forEach((f, i) => {
-        const osc = a.createOscillator();
-        const g = a.createGain();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(f, a.currentTime + i * 0.08);
-        g.gain.setValueAtTime(0.12, a.currentTime + i * 0.08);
-        g.gain.exponentialRampToValueAtTime(0.0001, a.currentTime + i * 0.08 + 0.2);
-        osc.connect(g);
-        g.connect(a.destination);
-        osc.start(a.currentTime + i * 0.08);
-        osc.stop(a.currentTime + i * 0.08 + 0.22);
-      });
-    } catch (e) {}
+    fanfare([523, 659, 784, 1046], { gain: 0.12 });
   }
+
+  useEffect(() => {
+    acquireAudio();
+    return () => releaseAudio();
+  }, []);
 
   function drawCard() {
     if (shoeRef.current.length < 20) {
@@ -202,8 +158,7 @@ export default function BlackjackGame({ chips, spend, win, onClose }) {
     setPlayerHand(initialPH);
     setDealerHand(initialDH);
 
-    const playerTotal = handTotal(initialPH);
-    const dealerTotal = handTotal(initialDH);
+
 
     // If dealer shows Ace, offer insurance
     if (d1.r === 'A') {
@@ -237,12 +192,14 @@ export default function BlackjackGame({ chips, spend, win, onClose }) {
 
     if (accept) {
       const insCost = Math.floor(activeBetRef.current / 2);
-      if (spend(insCost)) {
+      if (insCost < 1) {
+        say('Sigorta için bahis çok küçük — sigortasız devam ediliyor.');
+      } else if (!spend(insCost)) {
+        say('Sigorta için yeterli bakiye yok — sigortasız devam ediliyor.');
+      } else {
         setInsuranceBet(insCost);
-        say(`Sigorta alındı: ◈ ${insCost} dürTL`);
-        if (hasBJ) {
-          win(insCost * 3); // 2:1 insurance payout + return
-        }
+        say(html`Sigorta alındı: ◈ ${fmt(insCost)} dürTL`);
+        if (hasBJ) win(insCost * 3); // 2:1 ödeme + anapara iadesi
       }
     }
 
@@ -264,10 +221,18 @@ export default function BlackjackGame({ chips, spend, win, onClose }) {
   }
 
   function doubleDown() {
-    if (phase !== 'play' || playerHand.length !== 2 || chips < activeBetRef.current) return;
-    spend(activeBetRef.current);
-    activeBetRef.current *= 2;
-    say(`🎩 İkiye katladın! Bahis: ◈ ${activeBetRef.current}`);
+    if (phase !== 'play' || playerHand.length !== 2) return;
+
+    // spend() dönüşü MUTLAKA kontrol edilir. Eskiden yok sayılıyordu: bakiye
+    // yetmese bile activeBetRef ikiye katlanıyor ve finalize('win') karşılığı
+    // alınmamış bahsi 2× ödüyordu.
+    const extra = activeBetRef.current;
+    if (!spend(extra)) {
+      say(html`İkiye katlamak için ◈ ${fmt(extra)} dürTL gerekli — bakiyen yetmiyor.`);
+      return;
+    }
+    activeBetRef.current = extra * 2;
+    say(html`🎩 İkiye katladın! Bahis: ◈ ${fmt(activeBetRef.current)}`);
 
     const card = drawCard();
     const newHand = [...playerHand, card];
@@ -350,9 +315,7 @@ export default function BlackjackGame({ chips, spend, win, onClose }) {
   const dealerVisibleTotal = dealerHand.length > 0 ? (phase === 'play' ? handTotal([dealerHand[0]]) : dTotal) : 0;
 
   return (
-    <div className="ovl" onClick={e => e.target === e.currentTarget && onClose()} style={{ zIndex: 75 }}>
-      <div className="pnl" style={{ width: 'min(640px, 98vw)', padding: '1.2rem 1.4rem' }}>
-        <button className="close" onClick={onClose}>✕</button>
+    <Modal onClose={onClose} title="Blackjack" className="pnl" zIndex={75} style={{ width: 'min(640px, 98vw)', padding: '1.2rem 1.4rem' }}>
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '.4rem' }}>
           <div>
@@ -572,7 +535,6 @@ export default function BlackjackGame({ chips, spend, win, onClose }) {
             </button>
           )}
         </div>
-      </div>
-    </div>
+      </Modal>
   );
 }

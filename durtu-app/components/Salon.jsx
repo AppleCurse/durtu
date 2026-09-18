@@ -8,8 +8,12 @@ export default function Salon({ name, chips, onPlay, onOpenCheckIn, checkInInfo,
   const [date, setDate] = useState('');
   const [status, setStatus] = useState(() => checkInInfo || getCheckInStatus());
 
+  // Saat/tarih yalnızca istemcide hesaplanabilir: sunucuda üretilen HTML ile
+  // istemcinin saati farklı olursa hidrasyon uyuşmazlığı oluşur. Bu yüzden
+  // ilk değerler bilinçli olarak mount sonrasında yazılıyor.
   useEffect(() => {
     const h = new Date().getHours();
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- hidrasyon güvenliği
     setGreet(h < 6 ? 'İyi geceler' : h < 12 ? 'Günaydın' : h < 18 ? 'İyi günler' : h < 23 ? 'İyi akşamlar' : 'İyi geceler');
     setDate(new Date().toLocaleDateString('tr-TR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) + ' — salon hazır.');
     setStatus(getCheckInStatus());
@@ -152,7 +156,7 @@ export default function Salon({ name, chips, onPlay, onOpenCheckIn, checkInInfo,
           <div className="pick">
             <span className="tag">🎰 Slot · Gerçek</span>
             <div className="ic">⚡</div>
-            <h3>Zeus'un Günü</h3>
+            <h3>Zeus&apos;un Günü</h3>
             <p>Gates 6×5 scatter — 8+ her yerde öder, tumble, çarpan birikir.</p>
             <button className="btn" onClick={() => onPlay('gates')}>Oyna</button>
           </div>
@@ -194,12 +198,12 @@ export default function Salon({ name, chips, onPlay, onOpenCheckIn, checkInInfo,
             <h4 className="serif" style={{ fontStyle: 'italic', fontWeight: 400, lineHeight: 1.55, color: 'var(--cream)' }}>
               “Gates 6×5 tumble + çarpan birikimi, Bonanza 6×5 bomba — ikisi de gerçek scatter. Spor da gerçek settlement.”
             </h4>
-            <button className="btn" onClick={() => onPlay('sb')}>Sweet Bonanza'ya git</button>
+            <button className="btn" onClick={() => onPlay('sb')}>Sweet Bonanza&apos;ya git</button>
           </div>
           <div className="mini">
             <span className="tag">🎁 Sana Özel</span>
             <h4>50 Ücretsiz Dönüş</h4>
-            <p>Banner yok, spam yok — sadece sana. Gates of Olympus'ta geçerli.</p>
+            <p>Banner yok, spam yok — sadece sana. Gates of Olympus&apos;ta geçerli.</p>
             <button className="btn solid" onClick={() => { say('<b>50 ücretsiz dönüş</b> tanımlandı (demo). Bol şans.'); onPlay('gates'); }}>Kullan</button>
           </div>
         </div>

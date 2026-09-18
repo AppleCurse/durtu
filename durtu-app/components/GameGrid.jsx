@@ -1,7 +1,8 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { CATS, GAMES as FALLBACK } from '../lib/games';
-import { say } from '../lib/toast';
+import { shuffle } from '../lib/shuffle';
+import { log } from '../lib/logger';
 
 export default function GameGrid({ onPlay }) {
   const [games, setGames] = useState([]);
@@ -12,21 +13,37 @@ export default function GameGrid({ onPlay }) {
   async function refresh() {
     setLoading(true);
     try {
-      const r = await fetch('/api/games');
+      const r = await fetch('/api/games', { cache: 'no-store' });
+      // fetch HTTP 500'de reject ETMEZ; durum ve gövde ayrıca doğrulanmalı.
+      if (!r.ok) throw new Error('HTTP ' + r.status);
       const j = await r.json();
-      setGames(j.data); setFromApi(true);
-    } catch {
-      setGames(FALLBACK); setFromApi(false);
-    } finally { setLoading(false); }
+      if (!j?.ok || !Array.isArray(j.data) || j.data.length === 0) {
+        throw new Error('MALFORMED_PAYLOAD');
+      }
+      setGames(shuffle(j.data));
+      setFromApi(true);
+    } catch (err) {
+      log.warn('gamegrid.refresh', '/api/games başarısız — yerel seçkiye düşüldü', { err: err?.message });
+      setGames(shuffle(FALLBACK));
+      setFromApi(false);
+    } finally {
+      setLoading(false);
+    }
   }
+  // Asenkron veri çekimi: setState'ler await sonrasında, yani senkron
+  // cascading render değil. Kural bunu ayırt edemiyor.
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- async fetch
   useEffect(() => { refresh(); }, []);
 
-  const list = games.filter(g => filter === 'all' || g.cat === filter);
+  // İkinci savunma katmanı: games her ihtimale karşı dizi olmayabilir.
+  const list = (Array.isArray(games) ? games : FALLBACK).filter(
+    g => g && (filter === 'all' || g.cat === filter)
+  );
 
   return (
     <section id="secki">
       <span className="tag">Küratörün Seçkisi {fromApi ? '· /api/games' : '· yerel yedek'}</span>
-      <h2 className="sect">5.000 oyun değil. Senin için seçilmiş {games.length} oyun.</h2>
+      <h2 className="sect">5.000 oyun değil. Senin için seçilmiş {list.length} oyun.</h2>
       <div className="filters">
         {CATS.map(([k, l]) => (
           <button key={k} className={'chip' + (filter === k ? ' on' : '')} onClick={() => setFilter(k)}>{l}</button>
@@ -39,8 +56,16 @@ export default function GameGrid({ onPlay }) {
               <div className="gcard skel" key={i}><div className="skl tall" /><div className="skl" /><div className="skl w60" /></div>
             ))
           : list.map(x => (
-              <div className="gcard" key={x.id} onClick={() =>
-                onPlay(x.id)}>
+              <div
+                className="gcard"
+                key={x.id}
+                role="button"
+                tabIndex={0}
+                onClick={() => onPlay(x.id)}
+                onKeyDown={e => {
+                  if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onPlay(x.id); }
+                }}
+              >
                 <div className="ic">{x.icon}</div>
                 <h3>{x.name}</h3>
                 <div className="meta">RTP %{x.rtp} · {x.vol}</div>
