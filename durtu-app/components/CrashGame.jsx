@@ -7,12 +7,15 @@ import { crashPoint, evaluateFrame } from '../lib/engines/crash';
 import { acquireAudio, releaseAudio, getAudio, tone as sharedTone, noiseBurst } from '../lib/audio';
 import { log } from '../lib/logger';
 import Modal from './ui/Modal';
+import FairBadge from './ui/FairBadge';
+import { beginCrashRound } from '../lib/fairRound';
 
 const CRW = 660, CRH = 330;
 const NAMES = ['M*** K***','A*** Y***','S*** D***','E*** T***','B*** Ö***','H*** Ç***','Z*** A***','K*** Ş***','N*** V***','T*** G***'];
 const ac2 = () => getAudio();
 
 export default function CrashGame({ spend, win, onClose }){
+  const [fairHash, setFairHash] = useState('');
   const cvRef = useRef(null);
   const cx = useRef(null);
   const E = useRef({ running:false, cashed:false, m:1, crash:1, bet:10, oto:0, t0:0, raf:0, pts:[], hum:null });
@@ -162,7 +165,10 @@ export default function CrashGame({ spend, win, onClose }){
     if(e.running) return;
     const bet = betRef.current;
     if(!spend(bet)){ say('Yetersiz demo bakiyesi.'); return; }
-    e.running = true; e.cashed = false; e.m = 1; e.bet = bet; e.crash = crashPoint(); e.pts = [[0, 1]];
+    const fair = beginCrashRound();          // commit → play → reveal
+    e.fair = fair;
+    setFairHash(fair.hash);
+    e.running = true; e.cashed = false; e.m = 1; e.bet = bet; e.crash = fair.result; e.pts = [[0, 1]];
     e.oto = parseFloat((otoRef.current?.value || '').replace(',', '.')) || 0;
     setRunning(true); setCanCash(true); setBoom('');
     setMyMsg('Uçak havada. Çıkışını bekle…');
@@ -238,6 +244,7 @@ export default function CrashGame({ spend, win, onClose }){
 
   return (
     <Modal onClose={onClose} title="Aviator" className="pnl slot-pnl">
+      <FairBadge liveHash={fairHash} />
         <div className="slot-head">
           <div>
             <span className="demo-badge">Demo · Gerçek para yok</span>

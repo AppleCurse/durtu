@@ -16,6 +16,7 @@ import WheelGame from '../components/WheelGame';
 import VaultModal from '../components/VaultModal';
 import StatsModal from '../components/StatsModal';
 import DailyCheckInModal from '../components/DailyCheckInModal';
+import ProvablyFairModal from '../components/ProvablyFairModal';
 import Ticker from '../components/Ticker';
 import Chat from '../components/Chat';
 import AmbienceBtn from '../components/AmbienceBtn';
@@ -90,6 +91,12 @@ export default function Page() {
     chipsRef.current = startChips;
     setChips(startChips);
     setCheckInInfo(getCheckInStatus());
+  }, []);
+
+  useEffect(() => {
+    const onFair = () => setOpen('fair');
+    window.addEventListener('durtu:openfair', onFair);
+    return () => window.removeEventListener('durtu:openfair', onFair);
   }, []);
 
   useEffect(() => {
@@ -176,6 +183,14 @@ export default function Page() {
           >
             ☀️ {checkInInfo?.streak ? `${checkInInfo.streak}. GÜN` : 'RİTÜEL'}
           </button>
+          <button
+            className="btn btn-sm"
+            onClick={() => setOpen('fair')}
+            title="Doğrulanabilir Adillik (Provably Fair)"
+            style={{ padding: '.32rem .7rem', fontSize: '.66rem', background: 'rgba(127,191,127,.12)', border: '1px solid var(--gd)', color: 'var(--gold2)', borderRadius: 6, cursor: 'pointer', fontWeight: 600, letterSpacing: '.08em' }}
+          >
+            🛡️ ADİLLİK
+          </button>
           <button className="btn btn-sm" onClick={() => setOpen('vault')} style={{ padding: '.32rem .7rem', fontSize: '.66rem', background: 'rgba(212,175,55,.14)', border: '1px solid var(--gold)', color: 'var(--gold)', borderRadius: 6, cursor: 'pointer', fontWeight: 600, letterSpacing: '.08em' }}>
             + KASA
           </button>
@@ -224,6 +239,7 @@ export default function Page() {
       {open === 'wheel' && <WheelGame chips={chips} spend={spend} win={win} onClose={() => setOpen(null)} />}
       {open === 'vault' && <VaultModal chips={chips} spend={spend} win={win} onClose={() => setOpen(null)} />}
       {open === 'stats' && <StatsModal name={name} chips={chips} onClose={() => setOpen(null)} />}
+      {open === 'fair' && <ProvablyFairModal onClose={() => setOpen(null)} />}
       {open === 'checkin' && (
         <DailyCheckInModal
           checkInResult={

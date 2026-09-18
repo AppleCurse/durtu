@@ -25,7 +25,7 @@ images/, sw.js, manifest), kök `salon3d.html`, kök `public/`,
 oluştu; bu commit serisi çizgiyi teke indirir (main'in bileşen/API seçimleri korunur).
 
 ## Doğrulama (Node 20.20.2 ve 22.22.3)
-- `npm test` → **93/93** (72 sertleştirme + 12 modal/a11y sözleşmesi + 9 store/check-in/favori portu)
+- `npm test` → **105/105** (72 sertleştirme + 12 modal/a11y sözleşmesi + 9 store/check-in/favori portu)
 - `npm run lint` → **0 hata, 0 uyarı** (`--max-warnings=0`, CI'da zorunlu)
 - `npm run build` → ✅ Next 16.3.5
 - Test koşucusu: `durtu-app/scripts/run-tests.mjs` (Node 20 glob desteklemez,
@@ -43,13 +43,21 @@ oluştu; bu commit serisi çizgiyi teke indirir (main'in bileşen/API seçimleri
 2. **`/api/apply` kalıcılık kararı:** Supabase tablosu (email/contact kolonları) /
    e-posta bildirimi / demo olarak kalması — bilinçli seçim.
 
+## Bu seride eklendi: Provably Fair katmanı (backlog #1 tamam)
+- `lib/engines/provablyFair.js`: saf JS SHA-256, sayaç-modu tohum rng'si,
+  commit/reveal sözleşmesi, `verifyRound` (panel + testlerin ortak kapısı)
+- `lib/fairRound.js`: `beginCrashRound` / `beginMinesRound` — tur BAŞLAMADAN kilit
+- Crash + Mines panellerinde `ui/FairBadge` (kilitli hash → açığa çıkan anahtar)
+- `ProvablyFairModal`: son tur paketi + "KENDİN HESAPLA & DOĞRULA" aracı
+- Nav'da 🛡️ ADİLLİK düğmesi; 12 yeni test (SHA-256 vektörleri, determinizm,
+  RTP(t)=t·P(crash≥t) bandı, mines sayımı, verify pozitif/negatif)
+
 ## Port bekleyenler (monolitte vardı, React'te yeniden yazılacak)
-1. Provably Fair paneli (SHA-256 commit/reveal + kendini doğrula) → crash/mines
-2. Kulüp katmanı: VIP kademeleri, promo kuponları, %10 cashback, gece yakıtı
-3. 360° fotogrametrik lounge (panoramalar gitmedi; sahne yeniden kurulacak)
-4. Şans Melekleri (TTS) + Selin'in proaktif sesleri
-5. Turnuva + canlı liderlik tablosu; davet sistemi (3 tek kullanımlık hak)
-6. Supabase bulut hesabı (`supabase/schema.sql` hazır; anahtarlar env'e)
-7. Backoffice (gerçek auth'lu panel)
+1. Kulüp katmanı: VIP kademeleri, promo kuponları, %10 cashback, gece yakıtı
+2. 360° fotogrametrik lounge (panoramalar gitmedi; sahne yeniden kurulacak)
+3. Şans Melekleri (TTS) + Selin'in proaktif sesleri
+4. Turnuva + canlı liderlik tablosu; davet sistemi (3 tek kullanımlık hak)
+5. Supabase bulut hesabı (`supabase/schema.sql` hazır; anahtarlar env'e)
+6. Backoffice (gerçek auth'lu panel)
 
 dürTL — demo para. Gerçek para yok. 18+ · Sorumlu oyun.
