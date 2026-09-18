@@ -1,35 +1,55 @@
-# DÜRTÜ — Oyun Denetim Raporu (13 Eylül 2026 — Merge)
+# DÜRTÜ — Durum Raporu (18 Eylül 2026 · Birleştirme tamam)
 
-## Özet
-- **origin/main (57b130d)** ile birleştirildi: Plinko, Limbo, HiLo, Wheel, Daily Check-in, Provably Fair SHA-256, VIP tier, Promo kod, Favoriler, Başvuru e-posta doğrulama
-- **Bizim dal (38738bd)** ile birleştirildi: 6 slot gerçek motor (scatter 6x5 tumble mult birikir, hold&win, VS, blood), Spor gerçek settlement
-- **Merge commit:** 26441a6 — test 61/61 ✅, build ✅
-- **Para birimi:** dürTL demo
+## Tek kod tabanı
+Repo'da artık **tek uygulama** var: `durtu-app/` (Next.js 16.3.5 + React 19).
+Legacy monolit `durtu/index.html` ve çoğaltılmış `salon3d.html` kopyaları **silindi**;
+kendi kendine yeten iki 3D sahne statik sayfa olarak korundu:
 
-**Sahte oyun: 0** — 11 ana + 4 yeni orijinal = 15 gerçek oyun + spor
+- `durtu-app/public/salon3d.html` — WASD ile yürünen 3D VIP salon
+- `durtu-app/public/gate-3d.html` — sinematik 3D kapı (ikisi de Salon'dan bağlandı)
 
-## Yeni Gelenler (origin/main)
-- Plinko Original 99% RTP 1000×
-- Limbo Rocket 10.000×
-- Hi-Lo 98% seri
-- Wheel 50× çark
-- Daily Check-in 7 gün seri +250
-- Provably Fair: SHA-256 deterministik crash/mines
-- VIP: Bronz/Gümüş/Altın sandık
-- Promo: DURTU2026 500, VIP-KULUP 1000
+Silinenler (git geçmişinde): `durtu/` (index.html, admin.html, brand.html, assets/,
+images/, sw.js, manifest), kök `salon3d.html`, kök `public/`,
+`tests/engine.test.js` ve `durtu-app/tests/legacy.parity.test.js`
+(parite testinin öbür tarafı monolitti; kapsam `store.test.js`'e port edildi).
 
-## Bizim Gerçek Motorlar (korundu)
-- Gates/Starlight/Sweet 6×5 scatter 8+ tumble mult 2-500 birikir
-- MT4 Hold&Win 5×4 3 can
-- WDW VS expanding wild
-- BS blood pick
-- Spor: 3 maç UCL+SL 1X2 implied prob settlement
+## Tarihçe (neden iki kez yazıldı?)
+- `0858c5b` — 9 release blocker + 72 test (kıdemli mimar denetimi, bkz. CODE_REVIEW_RELEASE_BLOCKERS.md)
+- PR #2 (`b9a9e90` + `0be3f6f`, main'e merge) — legacy RTP hizalaması, `ui/Modal` +
+  `ui/BetControl` a11y/DRY katmanı, sıfır lint uyarısı, CI test koşucusu düzeltmesi
+- PR #1 (bu dal) — **birleştirme**: monolit emekliliği, 3D sahnelerin taşınması,
+  favoriler + lobi arama, `sport` kartı (ölü kod), `store.test.js`,
+  sürümden bağımsız `scripts/run-tests.mjs`, Pake/CI URL güncellemesi
 
-## Merge Notu
-- `durtu/index.html` slotSpin turbo + scatter/holdwin/vs/blood birleşti
-- `durtu-app/app/page.jsx` SportBet + Plinko/Limbo/HiLo/Wheel + DailyCheckIn hepsi import
-- `Salon.jsx` 4 pick: Zeus, Spor Gerçek, Plinko, VIP Blackjack + günlük ritüel banner
-- `tests/engine.test.js` 61 test (crash, bj, rulet, hist, sport 5, mines 4, promo 4, provably fair 6, VIP 6, favori 3, başvuru 3, check-in 5)
+İki oturum aynı kayıp paketi paralel yeniden yazdığı için main'de çift çizgi
+oluştu; bu commit serisi çizgiyi teke indirir (main'in bileşen/API seçimleri korunur).
 
-## Sonraki Adım
-- `git push origin main` — senin local'inden
+## Doğrulama (Node 20.20.2 ve 22.22.3)
+- `npm test` → **93/93** (72 sertleştirme + 12 modal/a11y sözleşmesi + 9 store/check-in/favori portu)
+- `npm run lint` → **0 hata, 0 uyarı** (`--max-warnings=0`, CI'da zorunlu)
+- `npm run build` → ✅ Next 16.3.5
+- Test koşucusu: `durtu-app/scripts/run-tests.mjs` (Node 20 glob desteklemez,
+  Node 22 düz dizini çalıştırmaz, kabuk glob'u Windows'ta kırılır → liste kodda)
+
+## Canlı yayın
+- **Tek site: `durtu-app.vercel.app`.** `d-rt` Vercel projesi monoliti derlemeye
+  çalıştığı için CI'da kırmızı görünür; panelden silinmeli veya yönlendirilmeli
+  (repo dışı işlem).
+- `AppleCurse/DURTL` **özel** Kotlin deposu; Arena bağlantısında yetki yok (404).
+  Erişim verilirse içeriği ayrıca değerlendirilecek.
+
+## Sende kalan iki iş
+1. **Supabase anon anahtarını rotate et** (eski monolitte gömülüydü; git geçmişinde).
+2. **`/api/apply` kalıcılık kararı:** Supabase tablosu (email/contact kolonları) /
+   e-posta bildirimi / demo olarak kalması — bilinçli seçim.
+
+## Port bekleyenler (monolitte vardı, React'te yeniden yazılacak)
+1. Provably Fair paneli (SHA-256 commit/reveal + kendini doğrula) → crash/mines
+2. Kulüp katmanı: VIP kademeleri, promo kuponları, %10 cashback, gece yakıtı
+3. 360° fotogrametrik lounge (panoramalar gitmedi; sahne yeniden kurulacak)
+4. Şans Melekleri (TTS) + Selin'in proaktif sesleri
+5. Turnuva + canlı liderlik tablosu; davet sistemi (3 tek kullanımlık hak)
+6. Supabase bulut hesabı (`supabase/schema.sql` hazır; anahtarlar env'e)
+7. Backoffice (gerçek auth'lu panel)
+
+dürTL — demo para. Gerçek para yok. 18+ · Sorumlu oyun.

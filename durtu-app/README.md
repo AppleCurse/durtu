@@ -1,66 +1,83 @@
-# DÜRTÜ — Next.js Portu
+# DÜRTÜ — Tek Kod Tabanı (Next.js)
 
-> Kapalı kulüp konseptinin React/Next.js mimarisiyle portu.
-> Konsept demosu · Gerçek para kullanılmaz · 18+
+> Kapalı kulüp konseptinin **tek ve resmî** uygulaması.
+> Konsept demosu · Gerçek para kullanılmaz (dürTL) · 18+
+> Canlı: https://durtu-app.vercel.app
+
+Legacy monolit (`durtu/index.html`) 18 Eylül 2026 birleştirmesiyle emekliye ayrıldı;
+kendi kendine yeten iki 3D sahne statik sayfa olarak `public/` altında korundu
+(`salon3d.html`, `gate-3d.html`).
 
 ## Çalıştırma
 
 ```bash
-npm install
-npm run dev        # http://localhost:3000
+npm install          # kökten (workspace)
+npm run dev          # http://localhost:3000
+npm run verify       # lint (0 tolerans) + test + production build
 ```
+
+Node 20.11+ ve 22+ desteklenir (test koşucusu sürüm farklarını normalize eder).
 
 ## Mimari
 
 ```
 durtu-app/
 ├── app/
+│   ├── page.jsx            # 'use client' — kapı/salon, cüzdan, modal yönlendirme (GAME_MODALS)
 │   ├── layout.jsx          # metadata + fontlar
 │   ├── globals.css         # tasarım token'ları + bileşen stilleri
-│   ├── page.jsx            # 'use client' — kapı/salon durumu, cüzdan
 │   └── api/
-│       ├── games/route.js  # GET  — küratör seçkisi (her çağrıda taze sıra)
-│       └── apply/route.js  # POST — üyelik başvurusu (proses-içi kuyruk)
-├── components/
-│   ├── Gate.jsx            # davet kodu + başvuru akışı (POST /api/apply)
-│   ├── Salon.jsx           # kişiselleştirilmiş dashboard
-│   ├── GameGrid.jsx        # /api/games'ten skeleton'lı seçki
-│   ├── SlotGame.jsx        # GERÇEK canvas slot motoru (port)
-│   └── Toasts.jsx          # event-bus toast host'u
-└── lib/
-    ├── games.js            # tek doğruluk kaynağı (katalog + etiketler)
-    └── toast.js            # say() · fmt() · buzz()
+│       ├── games/route.js  # GET  — küratör seçkisi (ISR 1s + Fisher-Yates)
+│       └── apply/route.js  # POST — üyelik başvurusu (doğrulama + rate limit + sınırlı kuyruk)
+├── components/             # oyunlar + salon + kapı + modaller
+│   └── ui/
+│       ├── Modal.jsx       # erişilebilir modal primitifi (focus trap, Escape, aria, scroll kilidi)
+│       └── BetControl.jsx  # ortak bahis bileşeni (½ · 2× · MAX · çipler)
+├── lib/
+│   ├── games.js            # tek doğruluk kaynağı: katalog + kategoriler (15 oyun)
+│   ├── store.js            # profil, bakiye, check-in, favoriler, defter (localStorage)
+│   ├── money.js            # TEK para doğrulama kapısı (NaN/Infinity/negatif girmez)
+│   ├── engines/            # saf oyun matematiği: crash, hilo, mines, plinko, wheel, rtp
+│   ├── audio.js            # paylaşımlı AudioContext + ref-count
+│   ├── logger.js           # sessiz catch yasağı; seviyeli log
+│   ├── shuffle.js          # Fisher-Yates
+│   ├── useRoundLock.js     # senkron tur kilidi (çift-tıklama yarışı)
+│   ├── useEventCallback.js # useEvent deseni (effect deps yarışları)
+│   └── toast.js            # event-bus + XSS-güvenli html tagged-template
+├── public/
+│   ├── salon3d.html        # 3D VIP salon (WASD) — monolitten taşındı
+│   ├── gate-3d.html        # sinematik 3D kapı — monolitten taşındı
+│   └── sw.js               # service worker (PWA)
+├── scripts/
+│   └── run-tests.mjs       # sürümden bağımsız test koşucusu
+└── tests/                  # 93 test: invariant · ekonomi · güvenlik · yarış · store · a11y
 ```
+
+## Testler
+
+```bash
+npm test               # 93 test (Node 20.11+ ve 22+ aynı komut)
+```
+
+- `math.invariants.test.js` — RTP/olasılık invariantları (Çark %98.5, Plinko kova
+  tabloları, Mines Infinity guard, Hi-Lo eşitlik, Crash eğrisi)
+- `economy.test.js` — `lib/money.js` kapısı: NaN/negatif/ondalık/taşma
+- `security.test.js` — toast XSS, escape, API doğrulama
+- `regression.race.test.js` — tur kilidi / çift-tıklama regresyonları
+- `store.test.js` — günlük check-in ritüeli + favoriler (legacy kapsamanın portu)
+- `modal.a11y.test.js` — Modal sözleşmesi + "hiçbir bileşen kendi overlay'ini yazamaz"
 
 ## Slot motoru (components/SlotGame.jsx)
 
-Prototipten (`../durtu/index.html`) birebir taşındı:
-
-- **Reel-strip mimarisi:** her makarada ağırlıklı ~29 sembollük şerit
-- **Fizik:** sabit hız → ease-out yavaşlama → sönümlü sekme · motion blur hayaletleri
-- **10 ödeme çizgisi**, **✦ WILD**, **✨ SCATTER** (8 ücretsiz dönüş, ×2)
-- **İmza çarpan orbları:** temada ×2–×20; ücretsiz dönüşte **birikimli** (Gates mantığı)
-- **WebAudio sentezi:** spin whoosh, makara thud, kazanç arpeji, scatter ding, yıldırım zap
-- **Haptic:** `navigator.vibrate` desenleri · **DPR** keskin canvas
-
-## Prototip ↔ port eşleşmesi
-
-| Özellik | Tek dosya (`durtu/index.html`) | Bu port |
-|---|---|---|
-| Kapı + başvuru | ✅ | ✅ (gerçek API POST) |
-| Kişisel salon | ✅ | ✅ |
-| Seçki + skeleton | ✅ (simüle API) | ✅ (`/api/games`) |
-| Slot motoru + orblar | ✅ | ✅ |
-| Crash/Aviator + canlı sofa | ✅ | 🗓 yol haritası |
-| Melekler (TTS) | ✅ | 🗓 yol haritası |
-| Caz ambiyansı (prosedürel) | ✅ | 🗓 yol haritası |
-| Turnuva modu | ✅ | 🗓 yol haritası |
-| Backoffice (`admin.html`) | ✅ (localStorage) | 🗓 gerçek DB + auth |
+- Reel-strip mimarisi: makara başına ağırlıklı ~29 sembollük şerit
+- Fizik: sabit hız → ease-out yavaşlama → sönümlü sekme · motion blur
+- 6×5 scatter/tumble/hold&win/VS/blood gerçek motorlar (katalog notlarına bkz.)
+- WebAudio sentezi + `navigator.vibrate` + DPR keskin canvas
 
 ## Üretim notları (dürüst liste)
 
-- Gerçek para oyunları **lisanslı sağlayıcı entegrasyonu** gerektirir
-  (Pragmatic Play, Evolution vb. — agregatör API üzerinden).
-- `/api/apply` şu an proses-içi bellek; üretimde Postgres/Kafka + admin onay iş akışı.
-- Kimlik doğrulama: NextAuth (credentials/magic link) + davet kodu claim akışı.
-- Adillik: server-seed commit/reveal veya sağlayıcı RNG'si; istemci motoru yalnızca demo.
+- Gerçek para oyunları **lisanslı sağlayıcı entegrasyonu** gerektirir.
+- `/api/apply` proses-içi bellek; üretimde Postgres + admin onay akışı.
+- Kimlik doğrulama: NextAuth + davet kodu claim akışı (backlog).
+- Provably Fair paneli, kulüp katmanı (VIP/promo/cashback), turnuvalar,
+  melekler ve Supabase bulut senkronu **port bekliyor** — bkz. kök `DURUM_RAPORU.md`.

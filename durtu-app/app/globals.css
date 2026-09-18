@@ -66,7 +66,7 @@ h2.sect::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,var
 .chip{background:transparent;border:1px solid var(--line);color:var(--muted);border-radius:24px;padding:.5rem 1.15rem;font-size:.72rem;transition:all .3s}
 .chip.on{background:var(--gold);color:#000;border-color:var(--gold);font-weight:500}
 .ggrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1rem}
-.gcard{background:linear-gradient(180deg,var(--card2),var(--card));border:1px solid var(--line);border-radius:12px;padding:1.3rem 1.15rem;cursor:pointer;transition:all .4s}
+.gcard{position:relative;background:linear-gradient(180deg,var(--card2),var(--card));border:1px solid var(--line);border-radius:12px;padding:1.3rem 1.15rem;cursor:pointer;transition:all .4s}
 .gcard:hover{transform:translateY(-4px);border-color:var(--gd);box-shadow:0 16px 40px rgba(0,0,0,.55)}
 .gcard .ic{font-size:1.7rem}
 .gcard h3{font-family:var(--serif);font-size:1.02rem;font-weight:600;margin:.55rem 0 .3rem}

@@ -10,9 +10,7 @@
     "build": "npm run build --workspace=durtu-app",
     "start": "npm run start --workspace=durtu-app",
     "lint": "npm run lint --workspace=durtu-app",
-    "test": "npm run test --workspace=durtu-app && node tests/engine.test.js",
-    "test:app": "npm run test --workspace=durtu-app",
-    "test:legacy": "node tests/engine.test.js",
+    "test": "npm run test --workspace=durtu-app",
     "verify": "npm run lint && npm test && npm run build"
   },
   "engines": {

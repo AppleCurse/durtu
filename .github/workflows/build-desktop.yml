@@ -7,7 +7,6 @@ on:
       - main
     paths:
       - '.github/workflows/build-desktop.yml'
-      - 'durtu/**'
       - 'durtu-app/**'
 
 jobs:
@@ -27,7 +26,7 @@ jobs:
 
       - name: Build DÜRTÜ Desktop App via Pake
         run: |
-          npx pake-cli https://d-rt.vercel.app --name Durtu --title "DÜRTÜ — Kapalı Kulüp" --width 1280 --height 850 --dark-mode --show-system-tray
+          npx pake-cli https://durtu-app.vercel.app --name Durtu --title "DÜRTÜ — Kapalı Kulüp" --width 1280 --height 850 --dark-mode --show-system-tray
 
       - name: Upload Windows Executable Artifact
         uses: actions/upload-artifact@v4

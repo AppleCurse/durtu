@@ -355,3 +355,30 @@ export function getCheckInStatus() {
     rewards: DAILY_REWARDS,
   };
 }
+
+/* ================= FAVORİLER (monolitten port) ================= */
+const FAV_KEY = 'durtu_react_favs';
+
+export function getFavs() {
+  if (typeof window === 'undefined') return [];
+  try {
+    const f = JSON.parse(localStorage.getItem(FAV_KEY) || '[]');
+    return Array.isArray(f) ? f.filter(x => typeof x === 'string') : [];
+  } catch (err) {
+    log.ignorable('store.getFavs', err);
+    return [];
+  }
+}
+
+export function toggleFav(id) {
+  const favs = getFavs();
+  const i = favs.indexOf(id);
+  if (i >= 0) favs.splice(i, 1);
+  else favs.push(id);
+  try {
+    localStorage.setItem(FAV_KEY, JSON.stringify(favs));
+  } catch (err) {
+    log.ignorable('store.toggleFav', err);
+  }
+  return favs;
+}

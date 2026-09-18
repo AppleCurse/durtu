@@ -33,6 +33,24 @@ export default function Salon({ name, chips, onPlay, onOpenCheckIn, checkInInfo,
         </h1>
         <p className="muted" suppressHydrationWarning>{date}</p>
 
+        {/* 3D katman — monolitten taşınan statik sahneler (public/) */}
+        <div style={{ display: 'flex', gap: '.6rem', flexWrap: 'wrap', margin: '.8rem 0 0' }}>
+          <a
+            href="/salon3d.html"
+            className="btn solid"
+            style={{ fontSize: '.65rem', padding: '.38rem .85rem', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '.3rem' }}
+          >
+            🚶‍️ 3D SALONDA YÜRÜ (WASD)
+          </a>
+          <a
+            href="/gate-3d.html"
+            className="btn ghost"
+            style={{ fontSize: '.65rem', padding: '.38rem .85rem', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '.3rem' }}
+          >
+            🎬 SİNEMATİK 3D KAPI
+          </a>
+        </div>
+
         {/* ☀️ Günlük Giriş Ritüeli */}
         <div
           style={{
