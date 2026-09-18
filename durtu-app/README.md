@@ -30,6 +30,7 @@ durtu-app/
 │       ├── games/route.js  # GET  — küratör seçkisi (ISR 1s + Fisher-Yates)
 │       └── apply/route.js  # POST — üyelik başvurusu (doğrulama + rate limit + sınırlı kuyruk)
 ├── components/             # oyunlar + salon + kapı + modaller
+│   ├── Lounge360.jsx       # WebGL equirectangular lounge + mekânsal hotspotlar
 │   └── ui/
 │       ├── Modal.jsx       # erişilebilir modal primitifi (focus trap, Escape, aria, scroll kilidi)
 │       └── BetControl.jsx  # ortak bahis bileşeni (½ · 2× · MAX · çipler)
@@ -43,20 +44,23 @@ durtu-app/
 │   ├── shuffle.js          # Fisher-Yates
 │   ├── useRoundLock.js     # senkron tur kilidi (çift-tıklama yarışı)
 │   ├── useEventCallback.js # useEvent deseni (effect deps yarışları)
+│   ├── panorama.js         # açı sarma + küresel hotspot projeksiyonu
 │   └── toast.js            # event-bus + XSS-güvenli html tagged-template
 ├── public/
+│   ├── lounge/
+│   │   └── panorama.jpg    # 2:1 equirectangular İstanbul lounge sahnesi
 │   ├── salon3d.html        # 3D VIP salon (WASD) — monolitten taşındı
 │   ├── gate-3d.html        # sinematik 3D kapı — monolitten taşındı
 │   └── sw.js               # service worker (PWA)
 ├── scripts/
 │   └── run-tests.mjs       # sürümden bağımsız test koşucusu
-└── tests/                  # 105 test: invariant · ekonomi · güvenlik · yarış · store · a11y · fair
+└── tests/                  # 114 test: invariant · ekonomi · güvenlik · yarış · store · a11y · fair · panorama
 ```
 
 ## Testler
 
 ```bash
-npm test               # 93 test (Node 20.11+ ve 22+ aynı komut)
+npm test               # 114 test (Node 20.11+ ve 22+ aynı komut)
 ```
 
 - `math.invariants.test.js` — RTP/olasılık invariantları (Çark %98.5, Plinko kova
@@ -67,6 +71,14 @@ npm test               # 93 test (Node 20.11+ ve 22+ aynı komut)
 - `store.test.js` — günlük check-in ritüeli + favoriler (legacy kapsamanın portu)
 - `modal.a11y.test.js` — Modal sözleşmesi + "hiçbir bileşen kendi overlay'ini yazamaz"
 - `provablyFair.test.js` — SHA-256 vektörleri, commit/reveal determinizmi, RTP bandı
+- `panorama.test.js` — 360° açı sarma, dikiş çizgisi, hotspot projeksiyonu ve giriş sözleşmesi
+
+## 360° lounge (components/Lounge360.jsx)
+
+- 2:1 equirectangular sahne, bağımlılıksız WebGL shader ile gerçek küresel projeksiyon
+- Kesintisiz 360° açı sarma; sürükleme, dokunma, WASD/ok tuşları ve tekerlek zoom
+- Beş mekânsal hotspot; özel masa doğrudan ortak React blackjack motoruna bağlanır
+- Otomatik tur, tam ekran, azaltılmış hareket tercihi ve WebGL yoksa görsel yedek
 
 ## Slot motoru (components/SlotGame.jsx)
 

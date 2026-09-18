@@ -6,7 +6,8 @@ Legacy monolit `durtu/index.html` ve çoğaltılmış `salon3d.html` kopyaları 
 kendi kendine yeten iki 3D sahne statik sayfa olarak korundu:
 
 - `durtu-app/public/salon3d.html` — WASD ile yürünen 3D VIP salon
-- `durtu-app/public/gate-3d.html` — sinematik 3D kapı (ikisi de Salon'dan bağlandı)
+- `durtu-app/public/gate-3d.html` — sinematik 3D kapı
+- `durtu-app/public/lounge/panorama.jpg` — React 360° lounge için 2:1 equirectangular sahne
 
 Silinenler (git geçmişinde): `durtu/` (index.html, admin.html, brand.html, assets/,
 images/, sw.js, manifest), kök `salon3d.html`, kök `public/`,
@@ -25,7 +26,7 @@ images/, sw.js, manifest), kök `salon3d.html`, kök `public/`,
 oluştu; bu commit serisi çizgiyi teke indirir (main'in bileşen/API seçimleri korunur).
 
 ## Doğrulama (Node 20.20.2 ve 22.22.3)
-- `npm test` → **105/105** (72 sertleştirme + 12 modal/a11y sözleşmesi + 9 store/check-in/favori portu)
+- `npm test` → **114/114** (önceki 105 + 9 panorama/projeksiyon/etkileşim testi)
 - `npm run lint` → **0 hata, 0 uyarı** (`--max-warnings=0`, CI'da zorunlu)
 - `npm run build` → ✅ Next 16.3.5
 - Test koşucusu: `durtu-app/scripts/run-tests.mjs` (Node 20 glob desteklemez,
@@ -52,12 +53,20 @@ oluştu; bu commit serisi çizgiyi teke indirir (main'in bileşen/API seçimleri
 - Nav'da 🛡️ ADİLLİK düğmesi; 12 yeni test (SHA-256 vektörleri, determinizm,
   RTP(t)=t·P(crash≥t) bandı, mines sayımı, verify pozitif/negatif)
 
+## Bu seride eklendi: 360° lounge (backlog #2 tamam)
+- `components/Lounge360.jsx`: bağımlılıksız WebGL shader ile gerçek küresel
+  equirectangular projeksiyon; düz arka plan kaydırma değil
+- 2:1 İstanbul/Boğaz gece sahnesi; WebGL yoksa çalışan görsel yedek
+- Sürükleme/dokunma, WASD/ok tuşları, zoom, otomatik tur ve tam ekran
+- Beş mekânsal hotspot; özel masa ortak React blackjack motoruna bağlanır
+- Paylaşılan erişilebilir `Modal`, görünür klavye odağı, azaltılmış hareket desteği
+- `lib/panorama.js` ve 9 test: açı sarma, 360° dikiş çizgisi, FOV projeksiyonu
+
 ## Port bekleyenler (monolitte vardı, React'te yeniden yazılacak)
 1. Kulüp katmanı: VIP kademeleri, promo kuponları, %10 cashback, gece yakıtı
-2. 360° fotogrametrik lounge (panoramalar gitmedi; sahne yeniden kurulacak)
-3. Şans Melekleri (TTS) + Selin'in proaktif sesleri
-4. Turnuva + canlı liderlik tablosu; davet sistemi (3 tek kullanımlık hak)
-5. Supabase bulut hesabı (`supabase/schema.sql` hazır; anahtarlar env'e)
-6. Backoffice (gerçek auth'lu panel)
+2. Şans Melekleri (TTS) + Selin'in proaktif sesleri
+3. Turnuva + canlı liderlik tablosu; davet sistemi (3 tek kullanımlık hak)
+4. Supabase bulut hesabı (`supabase/schema.sql` hazır; anahtarlar env'e)
+5. Backoffice (gerçek auth'lu panel)
 
 dürTL — demo para. Gerçek para yok. 18+ · Sorumlu oyun.

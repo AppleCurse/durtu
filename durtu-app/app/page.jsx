@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from 'react';
 import Gate from '../components/Gate';
 import Salon from '../components/Salon';
+import Lounge360 from '../components/Lounge360';
 import GameGrid from '../components/GameGrid';
 import SlotGame from '../components/SlotGame';
 import CrashGame from '../components/CrashGame';
@@ -204,6 +205,7 @@ export default function Page() {
           name={name}
           chips={chips}
           onPlay={handlePlay}
+          onOpenLounge={() => setOpen('lounge')}
           checkInInfo={checkInInfo}
           onOpenCheckIn={() => {
             setCheckInResult(
@@ -240,6 +242,14 @@ export default function Page() {
       {open === 'vault' && <VaultModal chips={chips} spend={spend} win={win} onClose={() => setOpen(null)} />}
       {open === 'stats' && <StatsModal name={name} chips={chips} onClose={() => setOpen(null)} />}
       {open === 'fair' && <ProvablyFairModal onClose={() => setOpen(null)} />}
+      {open === 'lounge' && (
+        <Lounge360
+          name={name}
+          chips={chips}
+          onClose={() => setOpen(null)}
+          onPlay={handlePlay}
+        />
+      )}
       {open === 'checkin' && (
         <DailyCheckInModal
           checkInResult={
