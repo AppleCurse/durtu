@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { say } from '../lib/toast';
 import { log } from '../lib/logger';
+import Modal from './ui/Modal';
 
 export default function Gate({ onEnter }) {
   const [code, setCode] = useState('');
@@ -74,26 +75,24 @@ export default function Gate({ onEnter }) {
       )}
 
       {appOpen && (
-        <div className="ovl" onClick={e => e.target === e.currentTarget && setAppOpen(false)}>
-          <div className="pnl">
-            <button className="close" onClick={() => setAppOpen(false)}>✕</button>
+        <Modal onClose={() => setAppOpen(false)} title="Üyelik Başvurusu" className="pnl">
             <span className="tag">Üyelik Başvurusu</span>
             <h3>Kayıt değil. Başvuru.</h3>
             <p className="noteline">Her üyelik Dürtü tarafından tek tek değerlendirilir. Acele etme; içtenlikle yaz.</p>
             {!approved ? (
               <form onSubmit={submitApp}>
-                <label>Adın Soyadın</label>
-                <input className="inp" name="name" placeholder="Adınız Soyadınız" required />
-                <label>E-posta Adresin (Zorunlu — Davetiyen buraya iletilir)</label>
-                <input className="inp" type="email" name="email" placeholder="ornek@alanadi.com" required />
-                <label>Telegram veya Telefon (VIP Temsilci Hattı — Opsiyonel)</label>
-                <input className="inp" name="contact" placeholder="@kullaniciadi veya 05XX XXX XX XX" />
-                <label>Neden DÜRTÜ&apos;ye katılmak istiyorsun? (3 cümle)</label>
-                <textarea className="inp" name="why" placeholder="Seni buraya çeken nedir?" required />
-                <label>Hangi türde kendini uzman hissediyorsun?</label>
-                <select className="inp" name="type"><option>Slot</option><option>Canlı Bahis</option><option>Masa Oyunları</option><option>Crash</option></select>
-                <label>Aylık oyun bütçen</label>
-                <select className="inp" name="budget"><option>5.000 TL altı</option><option>5.000 – 25.000 TL</option><option>25.000 – 100.000 TL</option><option>100.000 TL üzeri</option></select>
+                <label htmlFor="ap-name">Adın Soyadın</label>
+                <input className="inp" id="ap-name" name="name" placeholder="Adınız Soyadınız" required />
+                <label htmlFor="ap-email">E-posta Adresin (Zorunlu — Davetiyen buraya iletilir)</label>
+                <input className="inp" id="ap-email" type="email" name="email" placeholder="ornek@alanadi.com" required />
+                <label htmlFor="ap-contact">Telegram veya Telefon (VIP Temsilci Hattı — Opsiyonel)</label>
+                <input className="inp" id="ap-contact" name="contact" placeholder="@kullaniciadi veya 05XX XXX XX XX" />
+                <label htmlFor="ap-why">Neden DÜRTÜ&apos;ye katılmak istiyorsun? (3 cümle)</label>
+                <textarea className="inp" id="ap-why" name="why" placeholder="Seni buraya çeken nedir?" required />
+                <label htmlFor="ap-type">Hangi türde kendini uzman hissediyorsun?</label>
+                <select className="inp" id="ap-type" name="type"><option>Slot</option><option>Canlı Bahis</option><option>Masa Oyunları</option><option>Crash</option></select>
+                <label htmlFor="ap-budget">Aylık oyun bütçen</label>
+                <select className="inp" id="ap-budget" name="budget"><option>5.000 TL altı</option><option>5.000 – 25.000 TL</option><option>25.000 – 100.000 TL</option><option>100.000 TL üzeri</option></select>
                 <div style={{ marginTop: '1.4rem' }}>
                   <button className="btn solid" style={{ width: '100%' }} disabled={busy}>
                     {busy ? 'Değerlendiriliyor…' : 'Başvuruyu Gönder'}
@@ -105,8 +104,7 @@ export default function Gate({ onEnter }) {
                 ✦ Onaylandın. Davetiyen hazır…
               </p>
             )}
-          </div>
-        </div>
+        </Modal>
       )}
     </>
   );

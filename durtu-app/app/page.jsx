@@ -80,7 +80,11 @@ export default function Page() {
   useEffect(() => {
     if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});
     // Profil ve bakiye yükle
+    // localStorage yalnızca istemcide var; sunucu HTML'i "Misafir"/1000 ile
+    // render edilir ve mount sonrası gerçek profile geçilir. Lazy initializer
+    // kullanmak burada hidrasyon uyuşmazlığı yaratırdı.
     const p = getProfile();
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- hidrasyon güvenliği
     if (p.name && p.name !== 'Misafir') setName(p.name);
     const startChips = toChips(p.chips, 1000);
     chipsRef.current = startChips;

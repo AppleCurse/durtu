@@ -1,6 +1,7 @@
 'use client';
 import { fmt } from '../lib/toast';
 import { DAILY_REWARDS } from '../lib/store';
+import Modal from './ui/Modal';
 
 export default function DailyCheckInModal({ checkInResult, onClose }) {
   if (!checkInResult) return null;
@@ -8,9 +9,7 @@ export default function DailyCheckInModal({ checkInResult, onClose }) {
   const { bonus = 100, streak = 1, nextBonus = 125 } = checkInResult;
 
   return (
-    <div className="ovl" onClick={e => e.target === e.currentTarget && onClose()} style={{ zIndex: 75 }}>
-      <div className="pnl" style={{ width: 'min(500px, 95vw)', textAlign: 'center', padding: '2rem 1.8rem' }}>
-        <button className="close" onClick={onClose}>✕</button>
+    <Modal onClose={onClose} title="Günlük Giriş Ödülü" className="pnl" zIndex={75} style={{ width: 'min(500px, 95vw)', textAlign: 'center', padding: '2rem 1.8rem' }}>
         
         <div style={{
           display: 'inline-flex',
@@ -126,7 +125,6 @@ export default function DailyCheckInModal({ checkInResult, onClose }) {
         >
           Teşekkürler, Salona Geç
         </button>
-      </div>
-    </div>
+      </Modal>
   );
 }

@@ -30,6 +30,9 @@ export default function GameGrid({ onPlay }) {
       setLoading(false);
     }
   }
+  // Asenkron veri çekimi: setState'ler await sonrasında, yani senkron
+  // cascading render değil. Kural bunu ayırt edemiyor.
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- async fetch
   useEffect(() => { refresh(); }, []);
 
   // İkinci savunma katmanı: games her ihtimale karşı dizi olmayabilir.

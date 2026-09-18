@@ -4,6 +4,9 @@ import { fmt, say } from '../lib/toast';
 import { logRound } from '../lib/store';
 import { calcMultiplier, placeMines, GRID_SIZE } from '../lib/engines/mines';
 import { acquireAudio, releaseAudio, tone, fanfare } from '../lib/audio';
+import Modal from './ui/Modal';
+import BetControl from './ui/BetControl';
+import { useEventCallback } from '../lib/useEventCallback';
 
 const QUICK_MINES = [1, 2, 3, 5, 10, 15, 20, 24];
 
@@ -100,7 +103,7 @@ export default function MinesGame({ chips, spend, win, onClose }) {
     }
   }
 
-  function randomPick() {
+  const randomPick = useEventCallback(() => {
     if (!playing) return;
     const remaining = [];
     for (let i = 0; i < 25; i++) {
@@ -110,7 +113,7 @@ export default function MinesGame({ chips, spend, win, onClose }) {
       const lucky = remaining[Math.floor(Math.random() * remaining.length)];
       pickTile(lucky);
     }
-  }
+  });
 
   function cashout(forceArr) {
     const list = forceArr || revealed;
@@ -135,9 +138,7 @@ export default function MinesGame({ chips, spend, win, onClose }) {
   }
 
   return (
-    <div className="ovl" onClick={e => e.target === e.currentTarget && onClose()} style={{ zIndex: 75 }}>
-      <div className="pnl" style={{ width: 'min(580px, 98vw)', padding: '1.4rem 1.6rem' }}>
-        <button className="close" onClick={onClose}>✕</button>
+    <Modal onClose={onClose} title="Mayınlar" className="pnl" zIndex={75} style={{ width: 'min(580px, 98vw)', padding: '1.4rem 1.6rem' }}>
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '.4rem' }}>
           <div>
@@ -269,21 +270,12 @@ export default function MinesGame({ chips, spend, win, onClose }) {
         {!playing && (
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '.8rem', margin: '.6rem 0' }}>
             {/* Bet Selector */}
-            <div>
-              <label style={{ fontSize: '.68rem', color: 'var(--muted)', display: 'block', marginBottom: 4 }}>BAHİS (dürTL)</label>
-              <div style={{ display: 'flex', gap: 4 }}>
-                <input
-                  type="number"
-                  min={1}
-                  value={bet}
-                  onChange={e => setBet(Math.max(1, Number(e.target.value)))}
-                  className="inp"
-                  style={{ padding: '.45rem', fontSize: '.84rem', width: '100%' }}
-                />
-                <button className="btn" style={{ padding: '.2rem .5rem', fontSize: '.65rem' }} onClick={() => setBet(b => Math.max(1, Math.floor(b / 2)))}>½</button>
-                <button className="btn" style={{ padding: '.2rem .5rem', fontSize: '.65rem' }} onClick={() => setBet(b => b * 2)}>2×</button>
-              </div>
-            </div>
+            <BetControl
+              value={bet}
+              onChange={setBet}
+              max={chips}
+              disabled={Boolean(grid) && !busted && !cashed}
+            />
 
             {/* Mines Count Selector */}
             <div>
@@ -352,7 +344,6 @@ export default function MinesGame({ chips, spend, win, onClose }) {
             </>
           )}
         </div>
-      </div>
-    </div>
+      </Modal>
   );
 }

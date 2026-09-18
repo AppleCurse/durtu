@@ -4,6 +4,7 @@ import { fmt, say } from '../lib/toast';
 import { logRound } from '../lib/store';
 import { randomCard, hiloOdds, evaluateGuess } from '../lib/engines/hilo';
 import { acquireAudio, releaseAudio, tone } from '../lib/audio';
+import Modal from './ui/Modal';
 
 export default function HiloGame({ chips, spend, win, onClose }) {
   const [bet, setBet] = useState(25);
@@ -109,9 +110,7 @@ export default function HiloGame({ chips, spend, win, onClose }) {
   const isRed = activeCard.suit === '♥' || activeCard.suit === '♦';
 
   return (
-    <div className="ovl" onClick={e => e.target === e.currentTarget && onClose()} style={{ zIndex: 75 }}>
-      <div className="pnl" style={{ width: 'min(580px, 98vw)', padding: '1.4rem 1.6rem' }}>
-        <button className="close" onClick={onClose}>✕</button>
+    <Modal onClose={onClose} title="Hi-Lo" className="pnl" zIndex={75} style={{ width: 'min(580px, 98vw)', padding: '1.4rem 1.6rem' }}>
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '.6rem' }}>
           <div>
@@ -309,7 +308,6 @@ export default function HiloGame({ chips, spend, win, onClose }) {
             </>
           )}
         </div>
-      </div>
-    </div>
+      </Modal>
   );
 }

@@ -4,6 +4,9 @@ import { fmt, say } from '../lib/toast';
 import { logRound } from '../lib/store';
 import { getMultipliers } from '../lib/engines/plinko';
 import { acquireAudio, releaseAudio, tone } from '../lib/audio';
+import Modal from './ui/Modal';
+import BetControl from './ui/BetControl';
+import { useEventCallback } from '../lib/useEventCallback';
 
 const MAX_BALLS = 30;
 
@@ -26,6 +29,7 @@ export default function PlinkoGame({ chips, spend, win, onClose }) {
   const [history, setHistory] = useState([]);
   const [autoDrop, setAutoDrop] = useState(false);
   const [activeBins, setActiveBins] = useState({});
+  const binTimersRef = useRef({});
   const sfxRef = useRef(true);
 
   const ballsRef = useRef([]);
@@ -34,9 +38,16 @@ export default function PlinkoGame({ chips, spend, win, onClose }) {
   const riskRef = useRef(risk);
   const betRef = useRef(bet);
 
-  rowsRef.current = rows;
-  riskRef.current = risk;
-  betRef.current = bet;
+  // Ref'ler render sırasında yazılamaz (concurrent rendering'de render iptal
+  // edilebilir ve ref kirli kalır). Commit sonrası senkronize ediyoruz;
+  // fizik döngüsü bu ref'leri stale closure'dan kaçınmak için okuyor.
+  useEffect(() => {
+    rowsRef.current = rows;
+    riskRef.current = risk;
+    betRef.current = bet;
+  }, [rows, risk, bet]);
+
+  const winRef = useEventCallback(win);
 
   const currentMults = getMultipliers(rows, risk);
 
@@ -45,7 +56,7 @@ export default function PlinkoGame({ chips, spend, win, onClose }) {
     tone(f, { dur, type, gain });
   }
 
-  function dropBall() {
+  const dropBall = useEventCallback(() => {
     if (ballsRef.current.length >= MAX_BALLS) return;   // sınırsız nesne birikimini engelle
     if (!spend(betRef.current)) {
       say('Yetersiz bakiye — fişi küçült.');
@@ -78,7 +89,7 @@ export default function PlinkoGame({ chips, spend, win, onClose }) {
       bet: currentBet,
       id: Math.random(),
     });
-  }
+  });
 
   // Auto-drop interval
   useEffect(() => {
@@ -89,7 +100,7 @@ export default function PlinkoGame({ chips, spend, win, onClose }) {
       }, 350);
     }
     return () => clearInterval(timer);
-  }, [autoDrop]);
+  }, [autoDrop, dropBall]);
 
   // Main canvas animation & physics loop
   useEffect(() => {
@@ -214,12 +225,26 @@ export default function PlinkoGame({ chips, spend, win, onClose }) {
           const wonAmount = Math.round(b.bet * multiplier);
 
           if (wonAmount > 0) {
-            win(wonAmount);
+            winRef(wonAmount);
           }
           logRound('Plinko', b.bet, wonAmount, multiplier);
 
           // Highlight bin
-          setActiveBins(prev => ({ ...prev, [binIndex]: Date.now() }));
+          // Vurguyu zamanlayıcıyla söndür. Önceden render sırasında
+          // Date.now() ile karşılaştırılıyordu; bu render'ı saf olmaktan
+          // çıkarıyor ve süre dolduğunda yeniden render tetiklenmediği için
+          // vurgu bir sonraki render'a kadar takılı kalabiliyordu.
+          setActiveBins(prev => ({ ...prev, [binIndex]: true }));
+          clearTimeout(binTimersRef.current[binIndex]);
+          binTimersRef.current[binIndex] = setTimeout(() => {
+            setActiveBins(prev => {
+              if (!prev[binIndex]) return prev;
+              const next = { ...prev };
+              delete next[binIndex];
+              return next;
+            });
+            delete binTimersRef.current[binIndex];
+          }, 600);
 
           // Sound effect
           if (multiplier >= 10) {
@@ -245,17 +270,17 @@ export default function PlinkoGame({ chips, spend, win, onClose }) {
     acquireAudio();
     animRef.current = requestAnimationFrame(render);
 
+    const binTimers = binTimersRef.current;
     return () => {
       running = false;
       cancelAnimationFrame(animRef.current);
       releaseAudio();
+      Object.values(binTimers).forEach(clearTimeout);
     };
-  }, []);
+  }, [winRef]);
 
   return (
-    <div className="ovl" onClick={e => e.target === e.currentTarget && onClose()} style={{ zIndex: 75 }}>
-      <div className="pnl" style={{ width: 'min(640px, 98vw)', padding: '1.2rem 1.4rem' }}>
-        <button className="close" onClick={onClose}>✕</button>
+    <Modal onClose={onClose} title="Plinko" className="pnl" zIndex={75} style={{ width: 'min(640px, 98vw)', padding: '1.2rem 1.4rem' }}>
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '.6rem' }}>
           <div>
@@ -303,7 +328,7 @@ export default function PlinkoGame({ chips, spend, win, onClose }) {
             }}
           >
             {currentMults.map((val, idx) => {
-              const isHit = activeBins[idx] && Date.now() - activeBins[idx] < 600;
+              const isHit = Boolean(activeBins[idx]);
               return (
                 <div
                   key={idx}
@@ -331,21 +356,11 @@ export default function PlinkoGame({ chips, spend, win, onClose }) {
         {/* Controls Section */}
         <div style={{ marginTop: '1rem', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '.8rem', alignItems: 'end' }}>
           {/* Bet Input */}
-          <div>
-            <label style={{ fontSize: '.68rem', color: 'var(--muted)', display: 'block', marginBottom: 4 }}>BAHİS (dürTL)</label>
-            <div style={{ display: 'flex', gap: 4 }}>
-              <input
-                type="number"
-                min={1}
-                value={bet}
-                onChange={e => setBet(Math.max(1, Number(e.target.value)))}
-                className="inp"
-                style={{ padding: '.4rem .6rem', fontSize: '.82rem', width: '100%' }}
-              />
-              <button className="btn" style={{ padding: '.2rem .5rem', fontSize: '.65rem' }} onClick={() => setBet(b => Math.max(1, Math.floor(b / 2)))}>½</button>
-              <button className="btn" style={{ padding: '.2rem .5rem', fontSize: '.65rem' }} onClick={() => setBet(b => b * 2)}>2×</button>
-            </div>
-          </div>
+          <BetControl
+            value={bet}
+            onChange={setBet}
+            max={chips}
+          />
 
           {/* Risk Selector */}
           <div>
@@ -408,7 +423,6 @@ export default function PlinkoGame({ chips, spend, win, onClose }) {
           <span>Maksimum Çarpan: <b style={{ color: 'var(--gold)' }}>{Math.max(...currentMults)}×</b></span>
           <span>Bakiye: ◈ {fmt(chips)} dürTL</span>
         </div>
-      </div>
-    </div>
+      </Modal>
   );
 }

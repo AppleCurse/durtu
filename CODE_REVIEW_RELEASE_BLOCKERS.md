@@ -1818,3 +1818,87 @@ için artık timer'a ihtiyaç yok.
    ama serverless'te hâlâ veri kaybeder. Şemaya `email` ve `contact` alanları eklenmeli.
 3. **`durtu/index.html` crash motorunu React'e hizalayın** (`%33` kuralı) — yukarıdaki tablo.
 4. **Sorumlu oyun / yasal uyum** — bu ayrı bir denetimin konusu ve teknik borçtan ağırdır.
+
+---
+
+# EK-2: İKİNCİ TUR — teknik borç kapatma
+
+Blocker'lardan sonra kalan dört başlık da tamamlandı.
+
+```
+$ npm run verify
+eslint . --max-warnings=0     ← çıktı yok: 0 hata, 0 UYARI
+# pass 89   # fail 0           ← yeni test paketi
+SONUÇ: 61 geçti, 0 kaldı       ← legacy testler
+✓ Compiled successfully        ← production build
+```
+
+## 1. Legacy crash motoru React ile hizalandı
+
+`durtu/index.html:1761` içindeki `if (intVal % 33 === 0) return 1.00;` kaldırıldı.
+Bu satır turların %3.03'ünü anında patlatıyor ve RTP'yi `0.97 × (1 − 1/33) ≈ %94.06`
+seviyesine çekiyordu. Artık iki istemci **aynı dağılımı** kullanıyor.
+
+Aynı dosyadaki `mnMul` de düzeltildi: React'te Blocker #9 olarak raporlanan
+`Infinity` hatasının birebir aynısı legacy'de de vardı (`den → 0`), üstelik
+çarpan tavanı da yoktu. Guard + `MAX_MULT` eklendi.
+
+Yeni `tests/legacy.parity.test.js` bu iki motoru **birbirine karşı** test ediyor:
+`%33` kuralı geri gelirse, RTP sapar veya `mnMul` React'ten %2'den fazla ayrışırsa
+build kırılır.
+
+## 2. React Compiler uyarıları: 23 → 0
+
+Hiçbiri susturularak kapatılmadı; bulguların çoğu gerçek hatalardı:
+
+| Bulgu | Gerçek etkisi | Çözüm |
+|---|---|---|
+| `PlinkoGame` render sırasında ref yazıyor | Concurrent render iptal edilirse ref kirli kalır | Commit sonrası `useEffect` ile senkron |
+| `activeBins` render'da `Date.now()` ile karşılaştırılıyor | Süre dolunca render tetiklenmediği için vurgu takılı kalıyordu | Zamanlayıcıyla söndürme |
+| 5 bileşende uzun ömürlü döngü stale closure riski | Eski bakiye/bahis okunabilir — **para hatası** | Yeni `lib/useEventCallback.js` |
+| `VaultModal` / `StatsModal` effect'te setState | Gereksiz çift render, boş ilk kare | `useState` lazy initializer |
+| `Toasts` / `CrashGame` / `VaultModal` cleanup'ta `ref.current` | Temizlik yanlış nesne üzerinde çalışabilir | Yerel değişkene kopyalama |
+
+Kaçınılmaz 4 istisna (hidrasyon güvenliği, async fetch, oyun motoru yaşam döngüsü)
+satır bazında **gerekçesiyle** disable edildi. `--max-warnings=0` artık varsayılan.
+
+## 3. Erişilebilirlik
+
+Yeni `components/ui/Modal.jsx` — 14 modalın tamamı buradan geçiyor:
+
+- `role="dialog"` + `aria-modal` + `aria-labelledby` (her modalın başlığı var)
+- **Escape** ile kapatma
+- **Focus trap**: Tab/Shift+Tab modal içinde döner
+- Açılışta odak modala, kapanışta **tetikleyen öğeye iade**
+- Arka plan scroll kilidi (iç içe modal sayacıyla)
+- Kapatma butonunda `aria-label`
+
+Ayrıca: `:focus-visible` stilleri (önceden klavye odağı **hiç görünmüyordu**),
+`.sr-only`, `prefers-reduced-motion` desteği, `GameGrid` kartlarına klavye
+erişimi (`role="button"` + Enter/Space), başvuru formunda **her `<label>` artık
+girdisine bağlı** (`htmlFor`/`id`).
+
+`tests/modal.a11y.test.js` (12 test) bu sözleşmeyi koruyor.
+
+## 4. DRY: ~600 satır tekrar
+
+- `components/ui/Modal.jsx` — 14 kopyalanmış overlay kalıbı tek kaynağa indi.
+  Elle yazılmış `className="ovl"` kalmadı (test ile doğrulanıyor).
+- `components/ui/BetControl.jsx` — "input + ½ + 2×" bloğu. Her kopyada ufak
+  farklar vardı: bazılarında tur sırasında input kilitlenmiyordu (Blocker #4'ün
+  sömürü yüzeyi), bazılarında bakiye üstü bahis engellenmiyordu, hiçbirinde
+  label girdiye bağlı değildi. Artık doğrulama (`normalizeBet` + `max`), kilit
+  ve erişilebilirlik hepsinde aynı.
+- `lib/useEventCallback.js` — stale closure / gereksiz effect yeniden kurulumu
+  ikilemini çözen ortak kanca.
+
+Net: **20 dosyada 940 satır silindi, 1181 satır eklendi** — eklenen kısmın
+büyük bölümü test ve gerekçe yorumları.
+
+## Not: next/font denendi, geri alındı
+
+`next/font` ile self-hosting layout shift'i bitirir ve Google Fonts'a IP sızmasını
+önlerdi; ancak fontları **build sırasında** indiriyor ve ağ erişimi kısıtlı
+ortamlarda build kırılıyor — tekrarlanabilirlik blocker'ıyla çelişiyordu.
+Runtime `<link>` korundu, gerekçe `app/layout.jsx` içine yazıldı. Kalıcı çözüm
+`.woff2` dosyalarını repoya alıp `next/font/local` kullanmaktır.

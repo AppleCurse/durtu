@@ -47,11 +47,12 @@ export default function Toasts() {
     };
 
     window.addEventListener('durtu:toast', onToast);
+    const pending = timers.current;
     return () => {
       window.removeEventListener('durtu:toast', onToast);
       // Unmount sonrası setState sızıntısını engelle.
-      timers.current.forEach(clearTimeout);
-      timers.current.clear();
+      pending.forEach(clearTimeout);
+      pending.clear();
     };
   }, []);
 

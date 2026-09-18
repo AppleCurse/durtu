@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { say, fmt, html } from '../lib/toast';
 import { logRound } from '../lib/store';
 import { useRoundLock } from '../lib/useRoundLock';
+import Modal from './ui/Modal';
 
 const MATCHES = [
   {id:'ucl1', league:'Şampiyonlar Ligi', time:'Bu akşam 22:00', home:'Real Madrid', away:'Bayern München', odds:{'1':2.10,'X':3.40,'2':3.10}},
@@ -60,9 +61,7 @@ export default function SportBet({ spend, win, onClose }){
   }
 
   return (
-    <div className="ovl" onClick={e=>e.target===e.currentTarget&&onClose()}>
-      <div className="pnl" style={{width:'min(560px,100%)'}}>
-        <button className="close" onClick={onClose}>✕</button>
+    <Modal onClose={onClose} title="Spor Bahisleri" className="pnl" style={{width:'min(560px,100%)'}}>
         <span className="demo-badge">Demo · Gerçek oran · dürTL settlement</span>
         <h3>🏆 Spor Bahsi — Gerçek Kupon</h3>
         <p className="noteline">3 maç · 1X2 · oranlar küratörlü · sonuç ağırlıklı simüle, bakiye entegre.</p>
@@ -105,7 +104,6 @@ export default function SportBet({ spend, win, onClose }){
           </div>
         )}
         <p className="muted" style={{fontSize:'.66rem',marginTop:'.7rem',lineHeight:1.4}}>Oranlar demo küratörlü; sonuç, oranların ima ettiği olasılığa göre ağırlıklı rastgele simüle edilir. Kazanç anında dürTL bakiyene işlenir.</p>
-      </div>
-    </div>
+      </Modal>
   );
 }

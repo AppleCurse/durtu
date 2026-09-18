@@ -6,10 +6,11 @@ import nextCoreWebVitals from 'eslint-config-next/core-web-vitals';
  * "error" = build'i durdurur. Bunlar doğruluk/güvenlik sınıfı kurallardır.
  * "warn"  = teknik borç olarak izlenir (CI'ı kırmaz ama görünür kalır).
  *
- * Not: React Compiler kuralları (set-state-in-effect, purity, refs-during-render)
- * bilinçli olarak "warn" seviyesindedir. Gerçek bulgulardır ancak her biri
- * bileşen bazında refactor gerektirir; bkz. CODE_REVIEW_RELEASE_BLOCKERS.md
- * "Kod Kalitesi" bölümü. Sayıları artmamalı — azalmalıdır.
+ * React Compiler kuralları da dahil olmak üzere depo şu anda SIFIR uyarı ile
+ * temizdir ve `--max-warnings=0` ile bu durum korunur. Kaçınılmaz birkaç istisna
+ * (hidrasyon güvenliği, uzun ömürlü oyun döngüleri) satır bazında ve
+ * gerekçesiyle birlikte disable edilmiştir — yeni disable eklemek yerine
+ * kodu düzeltmek tercih edilmelidir.
  */
 const config = [
   {

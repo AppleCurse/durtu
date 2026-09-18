@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { fmt, say, html } from '../lib/toast';
 import { logRound } from '../lib/store';
 import { acquireAudio, releaseAudio, tone, fanfare } from '../lib/audio';
+import Modal from './ui/Modal';
 
 const SUITS = ['♠', '♥', '♦', '♣'];
 const RANKS = [
@@ -314,9 +315,7 @@ export default function BlackjackGame({ chips, spend, win, onClose }) {
   const dealerVisibleTotal = dealerHand.length > 0 ? (phase === 'play' ? handTotal([dealerHand[0]]) : dTotal) : 0;
 
   return (
-    <div className="ovl" onClick={e => e.target === e.currentTarget && onClose()} style={{ zIndex: 75 }}>
-      <div className="pnl" style={{ width: 'min(640px, 98vw)', padding: '1.2rem 1.4rem' }}>
-        <button className="close" onClick={onClose}>✕</button>
+    <Modal onClose={onClose} title="Blackjack" className="pnl" zIndex={75} style={{ width: 'min(640px, 98vw)', padding: '1.2rem 1.4rem' }}>
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '.4rem' }}>
           <div>
@@ -536,7 +535,6 @@ export default function BlackjackGame({ chips, spend, win, onClose }) {
             </button>
           )}
         </div>
-      </div>
-    </div>
+      </Modal>
   );
 }

@@ -5,6 +5,8 @@ import { logRound } from '../lib/store';
 import { WHEEL_PRESETS, spinWheelIndex, settleWheel } from '../lib/engines/wheel';
 import { useRoundLock } from '../lib/useRoundLock';
 import { acquireAudio, releaseAudio, tone, fanfare } from '../lib/audio';
+import Modal from './ui/Modal';
+import { useEventCallback } from '../lib/useEventCallback';
 
 const _COLORS = [
   '#2a2318', '#b26a00', '#1c221e', '#2e7d32',
@@ -37,7 +39,7 @@ export default function WheelGame({ chips, spend, win, onClose }) {
     fanfare([523, 659, 784, 1046], { gain: 0.12 });
   }
 
-  function drawWheel(angle) {
+  const drawWheel = useEventCallback((angle) => {
     const cv = canvasRef.current;
     if (!cv) return;
     const ctx = cv.getContext('2d');
@@ -115,11 +117,13 @@ export default function WheelGame({ chips, spend, win, onClose }) {
     ctx.strokeStyle = '#fff';
     ctx.lineWidth = 1.5;
     ctx.stroke();
-  }
+  });
 
+  // drawWheel kimliği useEventCallback sayesinde sabit; risk değişince
+  // çarkı yeniden boyamak yeterli.
   useEffect(() => {
     drawWheel(rotRef.current);
-  }, [risk]);
+  }, [risk, drawWheel]);
 
   useEffect(() => {
     acquireAudio();
@@ -194,9 +198,7 @@ export default function WheelGame({ chips, spend, win, onClose }) {
   }
 
   return (
-    <div className="ovl" onClick={e => e.target === e.currentTarget && onClose()} style={{ zIndex: 75 }}>
-      <div className="pnl" style={{ width: 'min(580px, 98vw)', padding: '1.4rem 1.6rem', textAlign: 'center' }}>
-        <button className="close" onClick={onClose}>✕</button>
+    <Modal onClose={onClose} title="Şans Çarkı" className="pnl" zIndex={75} style={{ width: 'min(580px, 98vw)', padding: '1.4rem 1.6rem', textAlign: 'center' }}>
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '.6rem' }}>
           <div style={{ textAlign: 'left' }}>
@@ -289,7 +291,6 @@ export default function WheelGame({ chips, spend, win, onClose }) {
           <span>Seçili Risk: <b style={{ color: 'var(--gold)' }}>{risk.toUpperCase()}</b></span>
           <span>Bakiye: ◈ {fmt(chips)} dürTL</span>
         </div>
-      </div>
-    </div>
+      </Modal>
   );
 }

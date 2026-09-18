@@ -4,6 +4,7 @@ import { say, fmt, buzz } from '../lib/toast';
 import { logRound } from '../lib/store';
 import { acquireAudio, releaseAudio, getAudio, tone as sharedTone } from '../lib/audio';
 import { log } from '../lib/logger';
+import Modal from './ui/Modal';
 
 const SLOT_DEFS = {
   gates: {
@@ -400,13 +401,16 @@ export default function SlotGame({ game, spend, win, onClose }){
     return ()=>{
       E.open=false; cancelAnimationFrame(E.raf); clearInterval(E.tickIv); window.removeEventListener('keydown',keyH); releaseAudio(); eng.current=null;
     };
+    // Motor tek sefer kurulur ve oyun değişene kadar yaşar; ses/çizim
+    // yardımcıları ile spend/win her render'da yeniden oluşur ama döngü
+    // onları ref üzerinden taze okur. deps'e eklemek motoru her render'da
+    // yeniden kurar (dönen makarayı sıfırlar).
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- motor yaşam döngüsü game.id'ye bağlı
   }, [game.id]);
 
   const tiers=['Premium','Yüksek','Orta','Orta','Düşük','Düşük'];
   return (
-    <div className="ovl" onClick={e=>e.target===e.currentTarget&&onClose()}>
-      <div className="pnl slot-pnl">
-        <button className="close" onClick={onClose}>✕</button>
+    <Modal onClose={onClose} title="Slot" className="pnl slot-pnl">
         <div className="slot-head">
           <div>
             <span className="demo-badge">Demo · Gerçek para yok</span>
@@ -463,7 +467,6 @@ export default function SlotGame({ game, spend, win, onClose }){
           <span className="muted" ref={el=>{ hud.current.slotMsg=el; }}>{def.type==='scatter' ? `${def.cols}×${def.rows} her yerde öder · ${def.scatter} ${def.scatterMin}+ → ${def.fs} FS · çarpan birikir` : def.type==='holdwin' ? '3+ 💰 → Hold&Win 3 can · para değerleri yapışır' : def.type==='vs' ? 'VS wild genişler · düello çarpanı' : '5×3 · 3+ 🩸 → tabut bonusu'}</span>
           <button className="taglink" onClick={()=>setPtOpen(o=>!o)}>📜 Ödeme Tablosu</button>
         </div>
-      </div>
-    </div>
+      </Modal>
   );
 }

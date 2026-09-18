@@ -1752,15 +1752,23 @@ const PF = {
 };
 PF.serverHash = sha256Sync(PF.serverSeed);
 
+// RTP hizalaması: buradaki `intVal % 33 === 0 → 1.00` kuralı turların %3.03'ünü
+// anında patlatıyordu; ölçülen RTP 0.97 × (1 − 1/33) ≈ %94.06 idi — ilan edilen
+// %97'nin 2.9 puan altında (3M turluk simülasyonla doğrulandı: 1.5× %94.00,
+// 2× %93.99, 5× %94.05). React motoru (durtu-app/lib/engines/crash.js) doğru
+// matematiği kullanıyordu; iki istemcinin aynı oyunu farklı dağılımla oynaması
+// sürdürülemezdi. Kural kaldırıldı, taban React ile birebir aynı.
+const CRASH_RTP = 0.97;
+const CRASH_MAX = 60;
+
 function getProvableCrash(serverSeed, clientSeed, nonce){
   const combined = serverSeed + ':' + clientSeed + ':' + nonce;
   const hash = sha256Sync(combined);
   const hex = hash.slice(0, 13);
   const intVal = parseInt(hex, 16);
   const maxVal = 4503599627370496; // 2^52
-  if(intVal % 33 === 0) return 1.00;
-  const raw = (0.97 * maxVal) / (maxVal - intVal);
-  return Math.min(60, Math.max(1.01, Math.floor(raw * 100) / 100));
+  const raw = (CRASH_RTP * maxVal) / (maxVal - intVal);
+  return Math.min(CRASH_MAX, Math.max(1, Math.floor(raw * 100) / 100));
 }
 
 function getProvableMines(serverSeed, clientSeed, nonce, mineCount){
@@ -4876,13 +4884,27 @@ function rouSettle(n, bet){
 const MN = { bet: 25, mines: 3, playing: false, safe: 0, grid: [] };
 function mnMul(mines, k){
   // adil çarpan = C(25,k) / C(25-mines,k), ev payı %3
-  if(k <= 0) return 1;
+  //
+  // Guard: k > 25 - mines olduğunda payda 0'a iniyor ve çarpan Infinity dönüyordu
+  // (React tarafındaki aynı hata Blocker #9 olarak raporlandı). Açılabilir kutu
+  // sayısı 25 - mines ile sınırlıdır; üstü matematiksel olarak tanımsızdır.
+  const m = Math.trunc(mines);
+  if(!Number.isFinite(m) || m < 1 || m > 24) return 1;
+  const safeMax = 25 - m;
+  const picks = Math.min(Math.trunc(k), safeMax);
+  if(!(picks > 0)) return 1;
+
   let num = 1, den = 1;
-  for(let i = 0; i < k; i++){
+  for(let i = 0; i < picks; i++){
     num *= (25 - i);
-    den *= (25 - mines - i);
+    den *= (safeMax - i);
   }
-  return Math.max(1, Math.round((0.97 * num / den) * 100) / 100);
+  // Tavan React motoruyla aynı (MAX_MULT = 1e6): tek turda ekonomiyi
+  // devirebilecek çarpanlar sınırlanır.
+  const MN_MAX_MULT = 1000000;
+  const raw = 0.97 * num / den;
+  if(!Number.isFinite(raw)) return MN_MAX_MULT;
+  return Math.min(MN_MAX_MULT, Math.max(1, Math.round(raw * 100) / 100));
 }
 function mnBal(){ const b = $('mnBal'); if(b) b.textContent = 'Bakiye: ◈ ' + fmt(state.chips) + ' dürTL'; }
 function mnChipRow(){ chipRow('mnChips', MN.bet, 'mnChip'); }

@@ -2,23 +2,26 @@
 import { useEffect, useRef, useState } from 'react';
 import { fmt, say } from '../lib/toast';
 import { ledger, addLedger, updateLedgerStatus, stats } from '../lib/store';
+import Modal from './ui/Modal';
+import { useEventCallback } from '../lib/useEventCallback';
 
 const AMTS = [100, 250, 500, 1000];
 
 export default function VaultModal({ chips, spend, win, onClose }) {
   const [tab, setTab] = useState('dep');   // dep | cek | defter
-  const [l, setL] = useState([]);
-  const [wagered, setWagered] = useState(0);
+  // localStorage senkron okunur; effect'te setState yapmak yerine lazy
+  // initializer kullanmak cascading render'ı önler.
+  const [l, setL] = useState(() => ledger());
+  const [wagered, setWagered] = useState(() => stats().wagered);
   const [busy, setBusy] = useState(false);
   const timersRef = useRef([]);
   const aliveRef = useRef(true);
 
   useEffect(() => {
-    setL(ledger());
-    setWagered(stats().wagered);
+    const timers = timersRef.current;
     return () => {
       aliveRef.current = false;
-      timersRef.current.forEach(clearTimeout);   // modal kapanınca setState sızmasın
+      timers.forEach(clearTimeout);   // modal kapanınca setState sızmasın
     };
   }, []);
 
@@ -26,7 +29,7 @@ export default function VaultModal({ chips, spend, win, onClose }) {
 
   function fresh() { setL(ledger()); setWagered(stats().wagered); }
 
-  function deposit(amt) {
+  const deposit = useEventCallback((amt) => {
     if (busy) return;
     setBusy(true);
     say('🏦 <b>Havale gönderildi:</b> ◈ ' + fmt(amt) + ' dürTL incelemede…');
@@ -36,7 +39,7 @@ export default function VaultModal({ chips, spend, win, onClose }) {
       fresh(); setBusy(false);
       say('✅ <b>Onaylandı:</b> ◈ ' + fmt(amt) + ' dürTL kasana işlendi.');
     }, 2200 + Math.random() * 1000);
-  }
+  });
   function withdraw(amt) {
     if (busy) return;
     // Tek doğruluk kaynağı spend(); stale `chips` prop'una göre karar verilmez.
@@ -57,9 +60,7 @@ export default function VaultModal({ chips, spend, win, onClose }) {
   const goal = 2500, prog = Math.min(1, (wagered % goal) / goal);
 
   return (
-    <div className="ovl" onClick={e => e.target === e.currentTarget && onClose()}>
-      <div className="pnl" style={{ width: 'min(520px,100%)' }}>
-        <button className="close" onClick={onClose}>✕</button>
+    <Modal onClose={onClose} title="Kasa" className="pnl" style={{ width: 'min(520px,100%)' }}>
         <span className="tag">✦ Kulüp Kasası</span>
         <h3>DÜRTÜ Finans Kasası</h3>
         <p className="noteline">Yatırım ve çekim talebin <b>demo</b> olarak işlenir — gerçek para kullanılmaz.</p>
@@ -113,7 +114,6 @@ export default function VaultModal({ chips, spend, win, onClose }) {
             })}
           </div>
         )}
-      </div>
-    </div>
+      </Modal>
   );
 }

@@ -1,13 +1,13 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { stats } from '../lib/store';
 import { fmt } from '../lib/toast';
+import Modal from './ui/Modal';
 
 export default function StatsModal({ name, chips, onClose }) {
-  const [s, setS] = useState(null);
-  useEffect(() => { setS(stats()); }, []);
-
-  if (!s) return null;
+  // stats() senkron localStorage okur. Effect'te setState yapmak yerine lazy
+  // initializer: fazladan render turu yok, "if (!s) return null" boş karesi yok.
+  const [s] = useState(() => stats());
   const net = s.won - s.wagered;
   let verdict;
   if (s.spins === 0) verdict = '“Henüz perde açılmadı. İlk dönüşünü bekliyoruz.”';
@@ -17,9 +17,7 @@ export default function StatsModal({ name, chips, onClose }) {
   else verdict = '“Bu hafta kırmızıdasın. Dürtü söylemeden duramasın — limitin var.”';
 
   return (
-    <div className="ovl" onClick={e => e.target === e.currentTarget && onClose()}>
-      <div className="pnl" style={{ width: 'min(460px,100%)' }}>
-        <button className="close" onClick={onClose}>✕</button>
+    <Modal onClose={onClose} title="İstatistikler" className="pnl" style={{ width: 'min(460px,100%)' }}>
         <span className="tag">◈ Dürtü Raporu</span>
         <h3>Haftalık özetin{', ' + name}</h3>
         <p className="noteline">Dürtü hesabını tutar; senden saklamaz.</p>
@@ -51,7 +49,6 @@ export default function StatsModal({ name, chips, onClose }) {
         </div>
         <p className="serif" style={{ fontStyle: 'italic', color: 'var(--muted)', marginTop: '1rem', textAlign: 'center', lineHeight: 1.7 }}>{verdict}</p>
         <button className="btn solid" style={{ width: '100%' }} onClick={onClose}>Anlaşıldı</button>
-      </div>
-    </div>
+      </Modal>
   );
 }

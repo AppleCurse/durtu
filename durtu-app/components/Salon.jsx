@@ -8,8 +8,12 @@ export default function Salon({ name, chips, onPlay, onOpenCheckIn, checkInInfo,
   const [date, setDate] = useState('');
   const [status, setStatus] = useState(() => checkInInfo || getCheckInStatus());
 
+  // Saat/tarih yalnızca istemcide hesaplanabilir: sunucuda üretilen HTML ile
+  // istemcinin saati farklı olursa hidrasyon uyuşmazlığı oluşur. Bu yüzden
+  // ilk değerler bilinçli olarak mount sonrasında yazılıyor.
   useEffect(() => {
     const h = new Date().getHours();
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- hidrasyon güvenliği
     setGreet(h < 6 ? 'İyi geceler' : h < 12 ? 'Günaydın' : h < 18 ? 'İyi günler' : h < 23 ? 'İyi akşamlar' : 'İyi geceler');
     setDate(new Date().toLocaleDateString('tr-TR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) + ' — salon hazır.');
     setStatus(getCheckInStatus());

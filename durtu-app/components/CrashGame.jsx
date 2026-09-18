@@ -6,6 +6,7 @@ import { logRound } from '../lib/store';
 import { crashPoint, evaluateFrame } from '../lib/engines/crash';
 import { acquireAudio, releaseAudio, getAudio, tone as sharedTone, noiseBurst } from '../lib/audio';
 import { log } from '../lib/logger';
+import Modal from './ui/Modal';
 
 const CRW = 660, CRH = 330;
 const NAMES = ['M*** K***','A*** Y***','S*** D***','E*** T***','B*** Ö***','H*** Ç***','Z*** A***','K*** Ş***','N*** V***','T*** G***'];
@@ -223,9 +224,10 @@ export default function CrashGame({ spend, win, onClose }){
     const visH = () => { if(document.hidden && E.current.running) endRound({ suspended: true }); };
     window.addEventListener('keydown', keyH);
     document.addEventListener('visibilitychange', visH);
+    const engine = E.current;   // cleanup'ta ref.current yeniden okunmasın
     return () => {
-      cancelAnimationFrame(E.current.raf);
-      E.current.running = false;
+      cancelAnimationFrame(engine.raf);
+      engine.running = false;
       hum(false);
       window.removeEventListener('keydown', keyH);
       document.removeEventListener('visibilitychange', visH);
@@ -235,9 +237,7 @@ export default function CrashGame({ spend, win, onClose }){
   }, []);
 
   return (
-    <div className="ovl" onClick={ev => ev.target === ev.currentTarget && onClose()}>
-      <div className="pnl slot-pnl">
-        <button className="close" onClick={onClose}>✕</button>
+    <Modal onClose={onClose} title="Aviator" className="pnl slot-pnl">
         <div className="slot-head">
           <div>
             <span className="demo-badge">Demo · Gerçek para yok</span>
@@ -287,7 +287,6 @@ export default function CrashGame({ spend, win, onClose }){
           </button>
         </div>
         <div className="slot-foot"><span className="muted">{myMsg}</span><span className="muted">Dürtü bilir — ama söylemez.</span></div>
-      </div>
-    </div>
+      </Modal>
   );
 }

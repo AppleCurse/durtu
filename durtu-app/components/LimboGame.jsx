@@ -4,6 +4,9 @@ import { fmt, say } from '../lib/toast';
 import { logRound } from '../lib/store';
 import { useRoundLock } from '../lib/useRoundLock';
 import { acquireAudio, releaseAudio, tone } from '../lib/audio';
+import Modal from './ui/Modal';
+import BetControl from './ui/BetControl';
+import { useEventCallback } from '../lib/useEventCallback';
 
 export default function LimboGame({ chips, spend, win, onClose }) {
   const [bet, setBet] = useState(25);
@@ -44,7 +47,25 @@ export default function LimboGame({ chips, spend, win, onClose }) {
     setTarget(parseFloat(derivedTarget));
   }
 
-  function playRound() {
+  function finalizeRound(round, outcome, isWon) {
+    setCurrDisplay(outcome);
+    release();
+    setLastResult({ won: isWon, mult: outcome });
+    setHistory(h => [{ won: isWon, mult: outcome, ts: Date.now() }, ...h].slice(0, 12));
+
+    if (isWon) {
+      const totalWin = Math.round(round.bet * round.target);   // snapshot'tan
+      win(totalWin);
+      logRound('Limbo', round.bet, totalWin, round.target);
+      playTone(880, 0.15, 'triangle', 0.2);
+      setTimeout(() => playTone(1320, 0.2, 'sine', 0.2), 100);
+    } else {
+      logRound('Limbo', round.bet, 0);
+      playTone(180, 0.12, 'sawtooth', 0.15);
+    }
+  }
+
+  const playRound = useEventCallback(() => {
     if (!acquire()) return;                    // senkron kilit
     if (!spend(bet)) {
       release();
@@ -84,30 +105,12 @@ export default function LimboGame({ chips, spend, win, onClose }) {
       }
     }
     rafRef.current = requestAnimationFrame(step);
-  }
+  });
 
-  function finalizeRound(round, outcome, isWon) {
-    setCurrDisplay(outcome);
-    release();
-    setLastResult({ won: isWon, mult: outcome });
-    setHistory(h => [{ won: isWon, mult: outcome, ts: Date.now() }, ...h].slice(0, 12));
 
-    if (isWon) {
-      const totalWin = Math.round(round.bet * round.target);   // snapshot'tan
-      win(totalWin);
-      logRound('Limbo', round.bet, totalWin, round.target);
-      playTone(880, 0.15, 'triangle', 0.2);
-      setTimeout(() => playTone(1320, 0.2, 'sine', 0.2), 100);
-    } else {
-      logRound('Limbo', round.bet, 0);
-      playTone(180, 0.12, 'sawtooth', 0.15);
-    }
-  }
 
   return (
-    <div className="ovl" onClick={e => e.target === e.currentTarget && onClose()} style={{ zIndex: 75 }}>
-      <div className="pnl" style={{ width: 'min(560px, 98vw)', padding: '1.4rem 1.6rem' }}>
-        <button className="close" onClick={onClose}>✕</button>
+    <Modal onClose={onClose} title="Limbo" className="pnl" zIndex={75} style={{ width: 'min(560px, 98vw)', padding: '1.4rem 1.6rem' }}>
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '.6rem' }}>
           <div>
@@ -203,22 +206,12 @@ export default function LimboGame({ chips, spend, win, onClose }) {
         {/* Input Controls */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '.8rem' }}>
           {/* Bet Input */}
-          <div>
-            <label style={{ fontSize: '.68rem', color: 'var(--muted)', display: 'block', marginBottom: 4 }}>BAHİS (dürTL)</label>
-            <div style={{ display: 'flex', gap: 4 }}>
-              <input
-                type="number"
-                min={1}
-                value={bet}
-                onChange={e => setBet(Math.max(1, Number(e.target.value)))}
-                disabled={rolling}
-                className="inp"
-                style={{ padding: '.45rem .6rem', fontSize: '.84rem', width: '100%' }}
-              />
-              <button className="btn" style={{ padding: '.2rem .5rem', fontSize: '.65rem' }} disabled={rolling} onClick={() => setBet(b => Math.max(1, Math.floor(b / 2)))}>½</button>
-              <button className="btn" style={{ padding: '.2rem .5rem', fontSize: '.65rem' }} disabled={rolling} onClick={() => setBet(b => b * 2)}>2×</button>
-            </div>
-          </div>
+          <BetControl
+            value={bet}
+            onChange={setBet}
+            max={chips}
+            disabled={rolling}
+          />
 
           {/* Target Multiplier Input */}
           <div>
@@ -285,7 +278,6 @@ export default function LimboGame({ chips, spend, win, onClose }) {
           <span>Hedefte Net Kazanç: <b style={{ color: 'var(--green)' }}>+{fmt(winProfit)} dürTL</b></span>
           <span>Bakiye: ◈ {fmt(chips)} dürTL</span>
         </div>
-      </div>
-    </div>
+      </Modal>
   );
 }

@@ -4,6 +4,8 @@ import { fmt, say } from '../lib/toast';
 import { logRound } from '../lib/store';
 import { useRoundLock } from '../lib/useRoundLock';
 import { acquireAudio, releaseAudio, tone, fanfare } from '../lib/audio';
+import Modal from './ui/Modal';
+import { useEventCallback } from '../lib/useEventCallback';
 
 const WHEEL_NUMS = [
   0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10, 5,
@@ -77,58 +79,6 @@ export default function RouletteGame({ chips, spend, win, onClose }) {
     setBets({ ...lastBets });
   }
 
-  function spin() {
-    if (totalBet === 0) {
-      say('Önce masaya en az bir fiş koy.');
-      return;
-    }
-    if (!acquire()) return;                      // senkron kilit
-    if (!spend(totalBet)) {
-      release();
-      say('Yetersiz bakiye — fişlerini düzenle.');
-      return;
-    }
-
-    // Tur sözleşmesi: settle bu dondurulmuş bahislere göre yapılır.
-    roundBetsRef.current = { ...bets };
-    roundTotalRef.current = totalBet;
-    setLastBets({ ...bets });
-    setWinningNum(null);
-    setMsg({ t: 'Krupiye: “Rien ne va plus — bahisler kapandı.”', cls: '' });
-    playBallWhirr();
-
-    const chosenIdx = Math.floor(Math.random() * WHEEL_NUMS.length);
-    const resultNum = WHEEL_NUMS[chosenIdx];
-
-    // Wheel animation over 4.2 seconds
-    const startTime = Date.now();
-    const duration = 4200;
-    const startWheel = wheelAngle;
-    const wheelTarget = startWheel + 360 * 4;
-
-    // Ball spins opposite direction
-    const seg = 360 / 37;
-    const targetBallPos = 360 * 7 + (360 - chosenIdx * seg);
-
-    function frame() {
-      const now = Date.now();
-      const elapsed = now - startTime;
-      const p = Math.min(1, elapsed / duration);
-      const ease = 1 - Math.pow(1 - p, 3);
-
-      setWheelAngle(startWheel + (wheelTarget - startWheel) * ease);
-      setBallAngle(targetBallPos * ease);
-
-      if (p < 1) {
-        animRef.current = requestAnimationFrame(frame);
-      } else {
-        settleResult(resultNum);
-      }
-    }
-
-    animRef.current = requestAnimationFrame(frame);
-  }
-
   function settleResult(num) {
     release();
     const roundBets = roundBetsRef.current || {};
@@ -194,6 +144,60 @@ export default function RouletteGame({ chips, spend, win, onClose }) {
     }
   }
 
+  const spin = useEventCallback(() => {
+    if (totalBet === 0) {
+      say('Önce masaya en az bir fiş koy.');
+      return;
+    }
+    if (!acquire()) return;                      // senkron kilit
+    if (!spend(totalBet)) {
+      release();
+      say('Yetersiz bakiye — fişlerini düzenle.');
+      return;
+    }
+
+    // Tur sözleşmesi: settle bu dondurulmuş bahislere göre yapılır.
+    roundBetsRef.current = { ...bets };
+    roundTotalRef.current = totalBet;
+    setLastBets({ ...bets });
+    setWinningNum(null);
+    setMsg({ t: 'Krupiye: “Rien ne va plus — bahisler kapandı.”', cls: '' });
+    playBallWhirr();
+
+    const chosenIdx = Math.floor(Math.random() * WHEEL_NUMS.length);
+    const resultNum = WHEEL_NUMS[chosenIdx];
+
+    // Wheel animation over 4.2 seconds
+    const startTime = Date.now();
+    const duration = 4200;
+    const startWheel = wheelAngle;
+    const wheelTarget = startWheel + 360 * 4;
+
+    // Ball spins opposite direction
+    const seg = 360 / 37;
+    const targetBallPos = 360 * 7 + (360 - chosenIdx * seg);
+
+    function frame() {
+      const now = Date.now();
+      const elapsed = now - startTime;
+      const p = Math.min(1, elapsed / duration);
+      const ease = 1 - Math.pow(1 - p, 3);
+
+      setWheelAngle(startWheel + (wheelTarget - startWheel) * ease);
+      setBallAngle(targetBallPos * ease);
+
+      if (p < 1) {
+        animRef.current = requestAnimationFrame(frame);
+      } else {
+        settleResult(resultNum);
+      }
+    }
+
+    animRef.current = requestAnimationFrame(frame);
+  });
+
+
+
   useEffect(() => {
     acquireAudio();
     return () => {
@@ -235,9 +239,7 @@ export default function RouletteGame({ chips, spend, win, onClose }) {
   };
 
   return (
-    <div className="ovl" onClick={e => e.target === e.currentTarget && onClose()} style={{ zIndex: 75 }}>
-      <div className="pnl" style={{ width: 'min(760px, 98vw)', padding: '1.2rem 1.4rem' }}>
-        <button className="close" onClick={onClose}>✕</button>
+    <Modal onClose={onClose} title="Rulet" className="pnl" zIndex={75} style={{ width: 'min(760px, 98vw)', padding: '1.2rem 1.4rem' }}>
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '.4rem' }}>
           <div>
@@ -593,7 +595,6 @@ export default function RouletteGame({ chips, spend, win, onClose }) {
             {spinning ? 'TOP DÖNÜYOR…' : `ÇARKI ÇEVİR (◈ ${fmt(totalBet)} dürTL)`}
           </button>
         </div>
-      </div>
-    </div>
+      </Modal>
   );
 }
