@@ -2,9 +2,11 @@
 import { useEffect, useState, useRef } from 'react';
 import { fmt, say } from '../lib/toast';
 import { logRound } from '../lib/store';
-import { calcMultiplier, placeMines, GRID_SIZE } from '../lib/engines/mines';
+import { calcMultiplier, GRID_SIZE } from '../lib/engines/mines';
 import { acquireAudio, releaseAudio, tone, fanfare } from '../lib/audio';
 import Modal from './ui/Modal';
+import FairBadge from './ui/FairBadge';
+import { beginMinesRound } from '../lib/fairRound';
 import BetControl from './ui/BetControl';
 import { useEventCallback } from '../lib/useEventCallback';
 
@@ -20,6 +22,8 @@ export default function MinesGame({ chips, spend, win, onClose }) {
   const [shaking, setShaking] = useState(false);
   const [msg, setMsg] = useState({ t: 'Mayın sayısını ve bahsini seç, tarlayı başlat.', cls: '' });
   const sfxRef = useRef(true);
+  const minesFairRef = useRef(null);
+  const [fairHash, setFairHash] = useState('');
   const betRef = useRef(25);
   const minesRef = useRef(3);
   const bustedRef = useRef(false);
@@ -63,7 +67,10 @@ export default function MinesGame({ chips, spend, win, onClose }) {
     bustedRef.current = false;
     cashedRef.current = false;
 
-    setGrid(placeMines(mineCount));
+    const fair = beginMinesRound(mineCount);  // commit → play → reveal
+    minesFairRef.current = fair;
+    setFairHash(fair.hash);
+    setGrid(fair.result);
     setRevealed([]);
     setBusted(false);
     setCashed(false);
@@ -139,6 +146,7 @@ export default function MinesGame({ chips, spend, win, onClose }) {
 
   return (
     <Modal onClose={onClose} title="Mayınlar" className="pnl" zIndex={75} style={{ width: 'min(580px, 98vw)', padding: '1.4rem 1.6rem' }}>
+      <FairBadge liveHash={fairHash} />
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '.4rem' }}>
           <div>

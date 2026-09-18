@@ -382,3 +382,60 @@ export function toggleFav(id) {
   }
   return favs;
 }
+
+/* ================= PROBABLY FAIR KİMLİĞİ (monolitten port) ================= */
+const FAIR_ID_KEY = 'durtu_react_fair_id';
+const FAIR_LAST_KEY = 'durtu_react_fair_last';
+
+/** Oyuncu tarafı tohum + tur sayacı (cihazda kalıcı). */
+export function getFairIdentity() {
+  if (typeof window === 'undefined') return { clientSeed: 'demo-client', nonce: 0 };
+  try {
+    const raw = JSON.parse(localStorage.getItem(FAIR_ID_KEY) || 'null');
+    if (raw && typeof raw.clientSeed === 'string' && raw.clientSeed.length >= 8 && Number.isInteger(raw.nonce)) {
+      return raw;
+    }
+  } catch (err) {
+    log.ignorable('store.getFairIdentity', err);
+  }
+  const fresh = { clientSeed: fairRandomSeed(), nonce: 0 };
+  try { localStorage.setItem(FAIR_ID_KEY, JSON.stringify(fresh)); } catch (err) { log.ignorable('store.setFairIdentity', err); }
+  return fresh;
+}
+
+function fairRandomSeed() {
+  const c = globalThis.crypto;
+  if (c?.getRandomValues) {
+    const b = new Uint8Array(16);
+    c.getRandomValues(b);
+    return Array.from(b, x => x.toString(16).padStart(2, '0')).join('');
+  }
+  return String(Date.now()) + Math.random().toString(16).slice(2);
+}
+
+export function bumpFairNonce() {
+  const id = getFairIdentity();
+  const next = { ...id, nonce: id.nonce + 1 };
+  try { localStorage.setItem(FAIR_ID_KEY, JSON.stringify(next)); } catch (err) { log.ignorable('store.bumpFairNonce', err); }
+  return next;
+}
+
+/** Son turun commit/reveal paketi (panel + doğrulama aracı okur). */
+export function setLastFairRound(round) {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem(FAIR_LAST_KEY, JSON.stringify(round));
+    window.dispatchEvent(new CustomEvent('durtu:fair')); // rozetler tazelenir
+  } catch (err) { log.ignorable('store.setLastFairRound', err); }
+}
+
+export function getLastFairRound() {
+  if (typeof window === 'undefined') return null;
+  try {
+    const r = JSON.parse(localStorage.getItem(FAIR_LAST_KEY) || 'null');
+    return r && typeof r === 'object' ? r : null;
+  } catch (err) {
+    log.ignorable('store.getLastFairRound', err);
+    return null;
+  }
+}

@@ -50,7 +50,7 @@ durtu-app/
 │   └── sw.js               # service worker (PWA)
 ├── scripts/
 │   └── run-tests.mjs       # sürümden bağımsız test koşucusu
-└── tests/                  # 93 test: invariant · ekonomi · güvenlik · yarış · store · a11y
+└── tests/                  # 105 test: invariant · ekonomi · güvenlik · yarış · store · a11y · fair
 ```
 
 ## Testler
@@ -66,6 +66,7 @@ npm test               # 93 test (Node 20.11+ ve 22+ aynı komut)
 - `regression.race.test.js` — tur kilidi / çift-tıklama regresyonları
 - `store.test.js` — günlük check-in ritüeli + favoriler (legacy kapsamanın portu)
 - `modal.a11y.test.js` — Modal sözleşmesi + "hiçbir bileşen kendi overlay'ini yazamaz"
+- `provablyFair.test.js` — SHA-256 vektörleri, commit/reveal determinizmi, RTP bandı
 
 ## Slot motoru (components/SlotGame.jsx)
 
@@ -79,5 +80,7 @@ npm test               # 93 test (Node 20.11+ ve 22+ aynı komut)
 - Gerçek para oyunları **lisanslı sağlayıcı entegrasyonu** gerektirir.
 - `/api/apply` proses-içi bellek; üretimde Postgres + admin onay akışı.
 - Kimlik doğrulama: NextAuth + davet kodu claim akışı (backlog).
-- Provably Fair paneli, kulüp katmanı (VIP/promo/cashback), turnuvalar,
-  melekler ve Supabase bulut senkronu **port bekliyor** — bkz. kök `DURUM_RAPORU.md`.
+- Provably Fair **canlı**: crash/mines her turu SHA-256 ile önceden kilitler
+  (nav → 🛡️ ADİLLİK paneli + kendini doğrula aracı)
+- Kulüp katmanı (VIP/promo/cashback), turnuvalar, melekler ve Supabase bulut
+  senkronu **port bekliyor** — bkz. kök `DURUM_RAPORU.md`.
