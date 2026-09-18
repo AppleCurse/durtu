@@ -1,14 +1,20 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { CATS, GAMES as FALLBACK } from '../lib/games';
 import { shuffle } from '../lib/shuffle';
 import { log } from '../lib/logger';
+import { getFavs, toggleFav } from '../lib/store';
 
 export default function GameGrid({ onPlay }) {
   const [games, setGames] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
   const [fromApi, setFromApi] = useState(false);
+  const [query, setQuery] = useState('');
+  const [favs, setFavs] = useState([]);
+
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- favoriler localStorage'dan mount'ta okunur (SSR'da [] olup istemcide dolması bilinçli)
+  useEffect(() => { setFavs(getFavs()); }, []);
 
   async function refresh() {
     setLoading(true);
@@ -35,19 +41,57 @@ export default function GameGrid({ onPlay }) {
   // eslint-disable-next-line react-hooks/set-state-in-effect -- async fetch
   useEffect(() => { refresh(); }, []);
 
+  function onToggleFav(id, e) {
+    e.stopPropagation();
+    setFavs(toggleFav(id));
+  }
+
   // İkinci savunma katmanı: games her ihtimale karşı dizi olmayabilir.
-  const list = (Array.isArray(games) ? games : FALLBACK).filter(
-    g => g && (filter === 'all' || g.cat === filter)
-  );
+  const base = Array.isArray(games) ? games : FALLBACK;
+  const list = useMemo(() => {
+    const q = query.trim().toLocaleLowerCase('tr-TR');
+    return base.filter(g => {
+      if (!g) return false;
+      if (filter === 'fav' && !favs.includes(g.id)) return false;
+      if (filter !== 'all' && filter !== 'fav' && g.cat !== filter) return false;
+      if (!q) return true;
+      const hay = `${g.name} ${g.note} ${g.type} ${g.rtp} ${g.vol}`.toLocaleLowerCase('tr-TR');
+      return hay.includes(q);
+    });
+  }, [base, filter, favs, query]);
 
   return (
     <section id="secki">
       <span className="tag">Küratörün Seçkisi {fromApi ? '· /api/games' : '· yerel yedek'}</span>
-      <h2 className="sect">5.000 oyun değil. Senin için seçilmiş {list.length} oyun.</h2>
+      <h2 className="sect">5.000 oyun değil. Senin için seçilmiş {base.length} oyun.</h2>
+
+      {/* Lobi arama çubuğu (monolitten port) */}
+      <div style={{ margin: '1rem 0 .9rem', position: 'relative', maxWidth: 440 }}>
+        <input
+          type="search"
+          value={query}
+          onChange={e => setQuery(e.target.value)}
+          placeholder="🔍 Oyun veya kategori ara (Gates, Rulet, Slot, 98%...)"
+          aria-label="Oyun ara"
+          style={{
+            width: '100%', padding: '.65rem .9rem', fontSize: '.82rem',
+            background: 'var(--card2)', border: '1px solid var(--line)',
+            borderRadius: 4, color: 'var(--cream)',
+          }}
+        />
+      </div>
+
       <div className="filters">
         {CATS.map(([k, l]) => (
           <button key={k} className={'chip' + (filter === k ? ' on' : '')} onClick={() => setFilter(k)}>{l}</button>
         ))}
+        <button
+          className={'chip' + (filter === 'fav' ? ' on' : '')}
+          onClick={() => setFilter('fav')}
+          title="Favori oyunların"
+        >
+          ❤️ Favorilerim ({favs.length})
+        </button>
         <button className="chip" style={{ borderStyle: 'dashed' }} onClick={refresh}>🔄 Tazele</button>
       </div>
       <div className="ggrid">
@@ -66,6 +110,20 @@ export default function GameGrid({ onPlay }) {
                   if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onPlay(x.id); }
                 }}
               >
+                <button
+                  type="button"
+                  aria-label={favs.includes(x.id) ? 'Favorilerden çıkar' : 'Favorilere ekle'}
+                  title={favs.includes(x.id) ? 'Favorilerden çıkar' : 'Favorilere ekle'}
+                  onClick={e => onToggleFav(x.id, e)}
+                  style={{
+                    position: 'absolute', top: '.7rem', right: '.7rem',
+                    background: 'none', border: 'none', cursor: 'pointer',
+                    fontSize: '1rem', color: favs.includes(x.id) ? 'var(--gold)' : 'var(--muted)',
+                    padding: '.2rem', lineHeight: 1,
+                  }}
+                >
+                  {favs.includes(x.id) ? '♥' : '♡'}
+                </button>
                 <div className="ic">{x.icon}</div>
                 <h3>{x.name}</h3>
                 <div className="meta">RTP %{x.rtp} · {x.vol}</div>
@@ -86,11 +144,20 @@ export default function GameGrid({ onPlay }) {
                       ? 'Çevir →'
                       : x.type === 'mines'
                       ? 'Tarlaya Gir →'
+                      : x.type === 'sport'
+                      ? 'Kupon Yap →'
                       : 'Masaya Git →'}
                   </span>
                 </div>
               </div>
             ))}
+        {!loading && list.length === 0 && (
+          <p className="muted" style={{ gridColumn: '1/-1' }}>
+            {filter === 'fav' && favs.length === 0
+              ? 'Henüz favori seçmedin — bir kartın ♡ simgesine dokun.'
+              : 'Bu aramaya uyan oyun yok.'}
+          </p>
+        )}
       </div>
     </section>
   );

@@ -28,6 +28,8 @@ export const GAMES = [
     note: 'Sonraki kart büyük mü küçük mü? Olasılıklar canlı hesaplanır, kazanç zinciri birikir.' },
   { id: 'wheel', icon: '🎯', name: 'Şans Çarkı (Wheel)', cat: 'orig', rtp: '98.50', vol: 'Çoklu Kademe', type: 'wheel',
     note: 'Özel segmentler, tıkırdayan ibre ve 50× çarpanlı çark deneyimi.' },
+  { id: 'sport', icon: '🏆', name: 'Spor Bahsi — Gerçek Kupon', cat: 'strat', rtp: '94.50', vol: 'Spor', type: 'sport',
+    note: '3 maç · 1X2 · küratörlü oranlar; sonuç oranların ima ettiği olasılıkla ağırlıklı simüle edilir.' },
 ];
 
 export const CATS = [
