@@ -10,6 +10,14 @@
 import { toChips } from './money.js';
 import { log } from './logger.js';
 import { say } from './toast.js';
+import { getTodayKey, getYesterdayKey } from './calendar.js';
+import { accrueRound } from './club.js';
+import { noteRoundLive } from './limits.js';
+
+// Gün anahtarları lib/calendar.js'te: kulüp katmanı (lib/club.js) da onlara
+// ihtiyaç duyuyor; oradan store'a dönen bir import döngüsü oluşmaması için
+// takvim matematiği bağımlılıksız modüle taşındı. Dışa açılan API değişmedi.
+export { getTodayKey, getYesterdayKey };
 
 const STATS_KEY = 'durtu_react_stats';
 const LEDGER_KEY = 'durtu_react_ledger';
@@ -110,6 +118,12 @@ export function logRound(game, bet, win, mul) {
   s.big = Math.max(s.big, Math.max(0, safeWin - safeBet));
   scheduleFlush();
 
+  // Kulüp katmanı: kayıp iadesi NET kayıptan tahakkuk eder. Tek dokunuş
+  // noktası burası — her oyun zaten logRound çağırıyor.
+  accrueRound(safeBet, safeWin);
+  // Sorumlu oyun: oturum net kaybı ve gerçeklik molası aynı kapıdan beslenir.
+  noteRoundLive(safeBet, safeWin);
+
   if (safeWin > 0) {
     window.dispatchEvent(
       new CustomEvent('durtu:tick', { detail: { who: 'Sen', game, amt: safeWin, mul } })
@@ -197,23 +211,6 @@ export function getBonusForStreak(streak) {
   const s = Math.max(1, Number(streak) || 1);
   if (s >= 7) return 250;
   return DAILY_REWARDS[s - 1]?.bonus || 100 + (s - 1) * 25;
-}
-
-export function getTodayKey(d = new Date()) {
-  const year = d.getFullYear();
-  const month = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-}
-
-/**
- * Dünün anahtarı — takvim günü üzerinden hesaplanır.
- * (Date.now() - 86400000 yaklaşımı DST geçişlerinde aynı güne veya iki gün öncesine düşüyordu.)
- */
-export function getYesterdayKey(d = new Date()) {
-  const y = new Date(d.getFullYear(), d.getMonth(), d.getDate());
-  y.setDate(y.getDate() - 1);
-  return getTodayKey(y);
 }
 
 function defaultProfile() {

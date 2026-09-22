@@ -15,7 +15,7 @@ const MODAL_SRC = fs.readFileSync(path.join(COMPONENTS, 'ui', 'Modal.jsx'), 'utf
 const MODAL_COMPONENTS = [
   'WheelGame', 'LimboGame', 'HiloGame', 'MinesGame', 'PlinkoGame',
   'BlackjackGame', 'RouletteGame', 'SportBet', 'SlotGame',
-  'VaultModal', 'StatsModal', 'DailyCheckInModal', 'CrashGame', 'Gate',
+  'VaultModal', 'ClubModal', 'LimitsModal', 'StatsModal', 'DailyCheckInModal', 'CrashGame', 'Gate',
   'Lounge360',
 ];
 

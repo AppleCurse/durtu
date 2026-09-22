@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { say, fmt, buzz } from '../lib/toast';
 import { logRound } from '../lib/store';
 import { crashPoint, evaluateFrame } from '../lib/engines/crash';
-import { acquireAudio, releaseAudio, getAudio, tone as sharedTone, noiseBurst } from '../lib/audio';
+import { acquireAudio, releaseAudio, getAudio, tone as sharedTone, noiseBurst, heartbeat, coinRain } from '../lib/audio';
 import { log } from '../lib/logger';
 import Modal from './ui/Modal';
 import FairBadge from './ui/FairBadge';
@@ -143,6 +143,18 @@ export default function CrashGame({ spend, win, onClose }){
       }
     });
     if(changed) setPlayers(playersRef.current.map(p => ({ ...p })));
+
+    // NABIZ: çarpan yükseldikçe tempo 760 ms → 330 ms'ye iner.
+    // Zamanlayıcı burada değil, rAF döngüsünün kendi karesinde: sızan
+    // setInterval yok, tur bitince kendiliğinden susar (e.running = false).
+    if(sfx.current && m >= 1.6){
+      if(!e.nextBeat || now >= e.nextBeat){
+        const tension = Math.min(1, (m - 1.6) / 8.4);   // 1.6× → 10× arası tam gerilim
+        heartbeat({ gain: 0.05 + tension * 0.12 });
+        e.nextBeat = now + (760 - tension * 430);
+      }
+    }
+
     if(cashRef.current) cashRef.current.textContent = '◈ ' + fmt(Math.round(e.bet * m));
     if (e.hum) { try { e.hum.o.frequency.setTargetAtTime(50 + Math.min(420, (m - 1) * 38), getAudio().currentTime, 0.06); } catch (err) { log.ignorable('crash.hum', err); } }
 
@@ -168,7 +180,7 @@ export default function CrashGame({ spend, win, onClose }){
     const fair = beginCrashRound();          // commit → play → reveal
     e.fair = fair;
     setFairHash(fair.hash);
-    e.running = true; e.cashed = false; e.m = 1; e.bet = bet; e.crash = fair.result; e.pts = [[0, 1]];
+    e.running = true; e.cashed = false; e.m = 1; e.bet = bet; e.crash = fair.result; e.pts = [[0, 1]]; e.nextBeat = 0;
     e.oto = parseFloat((otoRef.current?.value || '').replace(',', '.')) || 0;
     setRunning(true); setCanCash(true); setBoom('');
     setMyMsg('Uçak havada. Çıkışını bekle…');
@@ -193,6 +205,7 @@ export default function CrashGame({ spend, win, onClose }){
     win(w);
     logRound('Aviator', e.bet, w, Math.round(m * 100) / 100);
     tone(523, 0, .15, 'triangle', .12); tone(784, .1, .25, 'triangle', .12); buzz([30, 45, 75]);
+    if(m >= 5) coinRain({ count: Math.min(24, 12 + Math.round(m * 2)), gain: 0.07 });
     bestsRef.current = Math.max(bestsRef.current, m);
     setCanCash(false);
     setMyMsg((auto ? 'Oto çıkış — ' : '') + m.toFixed(2) + '× noktasında indin: +' + fmt(w) + ' ◈. Temiz karar.');
@@ -202,6 +215,7 @@ export default function CrashGame({ spend, win, onClose }){
     const e = E.current;
     if(!e.running) return;
     e.running = false;
+    e.nextBeat = 0;
     hum(false); boomSnd();
     playersRef.current.forEach(p => { if(!p.done){ p.done = true; p.win = 0; } });
     setPlayers(playersRef.current.map(p => ({ ...p })));
