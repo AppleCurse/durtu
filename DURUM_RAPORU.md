@@ -144,8 +144,11 @@ sistemin **aşamadığı** sınırlardır.
 5. Backoffice (gerçek auth'lu panel)
 7. **Sorumlu oyun:** kalıcı kendini men + hesap kapatma, harcama geçmişi grafiği,
    limit aşımında otomatik cool-off önerisi
-6. **Kasa yerelleştirme:** Papara / Payfix / Anında Havale / USDT-TRC20 seçimi,
-   yöntem bazlı limit ve simüle dekont akışı (şu an tek "Kulüp Kasası" hattı var)
+6. ~~Kasa yerelleştirme~~ ✅ `lib/payments.js` + VaultModal: 4 ray (Papara /
+   Payfix / Anında Havale / USDT-TRC20), ray bazlı yatırım/çekim limitleri,
+   DRT-referanslı simüle dekont akışı (review → ok, idempotent), USDT demo kuru
+   1 USDT = ◈ 9.7, çekimde tutar talep anında teminata alınır (spend-hold).
+   Kalan: ray bazlı çekim ücreti tablosu, gerçek sağlayıcı entegrasyonu (demo dışı)
 
 
 dürTL — demo para. Gerçek para yok. 18+ · Sorumlu oyun.
