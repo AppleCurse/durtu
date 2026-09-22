@@ -17,6 +17,13 @@ export default function Gate({ onEnter }) {
     else say('<b>Dürtü:</b> bu kod kapıyı açmadı. Davetin yoksa başvuru seni bekliyor.');
   }
 
+  // Tek tıkla geçiş kartı: sahada oyuncu 5. saniyede sekmeyi kapatır.
+  // Kapının gizemi kalsın ama sürtünme kalksın — davetiye beklemek zorunlu değil.
+  function fastPass() {
+    setDoor(true);
+    setTimeout(() => onEnter('Misafir'), 1500);
+  }
+
   async function submitApp(e) {
     e.preventDefault();
     const fd = new FormData(e.target);
@@ -63,7 +70,9 @@ export default function Gate({ onEnter }) {
           <input className="inp" style={{ textAlign: 'center', letterSpacing: '.3em' }} maxLength={12}
             placeholder="DAVET KODU" value={code} onChange={e => setCode(e.target.value)} />
           <button className="btn solid" type="submit">Kapıyı Çal</button>
+          <button className="btn ghost" type="button" onClick={fastPass}>⚡ Hızlı Geçiş Kartı</button>
           <button className="btn ghost" type="button" onClick={() => setAppOpen(true)}>Başvuru Yap</button>
+          <p className="gate-hint">Beklemek istemeyene tek tık: geçiş kartı kapıyı 1,5 saniyede aralar.</p>
           <p className="gate-hint">Demo: 4+ karakterli her kod kapıyı açar — örn. <b style={{ color: 'var(--gold)' }}>EV-2026</b></p>
           <p className="gate-hint" style={{ marginTop: '.4rem', color: 'var(--gold2)', fontSize: '.68rem' }}>☀️ Günün ilk girişinde +100 dürTL hoş geldin ritüeli kasana eklenir</p>
         </form>

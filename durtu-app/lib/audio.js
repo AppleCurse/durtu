@@ -101,3 +101,34 @@ export function noiseBurst({ dur = 0.35, gain = 0.28, decay = 2.2 } = {}) {
     log.ignorable('audio.noise', err);
   }
 }
+
+/**
+ * Kalp atışı — lub-dub. Tek vuruş üretir; TEMPO çağırandadır.
+ * Crash'te çarpan yükseldikçe çağırma aralığı kısaltılır, böylece ritim
+ * oyuncunun nabzıyla birlikte hızlanır (tek zamanlayıcı kuralı korunur:
+ * burada setInterval yok, sızan bir zamanlayıcı da yok).
+ */
+export function heartbeat({ gain = 0.14, low = 58, high = 44, gap = 0.13 } = {}) {
+  tone(low, { dur: 0.09, type: 'sine', gain });
+  tone(high, { delay: gap, dur: 0.11, type: 'sine', gain: gain * 0.8 });
+}
+
+/**
+ * Altın dökülmesi — büyük kazanç, kayıp iadesi ve gece yakıtında kullanılan
+ * tiz/dağınık vuruş bulutu. Notalar rastgele seçilir ki aynı sesi iki kez
+ * üst üste duyunca makine hissi vermesin.
+ */
+export function coinRain({ count = 14, gain = 0.075, spread = 1.1 } = {}) {
+  const scale = [1046, 1174, 1318, 1396, 1568, 1760, 2093];
+  const n = Math.max(1, Math.min(40, Math.trunc(count) || 14));
+  const step = spread / n;
+  for (let i = 0; i < n; i++) {
+    const base = scale[Math.floor(Math.random() * scale.length)];
+    tone(base * (1 + (Math.random() - 0.5) * 0.04), {
+      delay: i * step + Math.random() * 0.03,
+      dur: 0.12,
+      type: 'triangle',
+      gain: gain * (0.7 + Math.random() * 0.6),
+    });
+  }
+}

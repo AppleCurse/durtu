@@ -15,6 +15,8 @@ import LimboGame from '../components/LimboGame';
 import HiloGame from '../components/HiloGame';
 import WheelGame from '../components/WheelGame';
 import VaultModal from '../components/VaultModal';
+import ClubModal from '../components/ClubModal';
+import LimitsModal from '../components/LimitsModal';
 import StatsModal from '../components/StatsModal';
 import DailyCheckInModal from '../components/DailyCheckInModal';
 import ProvablyFairModal from '../components/ProvablyFairModal';
@@ -32,6 +34,8 @@ import {
   saveChips,
   getCheckInStatus,
 } from '../lib/store';
+import { clubBadge, rescueCheck, getClub } from '../lib/club';
+import { gateBet, getLimits, isCoolingOff } from '../lib/limits';
 
 const GAME_MODALS = {
   aviator: 'crash',
@@ -50,9 +54,11 @@ export default function Page() {
   const [name, setName] = useState('Misafir');
   const [chips, setChips] = useState(1000);
   const [slotId, setSlotId] = useState(null);
-  const [open, setOpen] = useState(null); // 'crash' | 'bj' | 'rl' | 'mines' | 'sport' | 'plinko' | 'limbo' | 'hilo' | 'wheel' | 'vault' | 'stats' | 'checkin'
+  const [open, setOpen] = useState(null); // 'crash' | 'bj' | 'rl' | 'mines' | 'sport' | 'plinko' | 'limbo' | 'hilo' | 'wheel' | 'vault' | 'club' | 'stats' | 'checkin'
   const [checkInResult, setCheckInResult] = useState(null);
   const [checkInInfo, setCheckInInfo] = useState(null);
+  // `open`'dan bağımsız: gerçeklik molası açık bir oyunun ÜSTÜNE biner, oyunu kapatmaz.
+  const [limitsOpen, setLimitsOpen] = useState(false);
   const chipsRef = useRef(1000);
 
   // Bakiye her yazımda normalize edilir: NaN/Infinity/negatif/ondalıklı asla girmez.
@@ -65,6 +71,22 @@ export default function Page() {
 
   /** Bahsi düşer. Geçersiz tutar veya yetersiz bakiyede false döner — çağıran MUTLAKA kontrol etmeli. */
   const spend = b => {
+    // SORUMLU OYUN KAPISI: bakiyeden ÖNCE denetlenir. Oyuncunun kendi koyduğu
+    // mola/kayıp limiti, oyun kodunun hiçbir yolundan绕过 edilemez.
+    const gate = gateBet(b);
+    if (!gate.ok) {
+      if (gate.reason === 'COOL_OFF') {
+        say('🧭 <b>Mola aktif.</b> Kendi koyduğun aralık dolmadan bahis açılmaz — bu kuralı sen koydun.');
+      } else if (gate.reason === 'LOSS_LIMIT') {
+        say(
+          html`🧭 <b>Oturum kayıp limitine ulaştın</b> — net ◈ ${fmt(
+            gate.netLoss
+          )} dürTL. Limiti panelde gevşetebilirsin, ama 24 saat sonra yürürlüğe girer.`
+        );
+        setLimitsOpen(true);
+      }
+      return false;
+    }
     if (!isValidBet(b, chipsRef.current)) return false;
     setC(chipsRef.current - b);
     return true;
@@ -105,6 +127,58 @@ export default function Page() {
     window.addEventListener('durtu:selin', onSelin);
     return () => window.removeEventListener('durtu:selin', onSelin);
   }, []);
+
+  /* ── Kulüp katmanı: nav rozeti + sıfır bakiyede Selin'in araya girmesi ── */
+  const [clubTick, setClubTick] = useState(0);
+  const bustPrompted = useRef(false);
+
+  // Rozet, kulüp kaydı her değiştiğinde tazelenir (tur tahakkuku, iade, yakıt).
+  useEffect(() => {
+    const bump = () => setClubTick(t => t + 1);
+    window.addEventListener('durtu:club', bump);
+    return () => window.removeEventListener('durtu:club', bump);
+  }, []);
+
+  useEffect(() => {
+    if (!entered || chips > 0) {
+      bustPrompted.current = false;
+      return;
+    }
+    if (bustPrompted.current) return;
+    const check = rescueCheck(getClub(), chips);
+    if (!check.ok) return;
+    bustPrompted.current = true;
+    window.dispatchEvent(
+      new CustomEvent('durtu:selin', {
+        detail: html`💬 <b>Selin:</b> kasa sıfırlandı. Kulüp kuralı: <b>💎 KULÜP</b> panelinde ◈ <b>${fmt(
+          check.amount
+        )}</b> dürTL gece yakıtın hazır. Al ya da bu akşamı burada kapat — karar senin.`,
+      })
+    );
+  }, [entered, chips, clubTick]);
+
+  // Gerçeklik molası: limits katmanı aralık dolunca haber verir.
+  useEffect(() => {
+    const onLimits = e => {
+      if (e.detail?.kind !== 'round' || !e.detail.realityCheck) return;
+      const s = getLimits();
+      const mins = Math.round((Date.now() - s.sessionStartedAt) / 60000);
+      say(
+        html`⏰ <b>Gerçeklik molası:</b> ${fmt(
+          mins
+        )} dakikadır oynuyorsun. Oturum: ◈ ${fmt(s.sessionWagered)} çevrim, net ◈ ${fmt(
+          Math.max(0, s.sessionWagered - s.sessionWon)
+        )} dürTL. Ara vermek her zaman açık bir seçenek.`
+      );
+      setLimitsOpen(true);
+    };
+    window.addEventListener('durtu:limits', onLimits);
+    return () => window.removeEventListener('durtu:limits', onLimits);
+  }, []);
+
+  const club = clubBadge(chips);
+  const limits = getLimits();
+  const coolingOff = isCoolingOff(limits);
 
   function enter(n) {
     setName(n);
@@ -192,6 +266,23 @@ export default function Page() {
           >
             🛡️ ADİLLİK
           </button>
+          <button
+            className="btn btn-sm"
+            onClick={() => setLimitsOpen(true)}
+            title="Sorumlu oyun — kayıp limiti, gerçeklik molası, kendini men"
+            style={{ padding: '.32rem .7rem', fontSize: '.66rem', background: coolingOff ? 'rgba(200,80,64,.2)' : 'rgba(127,191,127,.1)', border: '1px solid ' + (coolingOff ? 'var(--red)' : 'var(--gd)'), color: coolingOff ? 'var(--red)' : 'var(--gold2)', borderRadius: 6, cursor: 'pointer', fontWeight: 600, letterSpacing: '.08em' }}
+          >
+            🧭 {coolingOff ? 'MOLA' : 'LİMİT'}
+          </button>
+          <button
+            className="btn btn-sm"
+            onClick={() => setOpen('club')}
+            title="Kulüp — VIP kademe, kayıp iadesi, gece yakıtı"
+            style={{ padding: '.32rem .7rem', fontSize: '.66rem', background: 'rgba(212,175,55,.14)', border: '1px solid var(--gold)', color: 'var(--gold2)', borderRadius: 6, cursor: 'pointer', fontWeight: 600, letterSpacing: '.08em' }}
+          >
+            💎 KULÜP{club.claimable > 0 ? ` · ◈ ${fmt(club.claimable)}` : ''}
+            {club.claimable > 0 || club.rescueReady ? <span className="dot" style={{ marginLeft: '.45rem', marginRight: 0 }} /> : null}
+          </button>
           <button className="btn btn-sm" onClick={() => setOpen('vault')} style={{ padding: '.32rem .7rem', fontSize: '.66rem', background: 'rgba(212,175,55,.14)', border: '1px solid var(--gold)', color: 'var(--gold)', borderRadius: 6, cursor: 'pointer', fontWeight: 600, letterSpacing: '.08em' }}>
             + KASA
           </button>
@@ -240,6 +331,7 @@ export default function Page() {
       {open === 'hilo' && <HiloGame chips={chips} spend={spend} win={win} onClose={() => setOpen(null)} />}
       {open === 'wheel' && <WheelGame chips={chips} spend={spend} win={win} onClose={() => setOpen(null)} />}
       {open === 'vault' && <VaultModal chips={chips} spend={spend} win={win} onClose={() => setOpen(null)} />}
+      {open === 'club' && <ClubModal chips={chips} win={win} onClose={() => setOpen(null)} />}
       {open === 'stats' && <StatsModal name={name} chips={chips} onClose={() => setOpen(null)} />}
       {open === 'fair' && <ProvablyFairModal onClose={() => setOpen(null)} />}
       {open === 'lounge' && (
@@ -262,6 +354,7 @@ export default function Page() {
           onClose={() => setOpen(null)}
         />
       )}
+      {limitsOpen && <LimitsModal onClose={() => setLimitsOpen(false)} />}
       <Chat name={name} />
       <Toasts />
     </>
