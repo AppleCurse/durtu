@@ -108,12 +108,15 @@ export default function Page() {
     // render edilir ve mount sonrası gerçek profile geçilir. Lazy initializer
     // kullanmak burada hidrasyon uyuşmazlığı yaratırdı.
     const p = getProfile();
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- hidrasyon güvenliği
-    if (p.name && p.name !== 'Misafir') setName(p.name);
     const startChips = toChips(p.chips, 1000);
     chipsRef.current = startChips;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- hidrasyon güvenliği
     setChips(startChips);
     setCheckInInfo(getCheckInStatus());
+    // İsim profile yazılmışsa kapı bir daha sormaz: doğrudan giriş.
+    // (Giriş kartı ilk geçişte ismi profile yazar — bkz. checkDailyLogin.)
+    if (p.name && p.name !== 'Misafir') enter(p.name);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- mount'ta bir kez; enter her render'da yenilenir
   }, []);
 
   useEffect(() => {
@@ -315,7 +318,7 @@ export default function Page() {
 
       <footer style={{ paddingBottom: 40 }}>
         <div className="serif" style={{ color: 'var(--gold)', letterSpacing: '.3em', marginBottom: '.5rem' }}>✦ DÜRTÜ</div>
-        <p>React/Next.js portu — konsept demosu; gerçek para kullanılmaz.<br />18+ • Sorumlu oyun: limitlerini belirle, ara vermekten çekinme.</p>
+        <p>18+ • Sorumlu oyun: limitlerini belirle, ara vermekten çekinme.</p>
       </footer>
 
       <Ticker />

@@ -231,7 +231,7 @@ export default function Salon({ name, chips, onPlay, onOpenLounge, onOpenCheckIn
             <span className="tag">🎁 Sana Özel</span>
             <h4>50 Ücretsiz Dönüş</h4>
             <p>Banner yok, spam yok — sadece sana. Gates of Olympus&apos;ta geçerli.</p>
-            <button className="btn solid" onClick={() => { say('<b>50 ücretsiz dönüş</b> tanımlandı (demo). Bol şans.'); onPlay('gates'); }}>Kullan</button>
+            <button className="btn solid" onClick={() => { say('<b>50 ücretsiz dönüş</b> tanımlandı. Bol şans.'); onPlay('gates'); }}>Kullan</button>
           </div>
         </div>
       </section>

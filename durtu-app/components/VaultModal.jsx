@@ -161,6 +161,9 @@ export default function VaultModal({ chips, spend, win, onClose }) {
               {tab === 'dep' ? 'GÖNDERİLECEK HESAP' : 'ÖDEME ALICISI DOĞRULAMASI'}
             </p>
             <p style={{ margin: 0, fontSize: '.72rem', whiteSpace: 'pre-line', lineHeight: 1.5 }}>{rail.account}</p>
+            <p style={{ margin: '.45rem 0 0', fontSize: '.68rem', lineHeight: 1.45, color: 'var(--red, #c96a5e)', fontWeight: 600 }}>
+              ⚠️ Bu kasa demo krediyle çalışır — hesabına gerçek para transferi yapma.
+            </p>
             {isUsdt && <p className="muted" style={{ fontSize: '.6rem', margin: '.3rem 0 0' }}>Ağ: TRC-20 (Tron) · Başka ağa gönderim kurtarılamaz.</p>}
           </div>
 
@@ -198,7 +201,7 @@ export default function VaultModal({ chips, spend, win, onClose }) {
 
           <p className="muted" style={{ fontSize: '.64rem', textAlign: 'center', marginTop: '.55rem' }}>
             {tab === 'dep'
-              ? `${rail.label} · min ◈ ${fmt(rail.depMin)} · max ◈ ${fmt(rail.depMax)} · demo akış ~${Math.round(rail.reviewMs / 1000)} sn`
+              ? `${rail.label} · min ◈ ${fmt(rail.depMin)} · max ◈ ${fmt(rail.depMax)} · akış ~${Math.round(rail.reviewMs / 1000)} sn`
               : `${rail.label} · min ◈ ${fmt(rail.wdMin)} · max ◈ ${fmt(rail.wdMax)} · tutar talep anında teminata alınır`}
           </p>
         </>

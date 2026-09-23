@@ -62,9 +62,8 @@ export default function SportBet({ spend, win, onClose }){
 
   return (
     <Modal onClose={onClose} title="Spor Bahisleri" className="pnl" style={{width:'min(560px,100%)'}}>
-        <span className="demo-badge">Demo · Gerçek oran · dürTL settlement</span>
         <h3>🏆 Spor Bahsi — Gerçek Kupon</h3>
-        <p className="noteline">3 maç · 1X2 · oranlar küratörlü · sonuç ağırlıklı simüle, bakiye entegre.</p>
+        <p className="noteline">3 maç · 1X2 · oranlar küratörlü · bakiye entegre.</p>
         <div style={{display:'flex',flexDirection:'column',gap:'.85rem',margin:'.9rem 0'}}>
           {MATCHES.map(m=>(
             <div key={m.id} style={{border:'1px solid var(--line)',borderRadius:10,padding:'.65rem .75rem',background:'rgba(255,255,255,.02)'}}>
@@ -94,7 +93,7 @@ export default function SportBet({ spend, win, onClose }){
         <div className="muted" style={{fontSize:'.8rem',marginBottom:'.6rem',lineHeight:1.5}}>
           {sel ? <><b>{sel.match.home} — {sel.match.away}</b> · <span style={{color:'var(--gold)'}}>{sel.market==='1'?sel.match.home:sel.market==='2'?sel.match.away:'Beraberlik'} @ {sel.odds.toFixed(2)}</span><br/><span className="muted">Tek maç · kupon hazır.</span></> : 'Bir oran seç — kupon burada belirir.'}
         </div>
-        <button className="btn solid" style={{width:'100%'}} disabled={settling} onClick={confirm}>{settling?'Simüle ediliyor…':'Kuponu Onayla — Gerçek Settlement'}</button>
+        <button className="btn solid" style={{width:'100%'}} disabled={settling} onClick={confirm}>{settling?'Sonuçlanıyor…':'Kuponu Onayla — Gerçek Settlement'}</button>
         {settling && <div style={{height:4,background:'var(--line)',borderRadius:4,marginTop:'.6rem',overflow:'hidden'}}><div style={{height:'100%',width:progress+'%',background:'var(--gold)',transition:'width .2s'}}/></div>}
         {result && (
           <div style={{marginTop:'.85rem',padding:'.8rem',border:'1px solid var(--line)',borderRadius:10,background:'rgba(255,255,255,.03)'}}>
@@ -103,7 +102,7 @@ export default function SportBet({ spend, win, onClose }){
             <div style={{fontSize:'.92rem'}}><b>Bahis:</b> ◈ {fmt(stake)} · <b>{result.won?'Kazanç':'İade'}:</b> ◈ {fmt(result.payout)} {result.won&&<span style={{color:'var(--gold)'}}>(+{fmt(result.profit)})</span>}</div>
           </div>
         )}
-        <p className="muted" style={{fontSize:'.66rem',marginTop:'.7rem',lineHeight:1.4}}>Oranlar demo küratörlü; sonuç, oranların ima ettiği olasılığa göre ağırlıklı rastgele simüle edilir. Kazanç anında dürTL bakiyene işlenir.</p>
+        <p className="muted" style={{fontSize:'.66rem',marginTop:'.7rem',lineHeight:1.4}}>Oranlar küratörlü; sonuç, oranların ima ettiği olasılığa göre ağırlıklı olarak üretilir. Kazanç anında dürTL bakiyene işlenir.</p>
       </Modal>
   );
 }
