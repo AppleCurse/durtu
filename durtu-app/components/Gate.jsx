@@ -2,60 +2,59 @@
 import { useState } from 'react';
 import { say } from '../lib/toast';
 import { log } from '../lib/logger';
-import Modal from './ui/Modal';
 
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
+/**
+ * Kapı: tek giriş kartı.
+ *
+ * Kod yok, şifre yok, başvuru kuyruğu yok: Ad Soyad + E-posta zorunlu,
+ * Telegram/telefon opsiyonel. Kart /api/entry üzerinden kulübe iletilir
+ * (mail ya da log), kapı 1,4 sn'de açılır ve isim profile yazılır —
+ * kart bir daha sorulmaz (geri dönüşte otomatik giriş, bkz. page.jsx).
+ *
+ * Görünmez "website" alanı bal küpüdür: insan göremez, bot doldurur —
+ * doluysa istek sessizce yutulur.
+ */
 export default function Gate({ onEnter }) {
-  const [code, setCode] = useState('');
-  const [appOpen, setAppOpen] = useState(false);
   const [busy, setBusy] = useState(false);
-  const [approved, setApproved] = useState(false);
   const [door, setDoor] = useState(false);
 
-  function knock(e) {
+  async function submit(e) {
     e.preventDefault();
-    if (code.trim().length >= 4) { setDoor(true); setTimeout(() => onEnter('Misafir'), 1950); }
-    else say('<b>Dürtü:</b> bu kod kapıyı açmadı. Davetin yoksa başvuru seni bekliyor.');
-  }
-
-  // Tek tıkla geçiş kartı: sahada oyuncu 5. saniyede sekmeyi kapatır.
-  // Kapının gizemi kalsın ama sürtünme kalksın — davetiye beklemek zorunlu değil.
-  function fastPass() {
-    setDoor(true);
-    setTimeout(() => onEnter('Misafir'), 1500);
-  }
-
-  async function submitApp(e) {
-    e.preventDefault();
+    if (busy || door) return;
     const fd = new FormData(e.target);
-    const name = ((fd.get('name') || '').toString().trim().replace(/[<>&"']/g, '').slice(0, 40)) || 'Misafir';
-    const email = (fd.get('email') || '').toString().trim();
-    const contact = (fd.get('contact') || '').toString().trim();
-    const why = (fd.get('why') || '').toString().trim();
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!email || !emailRegex.test(email)) {
-      say('<b>Dürtü:</b> Geçerli bir e-posta adresi girin — davetiyeniz buraya gönderilecek.');
+    const name = String(fd.get('name') ?? '').trim().slice(0, 60);
+    const email = String(fd.get('email') ?? '').trim().toLowerCase();
+    const contact = String(fd.get('contact') ?? '').trim().slice(0, 80);
+    if (String(fd.get('website') ?? '').trim()) return; // bal küpü: sessiz yut
+    if (!name) {
+      say('<b>Dürtü:</b> Adını ve soyadını yaz — kapı isimle açılır.');
       return;
     }
-    if (why.length < 12) { say('<b>Dürtü:</b> Üç cümle bekliyoruz — içtenlikle yaz.'); return; }
+    if (!email || !EMAIL_RE.test(email)) {
+      say('<b>Dürtü:</b> Geçerli bir e-posta adresi gir — kartın oraya düşer.');
+      return;
+    }
     setBusy(true);
     try {
-      const res = await fetch('/api/apply', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, contact, why, type: fd.get('type'), budget: fd.get('budget') }),
+      const res = await fetch('/api/entry', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, contact }),
       });
       if (!res.ok) throw new Error('HTTP ' + res.status);
       const json = await res.json();
       if (!json?.ok) throw new Error(json?.error || 'UNKNOWN');
     } catch (err) {
-      // Başvuru iletilemediyse kullanıcıya "Onaylandın" DENMEZ.
-      log.critical('gate.submitApply', err, { emailDomain: email.split('@')[1] });
+      // Kart iletilemediyse kapı AÇILMAZ — "girdin" yalanı yok.
+      log.critical('gate.submitEntry', err, { emailDomain: email.split('@')[1] });
       setBusy(false);
-      say('<b>Dürtü:</b> Başvurun şu an iletilemedi — bağlantını kontrol edip tekrar dener misin?');
+      say('<b>Dürtü:</b> Kart şu an iletilemedi — bağlantını kontrol edip tekrar dener misin?');
       return;
     }
-    setBusy(false);
-    setApproved(true);
-    setTimeout(() => { setDoor(true); setTimeout(() => onEnter(name), 1800); }, 1600);
+    setDoor(true);
+    setTimeout(() => onEnter(name), 1400);
   }
 
   return (
@@ -65,55 +64,54 @@ export default function Gate({ onEnter }) {
         <div className="wm">DÜRTÜ</div>
         <div className="gate-rule" />
         <p className="gate-sub">“Dürtü seni çağırıyor.”</p>
-        <p className="gate-hint" style={{ letterSpacing: '.14em' }}>Seçilmişler için · Giriş yalnızca davetle</p>
-        <form className="gate-form" onSubmit={knock}>
-          <input className="inp" style={{ textAlign: 'center', letterSpacing: '.3em' }} maxLength={12}
-            placeholder="DAVET KODU" value={code} onChange={e => setCode(e.target.value)} />
-          <button className="btn solid" type="submit">Kapıyı Çal</button>
-          <button className="btn ghost" type="button" onClick={fastPass}>⚡ Hızlı Geçiş Kartı</button>
-          <button className="btn ghost" type="button" onClick={() => setAppOpen(true)}>Başvuru Yap</button>
-          <p className="gate-hint">Beklemek istemeyene tek tık: geçiş kartı kapıyı 1,5 saniyede aralar.</p>
-          <p className="gate-hint">Demo: 4+ karakterli her kod kapıyı açar — örn. <b style={{ color: 'var(--gold)' }}>EV-2026</b></p>
-          <p className="gate-hint" style={{ marginTop: '.4rem', color: 'var(--gold2)', fontSize: '.68rem' }}>☀️ Günün ilk girişinde +100 dürTL hoş geldin ritüeli kasana eklenir</p>
+        <form className="gate-form" onSubmit={submit}>
+          <label htmlFor="g-name">Ad Soyad</label>
+          <input
+            className="inp"
+            id="g-name"
+            name="name"
+            placeholder="Adınız Soyadınız"
+            required
+            maxLength={60}
+            autoComplete="name"
+          />
+          <label htmlFor="g-email">E-posta</label>
+          <input
+            className="inp"
+            id="g-email"
+            name="email"
+            type="email"
+            placeholder="ornek@alanadi.com"
+            required
+            maxLength={254}
+            autoComplete="email"
+          />
+          <label htmlFor="g-contact">
+            Telegram / Telefon <span className="muted">(opsiyonel)</span>
+          </label>
+          <input
+            className="inp"
+            id="g-contact"
+            name="contact"
+            placeholder="@kullaniciadi veya 05XX XXX XX XX"
+            maxLength={80}
+          />
+          {/* Bal küpü: ekran dışı, odaklanamaz — insan ulaşamaz, bot doldurur. */}
+          <div
+            style={{ position: 'absolute', left: '-9999px', width: 1, height: 1, overflow: 'hidden' }}
+            aria-hidden="true"
+          >
+            <input tabIndex={-1} autoComplete="off" name="website" />
+          </div>
+          <button className="btn solid" type="submit" disabled={busy} style={{ width: '100%' }}>
+            {busy ? 'Kapı aralanıyor…' : 'Giriş Kartını Doldur'}
+          </button>
         </form>
-        <p className="gate-foot">İki adımlı doğrulama • Şifreli iletişim • 18+ | Sorumlu oyun</p>
+        <p className="gate-foot">18+ | Sorumlu oyun</p>
       </section>
 
       {door && (
         <div className="door"><span className="tag">Kapı aralanıyor</span><div className="door-line" /></div>
-      )}
-
-      {appOpen && (
-        <Modal onClose={() => setAppOpen(false)} title="Üyelik Başvurusu" className="pnl">
-            <span className="tag">Üyelik Başvurusu</span>
-            <h3>Kayıt değil. Başvuru.</h3>
-            <p className="noteline">Her üyelik Dürtü tarafından tek tek değerlendirilir. Acele etme; içtenlikle yaz.</p>
-            {!approved ? (
-              <form onSubmit={submitApp}>
-                <label htmlFor="ap-name">Adın Soyadın</label>
-                <input className="inp" id="ap-name" name="name" placeholder="Adınız Soyadınız" required />
-                <label htmlFor="ap-email">E-posta Adresin (Zorunlu — Davetiyen buraya iletilir)</label>
-                <input className="inp" id="ap-email" type="email" name="email" placeholder="ornek@alanadi.com" required />
-                <label htmlFor="ap-contact">Telegram veya Telefon (VIP Temsilci Hattı — Opsiyonel)</label>
-                <input className="inp" id="ap-contact" name="contact" placeholder="@kullaniciadi veya 05XX XXX XX XX" />
-                <label htmlFor="ap-why">Neden DÜRTÜ&apos;ye katılmak istiyorsun? (3 cümle)</label>
-                <textarea className="inp" id="ap-why" name="why" placeholder="Seni buraya çeken nedir?" required />
-                <label htmlFor="ap-type">Hangi türde kendini uzman hissediyorsun?</label>
-                <select className="inp" id="ap-type" name="type"><option>Slot</option><option>Canlı Bahis</option><option>Masa Oyunları</option><option>Crash</option></select>
-                <label htmlFor="ap-budget">Aylık oyun bütçen</label>
-                <select className="inp" id="ap-budget" name="budget"><option>5.000 TL altı</option><option>5.000 – 25.000 TL</option><option>25.000 – 100.000 TL</option><option>100.000 TL üzeri</option></select>
-                <div style={{ marginTop: '1.4rem' }}>
-                  <button className="btn solid" style={{ width: '100%' }} disabled={busy}>
-                    {busy ? 'Değerlendiriliyor…' : 'Başvuruyu Gönder'}
-                  </button>
-                </div>
-              </form>
-            ) : (
-              <p className="noteline serif" style={{ border: 'none', padding: 0, textAlign: 'center', color: 'var(--gold)', fontSize: '1.05rem' }}>
-                ✦ Onaylandın. Davetiyen hazır…
-              </p>
-            )}
-        </Modal>
       )}
     </>
   );

@@ -150,5 +150,20 @@ sistemin **aşamadığı** sınırlardır.
    1 USDT = ◈ 9.7, çekimde tutar talep anında teminata alınır (spend-hold).
    Kalan: ray bazlı çekim ücreti tablosu, gerçek sağlayıcı entegrasyonu (demo dışı)
 
+## 23 Eylül 2026 — Giriş kartı + "demodur odur" temizliği
+
+- **Kapı:** DAVET KODU, `EV-2026` ipucu, ⚡ Hızlı Geçiş Kartı ve çok alanlı
+  "Başvuru" modalı kaldırıldı. Yerinde tek kart: **Ad Soyad + E-posta**
+  (zorunlu) + **Telegram/telefon** (opsiyonel). Kart `/api/entry` üzerinden
+  kulübe iletilir (Resend mail; anahtarsa yapılandırılmış log), kapı 1,4 sn'de
+  açılır, isim profile yazılır — geri dönüşte otomatik giriş, kart bir daha
+  sorulmaz. Ölü `/api/apply` ucu silindi.
+- **Koruma:** IP başına 5 istek/dk, görünmez bal küpü, mail gövdesindeki her
+  alan HTML'den kaçışlı (11 test: `tests/entry.test.js`).
+- **"Demo" temizliği:** oyun üstü kurdeleler, kapı demo ipuçları,
+  Lounge/Salon parantezleri, SportBet simüle anlatımı, footer ve meta
+  açıklaması gitti. Uygulamada kalan tek "demo" dizgisi kasadaki uyarı:
+  "Bu kasa demo krediyle çalışır — hesabına gerçek para transferi yapma."
+  — IBAN'a gerçek havale riskine karşı bilerek korundu.
 
 dürTL — demo para. Gerçek para yok. 18+ · Sorumlu oyun.

@@ -261,7 +261,6 @@ export default function CrashGame({ spend, win, onClose }){
       <FairBadge liveHash={fairHash} />
         <div className="slot-head">
           <div>
-            <span className="demo-badge">Demo · Gerçek para yok</span>
             <h3>✈️ Aviator <span className="muted" style={{ fontFamily: 'var(--sans)', fontSize: '.66rem', letterSpacing: '.14em' }}>· CANLI</span></h3>
           </div>
           <button className="btn ghost" style={{ padding: '.4rem .8rem' }}

@@ -2,7 +2,7 @@ import './globals.css';
 
 export const metadata = {
   title: 'DÜRTÜ — Kapalı Kulüp',
-  description: 'Dürtü seni çağırıyor. Seçilmişler için küratörlü oyun deneyimi — konsept demosu.',
+  description: 'Dürtü seni çağırıyor. Seçilmişler için küratörlü oyun deneyimi.',
   manifest: '/manifest.webmanifest',
 };
 

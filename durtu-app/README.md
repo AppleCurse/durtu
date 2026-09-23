@@ -28,7 +28,7 @@ durtu-app/
 │   ├── globals.css         # tasarım token'ları + bileşen stilleri
 │   └── api/
 │       ├── games/route.js  # GET  — küratör seçkisi (ISR 1s + Fisher-Yates)
-│       └── apply/route.js  # POST — üyelik başvurusu (doğrulama + rate limit + sınırlı kuyruk)
+│       └── entry/route.js  # POST — giriş kartı (doğrulama + rate limit + bal küpü + Resend mail)
 ├── components/             # oyunlar + salon + kapı + modaller
 │   ├── Lounge360.jsx       # WebGL equirectangular lounge + mekânsal hotspotlar
 │   └── ui/
@@ -90,8 +90,10 @@ npm test               # 114 test (Node 20.11+ ve 22+ aynı komut)
 ## Üretim notları (dürüst liste)
 
 - Gerçek para oyunları **lisanslı sağlayıcı entegrasyonu** gerektirir.
-- `/api/apply` proses-içi bellek; üretimde Postgres + admin onay akışı.
-- Kimlik doğrulama: NextAuth + davet kodu claim akışı (backlog).
+- `/api/entry` iletimi: Resend (`RESEND_API_KEY` + `ENTRY_MAIL_TO` env);
+  anahtarsızsa kart sunucu log'una yapılandırılmış JSON olarak düşer.
+  Kalıcı depo + admin onay akışı backlog.
+- Kimlik doğrulama: giriş kartı (ad soyad + e-posta); NextAuth (backlog).
 - Provably Fair **canlı**: crash/mines her turu SHA-256 ile önceden kilitler
   (nav → 🛡️ ADİLLİK paneli + kendini doğrula aracı)
 - Kulüp katmanı (VIP/promo/cashback), turnuvalar, melekler ve Supabase bulut

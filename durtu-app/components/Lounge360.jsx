@@ -30,7 +30,7 @@ export const LOUNGE_HOTSPOTS = Object.freeze([
     title: 'Gece Barı',
     description: 'İsimsiz menü, düşük ışık ve yalnızca bu geceye hazırlanan alkolsüz imza eşleşmesi.',
     actionLabel: 'Servisi çağır',
-    message: '<b>Gece Barı:</b> İmza servis notun Selin’e iletildi (konsept demo).',
+    message: '<b>Gece Barı:</b> İmza servis notun Selin’e iletildi.',
   },
   {
     id: 'bosphorus',
@@ -63,7 +63,7 @@ export const LOUNGE_HOTSPOTS = Object.freeze([
     title: 'Merkez Loca',
     description: 'Mekânın kalbi. Masaya geçmeden önce geceyi izle, yönünü seç ve acele etme.',
     actionLabel: 'Locayı ayır',
-    message: '<b>Merkez Loca:</b> Bu gece için ayrıldı (konsept demo).',
+    message: '<b>Merkez Loca:</b> Bu gece için ayrıldı.',
   },
 ]);
 

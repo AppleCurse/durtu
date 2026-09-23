@@ -15,7 +15,7 @@ const MODAL_SRC = fs.readFileSync(path.join(COMPONENTS, 'ui', 'Modal.jsx'), 'utf
 const MODAL_COMPONENTS = [
   'WheelGame', 'LimboGame', 'HiloGame', 'MinesGame', 'PlinkoGame',
   'BlackjackGame', 'RouletteGame', 'SportBet', 'SlotGame',
-  'VaultModal', 'ClubModal', 'LimitsModal', 'StatsModal', 'DailyCheckInModal', 'CrashGame', 'Gate',
+  'VaultModal', 'ClubModal', 'LimitsModal', 'StatsModal', 'DailyCheckInModal', 'CrashGame',
   'Lounge360',
 ];
 
@@ -79,10 +79,12 @@ test('MODAL: elle yazılmış ovl overlay kalıbı kalmadı', () => {
   }
 });
 
-test('A11Y: başvuru formundaki her alan label ile eşleşir', () => {
+test('A11Y: giriş kartındaki her alan label ile eşleşir', () => {
+  // Eski 6 alanlı "Başvuru" modalı kaldırıldı; kapı artık tek kart:
+  // ad soyad + e-posta + telegram/telefon. Bal küpü label'sızdır (amaçsız).
   const src = fs.readFileSync(path.join(COMPONENTS, 'Gate.jsx'), 'utf8');
   const labels = [...src.matchAll(/<label htmlFor="([^"]+)"/g)].map(m => m[1]);
-  assert.ok(labels.length >= 6, `yalnızca ${labels.length} bağlı label bulundu`);
+  assert.ok(labels.length >= 3, `yalnızca ${labels.length} bağlı label bulundu`);
   for (const id of labels) {
     assert.ok(
       new RegExp(`id="${id}"`).test(src),

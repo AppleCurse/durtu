@@ -413,7 +413,6 @@ export default function SlotGame({ game, spend, win, onClose }){
     <Modal onClose={onClose} title="Slot" className="pnl slot-pnl">
         <div className="slot-head">
           <div>
-            <span className="demo-badge">Demo · Gerçek para yok</span>
             <h3>{game.icon} {game.name} · {def.type.toUpperCase()}</h3>
           </div>
           <button className="btn ghost" style={{padding:'.4rem .8rem'}} onClick={()=>{ sfxRef.current=!sfxRef.current; setSfx(sfxRef.current); }}>{sfx?'🔊':'🔇'}</button>
